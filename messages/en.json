@@ -1,0 +1,11 @@
+{
+  "HomePage": {
+    "title": "Hello world!",
+    "description": "This is a multilingual Next.js site"
+  },
+  "Hero": {
+    "title": "Discover Your Next Adventure",
+    "subtitle": "Explore the World with Us",
+    "cta": "Book Your Journey →"
+  }
+}
