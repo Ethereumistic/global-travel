@@ -201,7 +201,7 @@ export default function NavBar() {
             exit="closed"
             variants={mobileMenuVariants as any}
           >
-            {navItems.map((item) =>
+            {/* {navItems.map((item) =>
               "submenu" in item ? (
                 <div key={item.label} className="space-y-2">
                   <div className="px-3 py-2 text-foreground font-medium">
@@ -229,7 +229,7 @@ export default function NavBar() {
                   {item.label}
                 </Link>
               )
-            )}
+            )} */}
             <Button className="">РЕЗЕРВИРАЙ</Button>
           </motion.div>
         )}
