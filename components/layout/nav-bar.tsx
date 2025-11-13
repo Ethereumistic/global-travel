@@ -3,8 +3,8 @@
 import * as React from "react"
 import { useState, useEffect } from "react"
 import {
-  Menu, // Kept for fallback, but AnimatedHamburgerButton is used
-  X, // Kept for fallback, but AnimatedHamburgerButton is used
+  Menu,
+  X,
   Phone,
   Mail,
   Sun,
@@ -12,11 +12,12 @@ import {
   Construction,
   Trees,
   Building,
+  Plane,
+  TreePalm,
+  MapPin,
 } from "lucide-react"
 import Link from "next/link"
 import { useTheme } from "next-themes"
-
-// NEW: Import motion and AnimatePresence for animations
 import { motion, AnimatePresence } from "framer-motion"
 
 import {
@@ -31,88 +32,116 @@ import {
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import Logo from "./logo"
+import { Button } from "../ui/button"
+import { usePathname } from "next/navigation"
 
 export default function NavBar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const pathname = usePathname() // Get current page path
+
+  // NEW: State to track scroll position
+  const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-  }, [])
+
+    // NEW: Add scroll event listener
+    const handleScroll = () => {
+      // Set scrolled to true if user has scrolled more than 10px
+      setScrolled(window.scrollY > 10)
+    }
+
+    window.addEventListener("scroll", handleScroll)
+
+    // Cleanup function to remove the listener
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+    }
+  }, []) // Empty dependency array ensures this runs only on mount and unmount
 
   const navItems = [
-    { label: "За нас", href: "/about" },
     {
-      label: "Услуги",
-      submenu: [
-        {
-          label: "Пътно строителство и поддръжка",
-          href: "/services?tab=roads",
-          icon: <Construction className="w-4 h-4" />,
-          description: "Изграждане и поддръжка на пътища, мостове и магистрали.",
-        },
-        {
-          label: "Саниране и фасади",
-          href: "/services?tab=facades",
-          icon: <Building className="w-4 h-4" />,
-          description: "Цялостни решения за обновяване и саниране на сгради.",
-        },
-        {
-          label: "Градско и парково строителство",
-          href: "/services?tab=urban",
-          icon: <Trees className="w-4 h-4" />,
-          description: "Озеленяване, паркови алеи и зони за отдих.",
-        },
-      ],
+      label: "Дестинации",
+      href: "/destinations",
+      icon: <MapPin className="size-5 text-white" />,
     },
-    { label: "Инвентар", href: "/inventory" },
-    { label: "Новини", href: "#news" },
-    { label: "Проекти", href: "/projects" },
-    { label: "Контакти", href: "/contact" },
+    {
+      label: "Екскурзии",
+      href: "/excursions",
+      icon: <TreePalm className="size-5 text-white" />,
+    },
+    {
+      label: "Самолетни Билети",
+      href: "/flights", // Using /flights as a placeholder
+      icon: <Plane className="size-5 text-white" />,
+    },
+
+    // {
+    //   label: "Услуги",
+    //   submenu: [
+    //     {
+    //       label: "Пътно строителство и поддръжка",
+    //       href: "/services?tab=roads",
+    //       icon: <Construction className="w-4 h-4" />,
+    //       description: "Изграждане и поддръжка на пътища, мостове и магистрали.",
+    //     },
+    //     {
+    //       label: "Саниране и фасади",
+    //       href: "/services?tab=facades",
+    //       icon: <Building className="w-4 h-4" />,
+    //       description: "Цялостни решения за обновяване и саниране на сгради.",
+    //     },
+    //     {
+    //       label: "Градско и парково строителство",
+    //       href: "/services?tab=urban",
+    //       icon: <Trees className="w-4 h-4" />,
+    //       description: "Озеленяване, паркови алеи и зони за отдих.",
+    //     },
+    //   ],
+    // },
+
   ]
 
-  // NEW: Variants for the mobile menu slide-down animation
   const mobileMenuVariants = {
     open: {
       opacity: 1,
-      height: "auto", // Animate to its natural height
+      height: "auto",
       transition: { duration: 0.3, ease: "easeInOut" },
     },
     closed: {
       opacity: 0,
-      height: 0, // Animate to 0 height
+      height: 0,
       transition: { duration: 0.25, ease: "easeInOut" },
     },
   }
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-border/20 bg-background/20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    // === CHANGED: Conditionally apply bg/border on desktop based on scroll ===
+    <nav
+      className={cn(
+        "sticky top-0 z-50 w-full border-b border-border/20 bg-secondary ", // Base styles (mobile-first)
+        "transition-colors duration-300 ease-in-out", // Add a nice transition
+        !scrolled && pathname === "/bg" && "/en" && "md:bg-transparent md:border-transparent"
+      )}
+    >
+      <div className="mx-auto  px-4 md:px-8 lg:px-12 xl:px-16">
         <div className="flex items-center justify-between h-20">
-          {/* Logo (Unchanged) */}
-          {/* <Link href="/" className="flex items-center gap-2 shrink-0"> */}
-            {/* <div className="relative">
-              <Image
-                src="https://cdn.jsdelivr.net/gh/Ethereumistic/ultrabuild-assets/logo.png"
-                alt="Ultrabuild"
-                width={180}
-                height={180}
-              />
-            </div> */}
-            <Logo />
-          {/* </Link> */}
+          <Logo />
 
-          {/* Desktop Navigation (Unchanged) */}
-          <div className="hidden md:flex items-center gap-1 lg:gap-2">
-            <NavigationMenu>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-1 lg:gap-4 ">
+            <NavigationMenu className="">
               <NavigationMenuList>
                 {navItems.map((item) =>
                   "submenu" in item ? (
                     <NavigationMenuItem key={item.label}>
-                      <NavigationMenuTrigger>{item.label}</NavigationMenuTrigger>
+                      <NavigationMenuTrigger className="">
+                        {item.label}
+                        </NavigationMenuTrigger>
                       <NavigationMenuContent>
-                        <ul className="grid w-[350px] gap-3 p-4 md:w-[450px]">
+                        {/* <ul className="grid w-[350px] gap-3 p-4 md:w-[450px]">
                           {item.submenu?.map((subitem) => (
                             <ListItem
                               key={subitem.label}
@@ -123,7 +152,7 @@ export default function NavBar() {
                               {subitem.description}
                             </ListItem>
                           ))}
-                        </ul>
+                        </ul> */}
                       </NavigationMenuContent>
                     </NavigationMenuItem>
                   ) : (
@@ -132,7 +161,10 @@ export default function NavBar() {
                         asChild
                         className={navigationMenuTriggerStyle()}
                       >
-                        <Link href={item.href}>{item.label}</Link>
+                        <Link href={item.href} className="flex-row items-center gap-2 px-2 lg:px-4">
+                          {item.icon}
+                          <span className="md:text-base xl:text-lg 2xl:text-xl">{item.label}</span>
+                        </Link>
                       </NavigationMenuLink>
                     </NavigationMenuItem>
                   )
@@ -141,127 +173,72 @@ export default function NavBar() {
             </NavigationMenu>
           </div>
 
-          {/* Right side - Contact & Theme (Unchanged) */}
-          <div className="hidden lg:flex items-center gap-4 border-l border-border pl-4">
-
-
-          <div className="flex items-center lg:flex-col lg:items-start xl:flex-row  gap-3 xl:text-sm text-xs">
-          <div className="flex items-center gap-1">
-            <Phone className="w-4 h-4 text-primary" />
-            <a
-              href="tel:0893277266"
-              className="text-foreground hover:text-primary transition-colors"
-            >
-              0893 277 266
-            </a>
-          </div>
-          <div className="flex items-center gap-1">
-            <Mail className="w-4 h-4 text-primary" />
-            <a
-              href="mailto:office@ultrabuild.bg"
-              className="text-foreground hover:text-primary transition-colors"
-            >
-              office@ultrabuild.bg
-            </a>
-          </div>
-        </div>
+          {/* Right side - Contact & Theme */}
+          <div className="hidden lg:flex items-center gap-4 pl-4">
+          <Button size="lg" className="text-sm xl:text-base 2xl:text-lg">РЕЗЕРВИРАЙ</Button>
 
           </div>
 
-
-
-          {/* === CHANGED: Mobile menu button & theme toggle === */}
-          <div className="flex">
-          {mounted && (
-              <button
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="p-2 text-foreground hover:bg-muted rounded-md"
-                aria-label="Toggle theme"
-              >
-                {theme === "dark" ? (
-                  <Sun className="w-4 h-4" />
-                ) : (
-                  <Moon className="w-4 h-4" />
-                )}
-              </button>
-            )}
+          {/* Mobile menu button & theme toggle */}
           <div className="flex md:hidden items-center gap-2">
-
-            {/* NEW: Replaced the old button with the animated one */}
             <AnimatedHamburgerButton
               isOpen={mobileOpen}
               onClick={() => setMobileOpen(!mobileOpen)}
             />
           </div>
         </div>
-        </div>
-        {/* === CHANGED: Mobile Navigation === */}
-        {/* NEW: Wrapped in AnimatePresence for open/close animation */}
-        <AnimatePresence>
-          {mobileOpen && (
-            <motion.div
-              className="md:hidden  space-y-2 border-t border-border pt-4 overflow-hidden" // NEW: Added overflow-hidden
-              initial="closed"
-              animate="open"
-              exit="closed"
-              variants={mobileMenuVariants as any}
-            >
-              {/* The content inside is unchanged, but it will now animate */}
-              {navItems.map((item) =>
-                "submenu" in item ? (
-                  <div key={item.label} className="space-y-2">
-                    <div className="px-3 py-2 text-foreground font-medium">
-                      {item.label}
-                    </div>
-                    {item.submenu?.map((subitem) => (
-                      <Link
-                        key={subitem.label}
-                        href={subitem.href}
-                        className="flex items-center px-6 py-2 text-foreground/80 hover:text-primary gap-4 transition-colors text-sm"
-                        onClick={() => setMobileOpen(false)}
-                      >
-                        {subitem.icon}
-                        <span>{subitem.label}</span>
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className="block px-3 py-2 text-foreground hover:text-primary transition-colors"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
-                ),
-              )}
-              <div className="flex justify-between items-center gap-2 px-8 py-4 border-t border-border text-sm">
-                <a
-                  href="tel:0893277266"
-                  className="text-foreground hover:text-primary transition-colors flex items-center gap-2"
-                >
-                  <Phone className="w-4 h-4 text-primary" />
-                  0893 277 266
-                </a>
-                <a
-                  href="mailto:office@ultrabuild.bg"
-                  className="text-foreground hover:text-primary transition-colors flex items-center gap-2"
-                >
-                  <Mail className="w-4 h-4 text-primary" />
-                  office@ultrabuild.bg
-                </a>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
+      {/* === CHANGED: Mobile Navigation (Now overlays) === */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            // NEW: Added absolute positioning to overlay content
+            // 'top-20' matches the 'h-20' of the header
+            // 'bg-background' ensures it's not transparent
+            className="absolute top-20 left-0 right-0 z-40 md:hidden space-y-2 border-t border-border pt-4 overflow-hidden bg-background"
+            initial="closed"
+            animate="open"
+            exit="closed"
+            variants={mobileMenuVariants as any}
+          >
+            {navItems.map((item) =>
+              "submenu" in item ? (
+                <div key={item.label} className="space-y-2">
+                  <div className="px-3 py-2 text-foreground font-medium">
+                    {item.label}
+                  </div>
+                  {item.submenu?.map((subitem) => (
+                    <Link
+                      key={subitem.label}
+                      href={subitem.href}
+                      className="flex items-center px-6 py-2 text-foreground/80 hover:text-primary gap-4 transition-colors text-sm"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {subitem.icon}
+                      <span>{subitem.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className="block px-3 py-2 text-foreground hover:text-primary transition-colors"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              )
+            )}
+            <Button className="">РЕЗЕРВИРАЙ</Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   )
 }
 
-// === NEW: AnimatedHamburgerButton Component ===
-// A self-contained component for the animated hamburger/X icon
+// === AnimatedHamburgerButton Component (Unchanged) ===
 const AnimatedHamburgerButton = ({
   isOpen,
   onClick,
@@ -272,7 +249,7 @@ const AnimatedHamburgerButton = ({
   return (
     <motion.button
       onClick={onClick}
-      className="p-2 text-foreground"
+      className="p-2 text-secondary-foreground"
       aria-label="Toggle menu"
       animate={isOpen ? "open" : "closed"}
       initial={false}
@@ -283,38 +260,38 @@ const AnimatedHamburgerButton = ({
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-6 h-6" // Match the original size
+        className="w-6 h-6"
       >
         <motion.path
-          d="M 4 8 L 20 8" // Top line
+          d="M 4 8 L 20 8"
           stroke="currentColor"
           strokeWidth="2.5"
           strokeLinecap="round"
           variants={{
             closed: { rotate: 0, y: 0 },
-            open: { rotate: 45, y: 4 }, // Rotates and moves to center
+            open: { rotate: 45, y: 4 },
           }}
           transition={{ duration: 0.3 }}
         />
         <motion.path
-          d="M 4 12 L 20 12" // Middle line
+          d="M 4 12 L 20 12"
           stroke="currentColor"
           strokeWidth="2.5"
           strokeLinecap="round"
           variants={{
             closed: { opacity: 1 },
-            open: { opacity: 0 }, // Fades out
+            open: { opacity: 0 },
           }}
           transition={{ duration: 0.3 }}
         />
         <motion.path
-          d="M 4 16 L 20 16" // Bottom line
+          d="M 4 16 L 20 16"
           stroke="currentColor"
           strokeWidth="2.5"
           strokeLinecap="round"
           variants={{
             closed: { rotate: 0, y: 0 },
-            open: { rotate: -45, y: -4 }, // Rotates and moves to center
+            open: { rotate: -45, y: -4 },
           }}
           transition={{ duration: 0.3 }}
         />

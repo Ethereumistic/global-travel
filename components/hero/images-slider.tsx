@@ -3,42 +3,41 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import React, { useEffect, useState } from "react";
 
+// 1. MODIFIED PROPS
+// We now require currentIndex, onNext, and onPrevious from the parent.
+// We remove the internal 'autoplay' logic, as the parent will handle it.
 export const ImagesSlider = ({
   images,
   children,
   overlay = true,
   overlayClassName,
   className,
-  autoplay = true,
   direction = "up",
+  currentIndex, // ADDED: The current index to display
+  onNext,       // ADDED: Function to call on next
+  onPrevious,   // ADDED: Function to call on previous
 }: {
   images: string[];
   children: React.ReactNode;
   overlay?: React.ReactNode;
   overlayClassName?: string;
   className?: string;
-  autoplay?: boolean;
   direction?: "up" | "down";
+  currentIndex: number; // ADDED
+  onNext: () => void;     // ADDED
+  onPrevious: () => void; // ADDED
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // 2. REMOVED INTERNAL STATE
+  // const [currentIndex, setCurrentIndex] = useState(0); // <-- REMOVED
   const [loading, setLoading] = useState(false);
   const [loadedImages, setLoadedImages] = useState<string[]>([]);
 
-  const handleNext = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex + 1 === images.length ? 0 : prevIndex + 1
-    );
-  };
-
-  const handlePrevious = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex - 1 < 0 ? images.length - 1 : prevIndex - 1
-    );
-  };
+  // 3. REMOVED handleNext / handlePrevious
+  // They are no longer needed as we call props directly.
 
   useEffect(() => {
     loadImages();
-  }, []);
+  }, []); // This loadImages effect is still fine
 
   const loadImages = () => {
     setLoading(true);
@@ -58,32 +57,29 @@ export const ImagesSlider = ({
       })
       .catch((error) => console.error("Failed to load images", error));
   };
+
+  // 4. MODIFIED KEYDOWN EFFECT
+  // It now calls the onNext/onPrevious props directly.
+  // The dependency array is updated to [onNext, onPrevious].
+  // The autoplay interval is completely REMOVED.
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "ArrowRight") {
-        handleNext();
+        onNext(); // Call prop
       } else if (event.key === "ArrowLeft") {
-        handlePrevious();
+        onPrevious(); // Call prop
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
 
-    // autoplay
-    let interval: any;
-    if (autoplay) {
-      interval = setInterval(() => {
-        handleNext();
-      }, 5000);
-    }
-
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
-      clearInterval(interval);
     };
-  }, []);
+  }, [onNext, onPrevious]); // Add props to dependency array
 
   const slideVariants = {
+    // ... (slideVariants are unchanged)
     initial: {
       scale: 0,
       opacity: 0,
@@ -136,8 +132,9 @@ export const ImagesSlider = ({
       {areImagesLoaded && (
         <AnimatePresence>
           <motion.img
-            key={currentIndex}
-            src={loadedImages[currentIndex]}
+            // 5. USE PROPS FOR KEY AND SRC
+            key={currentIndex} // Use the currentIndex prop
+            src={loadedImages[currentIndex]} // Use the currentIndex prop
             initial="initial"
             animate="visible"
             exit={direction === "up" ? "upExit" : "downExit"}

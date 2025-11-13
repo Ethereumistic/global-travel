@@ -20,7 +20,8 @@ import {
   Trophy,
   PlaneTakeoff, // Added
   PlaneLanding, // Added
-  Bus, // Added
+  Bus,
+  Euro, // Added
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -36,7 +37,14 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel"
+import {
+  Marquee,
+  MarqueeContent,
+  MarqueeFade,
+  MarqueeItem,
+} from '@/components/ui/marquee';
 import type { PackageDetail } from "@/app/api/packages/[id]/route"
+import { ALL_COUNTRIES } from "@/lib/constants";
 
 export default function ExcursionDetailPage({
   params,
@@ -51,6 +59,18 @@ export default function ExcursionDetailPage({
   const [galleryCarouselApi, setGalleryCarouselApi] = React.useState<CarouselApi>()
   const [mainImageIndex, setMainImageIndex] = React.useState(0)
   const [galleryImageIndex, setGalleryImageIndex] = React.useState(0)
+
+  const countryData = React.useMemo(() => {
+    if (!packageDetail) return []; // Return empty if data isn't loaded
+    
+    // Map over the package's countries (which are {id, name} objects)
+    return packageDetail.countries
+      .map((country) => 
+        // Find the matching country in your ALL_COUNTRIES constant
+        ALL_COUNTRIES.find((c) => c.name === country.name)
+      )
+      .filter(Boolean) as { name: string; abbr: string }[]; // Filter out any misses
+  }, [packageDetail]); // Re-run only when packageDetail changes
 
   React.useEffect(() => {
     if (!mainCarouselApi) return
@@ -125,21 +145,36 @@ export default function ExcursionDetailPage({
   }
 
   return (
-    <div className="bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-950 min-h-screen">
-      <div className="mx-auto px-4 py-6">
-        <Button asChild variant="ghost" className="mb-6 hover:bg-primary/10">
-          <Link href="/excursions">
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Обратно
-          </Link>
-        </Button>
-      </div>
 
-      <div className="max-w-7xl mx-auto py-8">
-        <h1 className="text-4xl md:text-5xl font-bold text-center mb-12">{packageDetail.title}</h1>
+
+      <div className="max-w-6xl mx-auto py-6 px-2">
+        {/* --- MODIFIED SECTION --- */}
+        <div className="flex justify-start items-center  text-center mb-4 ">
+          {/* Render Flags */}
+          {countryData.length > 0 && (
+            <div className="flex items-center flex-shrink-0 mr-4">
+              {countryData.map((country) => (
+                <Image
+                  key={country.abbr}
+                  src={`https://flagcdn.com/${country.abbr}.svg`}
+                  alt={`${country.name} flag`}
+                  width={48} // w-12
+                  height={32} // h-8
+                  className="border border-gray-300 rounded-[4px]" // Not rounded
+                  title={country.name}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Render Title */}
+          <h1 className="text-3xl md:text-4xl font-bold text-secondary">
+            {packageDetail.title}
+          </h1>
+        </div>
 
         {packageDetail.images.length > 0 && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-3">
             
             {/* Main carousel (left) - Added 'relative' for absolute positioning of the badge */}
             <div className="lg:col-span-1 relative"> 
@@ -163,7 +198,7 @@ export default function ExcursionDetailPage({
                 <CarouselNext className="right-4" />
                 {packageDetail.images.length > 1 && (
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
-                  <Badge variant="secondary">
+                  <Badge className="bg-white text-secondary">
                     {mainImageIndex + 1} / {packageDetail.images.length}
                   </Badge>
                 </div>
@@ -201,85 +236,122 @@ export default function ExcursionDetailPage({
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+          <div className="lg:col-span-1">
+          
+          {/* --- MODIFIED SECTION START --- */}
+          {packageDetail.cities.length > 0 &&
+  (() => {
+    // --- 1. Define all shared logic ---
+    const cities = packageDetail.cities;
+    const isPlane =
+      packageDetail.transport === "Самолет" ||
+      packageDetail.transport === "Директен полет";
+    const isBus = packageDetail.transport === "Автобус";
+    const showIcons = isPlane || isBus;
+
+    // --- 2. Render Card with Carousel ---
+    return (
+      <Card className="border-0 shadow-sm mb-3">
+        <CardContent className="">
+          <Carousel
+            opts={{ align: "start", dragFree: true }}
+            className="w-full"
+          >
+            <CarouselContent className="mx-6">
+              {/* 1. Start Icon */}
+              {isPlane && (
+                <CarouselItem className="basis-auto mt-2 flex-shrink-0 pl-1 pr-2">
+                  <PlaneTakeoff className="h-5 w-5 text-primary" />
+                </CarouselItem>
+              )}
+              {isBus && (
+                <CarouselItem className="basis-auto mt-2 flex-shrink-0 pl-1 pr-2">
+                  <Bus className="h-5 w-5 text-primary" />
+                </CarouselItem>
+              )}
+
+              {/* 2. Map cities and lines */}
+              {cities.flatMap((city, idx) => [
+                // A. Render connecting line
+                (idx > 0 || (idx === 0 && showIcons)) && (
+                  <CarouselItem
+                    key={`${city.id}-line`}
+                    className="basis-auto flex-shrink-0 px-1 flex items-center"
+                  >
+                    <div className="flex-1 h-px bg-gray-300 min-w-[20px]" />
+                  </CarouselItem>
+                ),
+
+                // B. Render City Badge
+                <CarouselItem
+                  key={city.id}
+                  className="basis-auto flex-shrink-0 px-1"
+                >
+                  <Badge className="text-base py-2 px-4 whitespace-nowrap">
+                    {city.name}
+                  </Badge>
+                </CarouselItem>,
+              ])}
+
+              {/* 3. Render final connecting line */}
+              {showIcons && cities.length > 0 && (
+                <CarouselItem className="basis-auto flex-shrink-0 px-1 flex items-center">
+                  <div className="flex-1 h-px bg-gray-300 min-w-[20px]" />
+                </CarouselItem>
+              )}
+
+              {/* 4. End Icon */}
+              {isPlane && (
+                <CarouselItem className="basis-auto flex-shrink-0 pl-2 pr-1">
+                  <PlaneLanding className="h-5 w-5 mt-2 text-primary" />
+                </CarouselItem>
+              )}
+              {isBus && (
+                <CarouselItem className="basis-auto flex-shrink-0 pl-2 pr-1">
+                  <Bus className="h-5 w-5 mt-2 text-primary" />
+                </CarouselItem>
+              )}
+            </CarouselContent>
+          </Carousel>
+        </CardContent>
+      </Card>
+    );
+  })()}
+          </div>
+
+          <div className="lg:col-span-1">
+                                    {/* Travel Dates */}
+                                    <Card className="border-0 shadow-sm ">
+              <CardContent className="">
+                <div className="flex items-center gap-3">
+                  <Calendar className="size-8 text-primary flex-shrink-0" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Период на пътуване</p>
+                    <p className="text-base font-semibold">
+                      {new Date(packageDetail.period.from).toLocaleDateString("bg-BG")} -{" "}
+                      {new Date(packageDetail.period.to).toLocaleDateString("bg-BG")}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+        </div>
+
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-12">
           {/* Left: 4 Icons in compact cards */}
           <div className="lg:col-span-1">
           
           {/* --- MODIFIED SECTION START --- */}
-          {packageDetail.cities.length > 0 && (
-              <Card className="border-0 shadow-sm mb-3">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-primary" />
-                    Посещавани места
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center overflow-x-auto py-4">
-                    {(() => {
-                      const isPlane =
-                        packageDetail.transport === "Самолет" ||
-                        packageDetail.transport === "Директен полет";
-                      const isBus = packageDetail.transport === "Автобус";
-                      const showIcons = isPlane || isBus;
 
-                      return (
-                        <div className="flex items-center">
-                          {/* 1. Start Icon */}
-                          {isPlane && (
-                            <PlaneTakeoff className="h-5 w-5 text-primary flex-shrink-0 mx-2" />
-                          )}
-                          {isBus && (
-                            <Bus className="h-5 w-5 text-primary flex-shrink-0 mx-2" />
-                          )}
-
-                          {/* 2. Map cities with connecting lines */}
-                          {packageDetail.cities.map((city, idx) => (
-                            <React.Fragment key={city.id}>
-                              {/* 3. Render connecting line *before* all items except the first */}
-                              {idx > 0 && (
-                                <div className="flex-1 h-px bg-gray-300 min-w-[20px]" />
-                              )}
-
-                              {/* 4. Render line *before* first city *if* icons are shown */}
-                              {idx === 0 && showIcons && (
-                                <div className="flex-1 h-px bg-gray-300 min-w-[20px]" />
-                              )}
-
-                              {/* 5. City Badge */}
-                              <Badge
-                                variant="secondary"
-                                className="text-sm py-2 px-4 whitespace-nowrap"
-                              >
-                                {city.name}
-                              </Badge>
-                            </React.Fragment>
-                          ))}
-
-                          {/* 6. Render line *after* last city *if* icons are shown */}
-                          {showIcons && packageDetail.cities.length > 0 && (
-                            <div className="flex-1 h-px bg-gray-300 min-w-[20px]" />
-                          )}
-
-                          {/* 7. End Icon */}
-                          {isPlane && (
-                            <PlaneLanding className="h-5 w-5 text-primary flex-shrink-0 mx-2" />
-                          )}
-                          {isBus && (
-                            <Bus className="h-5 w-5 text-primary flex-shrink-0 mx-2" />
-                          )}
-                        </div>
-                      )
-                    })()}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
             {/* --- MODIFIED SECTION END --- */}
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               {/* Time Period */}
-              <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+              {/* <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
                 <CardContent className="p-4 text-center">
                   <Calendar className="h-6 w-6 mx-auto mb-2 text-primary" />
                 <div className="flex justify-center items-center gap-3">
@@ -292,23 +364,38 @@ export default function ExcursionDetailPage({
                     </div>
                 </div>
                 </CardContent>
-              </Card>
+              </Card> */}
 
               {/* Duration */}
               <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="p-4 text-center">
-                  <Clock className="h-6 w-6 mx-auto mb-2 text-primary" />
-                  <p className="text-xs text-muted-foreground mb-1">Продължителност</p>
-                  <p className="text-lg font-bold">{packageDetail.duration} дни</p>
+                <CardContent className="p-1 text-center">
+                  <Clock className="size-8 mx-auto mb-2 text-primary" />
+                  <p className="text-base text-muted-foreground mb-1">Продължителност</p>
+                  <p className="text-xl font-bold">{packageDetail.duration} дни</p>
                 </CardContent>
               </Card>
 
               {/* Destination */}
               <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="p-4 text-center">
-                  <MapPin className="h-6 w-6 mx-auto mb-2 text-primary" />
-                  <p className="text-xs text-muted-foreground mb-1">Дестинации</p>
-                  <p className="text-xs font-bold line-clamp-1">
+                <CardContent className="p-1 text-center mx-auto ">
+                  {/* <MapPin className="size-8 mx-auto mb-2 text-primary" /> */}
+                  {countryData.length > 0 && (
+            <div className="flex items-center justify-center flex-shrink-0 mb-2 gap-1">
+              {countryData.map((country) => (
+                <Image
+                  key={country.abbr}
+                  src={`https://flagcdn.com/${country.abbr}.svg`}
+                  alt={`${country.name} flag`}
+                  width={48} // w-12
+                  height={32} // h-8
+                  className="border border-gray-300 rounded-[4px]" // Not rounded
+                  title={country.name}
+                />
+              ))}
+            </div>
+          )}
+                  <p className="text-base text-muted-foreground mb-1">Дестинации</p>
+                  <p className="text-lg font-bold line-clamp-1">
                     {packageDetail.countries.map((c) => c.name).join(", ")}
                   </p>
                 </CardContent>
@@ -316,56 +403,57 @@ export default function ExcursionDetailPage({
 
               {/* Transport */}
               <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="p-4 text-center">
-                  <Plane className="h-6 w-6 mx-auto mb-2 text-primary" />
-                  <p className="text-xs text-muted-foreground mb-1">Транспорт</p>
-                  <p className="text-xs font-bold line-clamp-1">{packageDetail.transport}</p>
+                <CardContent className="p-1 text-center">
+                  <Plane className="size-8 mx-auto mb-2 text-primary" />
+                  <p className="text-base text-muted-foreground mb-1">Транспорт</p>
+                  <p className="text-lg font-bold line-clamp-1">{packageDetail.transport}</p>
                 </CardContent>
               </Card>
 
               {/* Price */}
               <Card className="border-0 shadow-sm hover:shadow-md transition-shadow bg-gradient-to-br from-primary/10 to-primary/5">
-                <CardContent className="p-4 text-center">
-                  <Trophy className="h-6 w-6 mx-auto mb-2 text-primary" />
-                  <p className="text-xs text-muted-foreground mb-1">Цена от</p>
-                  <p className="text-lg font-bold text-primary">{packageDetail.minPrice.price}</p>
+                <CardContent className="p-1 text-center">
+                  <Euro className="size-8 mx-auto mb-2 text-primary" />
+                  <p className="text-base text-muted-foreground mb-1">Цена от</p>
+                  <p className="text-2xl font-bold text-primary ">{packageDetail.minPrice.price}</p>
                 </CardContent>
               </Card>
             </div>
           </div>
 
           {/* Right: Overview + Dates + Price */}
-          <div className="lg:col-span-1 space-y-4">
-            {/* Overview */}
-            {packageDetail.overview && (
-              <Card className="border-0 shadow-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Compass className="h-5 w-5 text-primary" />
-                    Преглед
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-foreground/80 leading-relaxed line-clamp-3">{packageDetail.overview}</p>
-                </CardContent>
-              </Card>
-            )}
+          <div className="grid-rows-2 space-y-3">
 
-            {/* Travel Dates */}
-            <Card className="border-0 shadow-sm">
-              <CardContent className="p-4">
+                        {/* Travel Dates */}
+                        {/* <Card className="border-0 shadow-sm">
+              <CardContent className="">
                 <div className="flex items-center gap-3">
-                  <Calendar className="h-5 w-5 text-primary flex-shrink-0" />
+                  <Calendar className="size-8 text-primary flex-shrink-0" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Период на пътуване</p>
-                    <p className="text-sm font-semibold">
+                    <p className="text-sm text-muted-foreground">Период на пътуване</p>
+                    <p className="text-base font-semibold">
                       {new Date(packageDetail.period.from).toLocaleDateString("bg-BG")} -{" "}
                       {new Date(packageDetail.period.to).toLocaleDateString("bg-BG")}
                     </p>
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
+
+            {/* Overview */}
+            {packageDetail.overview && (
+              <Card className="border-0 shadow-sm row-span-1">
+                <CardHeader className="">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Compass className="size-8 text-primary" />
+                    Преглед
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm md:text-base text-foreground leading-relaxed">{packageDetail.overview}</p>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Price Note */}
             {packageDetail.minPrice.priceNote && (
@@ -380,6 +468,7 @@ export default function ExcursionDetailPage({
               </Card>
             )}
           </div>
+
         </div>
 
         {/* Main Content Tabs */}
@@ -649,7 +738,6 @@ export default function ExcursionDetailPage({
           </CardContent>
         </Card>
       </div>
-    </div>
   )
 }
 

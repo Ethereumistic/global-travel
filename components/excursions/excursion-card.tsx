@@ -4,26 +4,36 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, MapPin, Plane, Clock } from "lucide-react";
+import { Calendar, MapPin, Plane, Clock, Sparkles, Sparkle, Moon } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { PackageListItem } from "@/app/api/packages/route";
+import { ALL_COUNTRIES } from "@/lib/constants"; // <-- 1. IMPORT CONSTANTS (adjust path if needed)
 
 interface ExcursionCardProps {
   package: PackageListItem;
 }
 
 export function ExcursionCard({ package: pkg }: ExcursionCardProps) {
+  // 2. Find the country data (including abbreviation) for each country in the package
+  const countryData = React.useMemo(() => {
+    return pkg.countries
+      .map((countryName) =>
+        ALL_COUNTRIES.find((c) => c.name === countryName)
+      )
+      .filter(Boolean) as { name: string; abbr: string }[]; // Filter out any undefined matches
+  }, [pkg.countries]);
+
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
-      <div className="relative h-48 w-full bg-gray-200">
+    <Card className="group flex flex-col h-full overflow-hidden hover:shadow-lg transition-shadow duration-300 pt-0 bg-secondary-foreground/30">
+      <div className="relative h-56 w-full bg-gray-200">
         {pkg.thumbnail ? (
           <Image
             src={pkg.thumbnail}
             alt={pkg.title}
             fill
-            className="object-cover"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         ) : (
@@ -31,15 +41,39 @@ export function ExcursionCard({ package: pkg }: ExcursionCardProps) {
             <MapPin className="h-16 w-16 text-gray-500" />
           </div>
         )}
+
+    {countryData.length > 0 && (
+      <div className="absolute bottom-2 left-2">
+        {countryData.map((country) => (
+          <div
+            key={country.abbr}
+            className="relative w-8 h-6  flex-shrink-0"
+            title={country.name}
+          >
+            <Image
+              src={`https://flagcdn.com/${country.abbr}.svg`}
+              alt={`${country.name} flag`}
+              fill
+              className="object-contain rounded-xs"
+              sizes="28px"
+            />
+          </div>
+        ))}
+      </div>
+    )}
+
         <div className="absolute top-2 right-2">
-          <Badge variant="secondary" className="bg-white/90 backdrop-blur-sm">
+          <Badge variant="secondary" className="bg-primary text-primary-foreground text-sm backdrop-blur-sm">
             {pkg.transport}
           </Badge>
         </div>
       </div>
 
       <CardHeader className="space-y-2">
-        <h3 className="font-semibold text-lg line-clamp-2 min-h-[3.5rem]">
+        {/* 3. ADDED: Render flags before the title */}
+
+
+        <h3 className="font-semibold text-third text-xl line-clamp-2 transition-all duration-300 group-hover:scale-105 group-hover:text-primary">
           {pkg.title}
         </h3>
         {pkg.subtitle && (
@@ -49,9 +83,9 @@ export function ExcursionCard({ package: pkg }: ExcursionCardProps) {
         )}
       </CardHeader>
 
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-2 flex-grow">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <MapPin className="h-4 w-4 shrink-0" />
+          <MapPin className="size-5 text-third shrink-0" />
           <span className="line-clamp-1">
             {pkg.countries.join(", ")}
             {pkg.cities.length > 0 && ` • ${pkg.cities[0]}`}
@@ -60,7 +94,7 @@ export function ExcursionCard({ package: pkg }: ExcursionCardProps) {
         </div>
 
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Clock className="h-4 w-4 shrink-0" />
+          <Clock className="size-5 text-third shrink-0" />
           <span>
             {pkg.duration} дни / {pkg.overnights} нощувки
           </span>
@@ -68,7 +102,7 @@ export function ExcursionCard({ package: pkg }: ExcursionCardProps) {
 
         {pkg.period.from && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4 shrink-0" />
+            <Calendar className="size-5 text-third shrink-0" />
             <span>
               {new Date(pkg.period.from).toLocaleDateString("bg-BG")} -{" "}
               {new Date(pkg.period.to).toLocaleDateString("bg-BG")}
@@ -77,13 +111,14 @@ export function ExcursionCard({ package: pkg }: ExcursionCardProps) {
         )}
 
         {pkg.priceNote && (
-          <p className="text-xs text-muted-foreground line-clamp-2">
+          <p className="flex items-center gap-2 text-sm text-muted-foreground line-clamp-2">
+            <Moon className="size-5 text-third shrink-0" />
             {pkg.priceNote}
           </p>
         )}
       </CardContent>
 
-      <CardFooter className="flex items-center justify-between pt-4 border-t">
+      <CardFooter className="justify-between pt-2">
         <div>
           <p className="text-xs text-muted-foreground">Цена от</p>
           <p className="text-2xl font-bold text-primary">{pkg.minPrice}</p>

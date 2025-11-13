@@ -5,7 +5,7 @@ import * as React from "react";
 import { ExcursionCard } from "@/components/excursions/excursion-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Palmtree } from "lucide-react";
 import type { PackageListItem } from "@/app/api/packages/route";
 
 export default function ExcursionsPage() {
@@ -35,12 +35,18 @@ export default function ExcursionsPage() {
   }, []);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Екскурзии и Почивки</h1>
-        <p className="text-muted-foreground">
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="mb-8 text-third">
+        <div className="flex gap-3">
+        <Palmtree className="size-12 mt-2" />
+        <div>
+        <h1 className="text-4xl font-bold mb-2 text-secondary">Екскурзии и Почивки</h1>
+        <p className="text-secondary">
           Открийте най-добрите оферти за пътувания и екскурзии
         </p>
+        </div>
+        </div>
+
       </div>
 
       {error && (
@@ -70,7 +76,7 @@ export default function ExcursionsPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
           {packages.map((pkg) => (
             <ExcursionCard key={pkg.id} package={pkg} />
           ))}

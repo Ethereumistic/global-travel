@@ -7,24 +7,15 @@ const LOGO = "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/log
 const LOGOTYPE = "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/logo/logotype.svg";
 const LOGOMARK = "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/logo/logomark.svg";
 
-/**
- * A responsive logo component for ULTRABUILD.
- * Assumes you are using Tailwind CSS with the 'dark' class strategy.
- *
- * - Mobile (default): Logo stacked on top of smaller text.
- * - Desktop (md breakpoint): Logo to the left of larger text.
- */
 const Logo = () => {
-  // --- Mobile dimensions (1.5x smaller than 90x62) ---
-  // Width: 90 / 1.5 = 60px
-  // Height: 62 / 1.5 = 41.33px (we'll use 41px)
+
   
   return (
     <Link
       href="/"
       className="
         flex items-center 
-        gap-4
+        gap-2
       "
       aria-label="Global Travel Homepage"
     >
@@ -33,18 +24,20 @@ const Logo = () => {
         alt="Global Travel Logo"
         className="
           object-contain
+          w-14 h-14 md:w-12 md:h-12 lg:w-14 lg:h-14
         "
-        width={60}  // Base width (largest size)
-        height={60} // Base height (largest size)
+        width={60}  // Base width for aspect ratio
+        height={60} // Base height for aspect ratio
       />
       <Image
         src={LOGOTYPE}
         alt="Global Travel Logo"
         className="
           object-contain
+          w-48 h-auto md:w-36 lg:w-48  
         "
-        width={200}  // Base width (largest size)
-        height={110} // Base height (largest size)
+        width={200}  // Base width for aspect ratio
+        height={100} // Base height for aspect ratio
       />
 
 
