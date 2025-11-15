@@ -10,7 +10,7 @@ interface HotelsTabProps {
     board?: string;
     overview?: string;
     details?: string;
-    minPriceInDouble?: string;
+    minPriceInDouble?: number;
     currency?: string;
     website?: string;
   }>;

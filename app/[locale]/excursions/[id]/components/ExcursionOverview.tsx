@@ -1,9 +1,11 @@
+// ExcursionOverview.tsx
+
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { AlertCircle, Compass } from "lucide-react";
 
 interface ExcursionOverviewProps {
-  overview: string | null;
-  priceNote: string | null;
+  overview: string | null | undefined; // Changed: Allow undefined
+  priceNote: string | null | undefined; // Changed: Allow undefined
 }
 
 export function ExcursionOverview({ overview, priceNote }: ExcursionOverviewProps) {
