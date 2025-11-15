@@ -50,7 +50,7 @@ export default function NavBar() {
     // NEW: Add scroll event listener
     const handleScroll = () => {
       // Set scrolled to true if user has scrolled more than 10px
-      setScrolled(window.scrollY > 10)
+      setScrolled(window.scrollY > 200)
     }
 
     window.addEventListener("scroll", handleScroll)
@@ -65,17 +65,17 @@ export default function NavBar() {
     {
       label: "Дестинации",
       href: "/destinations",
-      icon: <MapPin className="size-5 text-white" />,
+      icon: <MapPin className="size-7 md:size-5 text-white" />,
     },
     {
       label: "Екскурзии",
       href: "/excursions",
-      icon: <TreePalm className="size-5 text-white" />,
+      icon: <TreePalm className="size-7 md:size-5 text-white" />,
     },
     {
       label: "Самолетни Билети",
       href: "/flights", // Using /flights as a placeholder
-      icon: <Plane className="size-5 text-white" />,
+      icon: <Plane className="size-7 md:size-5 text-white " />,
     },
 
     // {
@@ -101,7 +101,6 @@ export default function NavBar() {
     //     },
     //   ],
     // },
-
   ]
 
   const mobileMenuVariants = {
@@ -118,30 +117,42 @@ export default function NavBar() {
   }
 
   return (
-    // === CHANGED: Conditionally apply bg/border on desktop based on scroll ===
+    // === CHANGED: Removed bg/blur styles from <nav> ===
+    // The <nav> is now just a sticky container.
     <nav
       className={cn(
-        "sticky top-0 z-50 w-full bg-black/50  backdrop-blur-2xl", // Base styles (mobile-first)
-        "transition-all duration-300 ease-in-out", // Add a nice transition
-        !scrolled && pathname === "/bg" && "/en" && "md:bg-transparent md:backdrop-filter-none md:border-transparent"
+        "sticky top-0 z-50 w-full",
+        "transition-all duration-300 ease-in-out"
       )}
     >
-      <div className="mx-auto  px-4 md:px-8 lg:px-12 xl:px-16">
-        <div className="flex items-center justify-between h-20">
-          <Logo />
+      {/* === NEW WRAPPER: Added this div === */}
+      {/* This new div now holds the bg/blur styles for the H-20 bar */}
+      <div
+        className={cn(
+          "w-full bg-black/50 backdrop-blur-2xl", // Base styles
+          "transition-all duration-300 ease-in-out", // Kept transition
+          !scrolled &&
+            pathname === "/bg" &&
+            "/en" &&
+            "md:bg-transparent md:backdrop-filter-none md:border-transparent"
+        )}
+      >
+        <div className="mx-auto  px-4 md:px-8 lg:px-12 xl:px-16">
+          <div className="flex items-center justify-between h-20">
+            <Logo />
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1 lg:gap-4 ">
-            <NavigationMenu className="">
-              <NavigationMenuList>
-                {navItems.map((item) =>
-                  "submenu" in item ? (
-                    <NavigationMenuItem key={item.label}>
-                      <NavigationMenuTrigger className="">
-                        {item.label}
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-1 lg:gap-4 ">
+              <NavigationMenu className="">
+                <NavigationMenuList>
+                  {navItems.map((item) =>
+                    "submenu" in item ? (
+                      <NavigationMenuItem key={item.label}>
+                        <NavigationMenuTrigger className="">
+                          {item.label}
                         </NavigationMenuTrigger>
-                      <NavigationMenuContent>
-                        {/* <ul className="grid w-[350px] gap-3 p-4 md:w-[450px]">
+                        <NavigationMenuContent>
+                          {/* <ul className="grid w-[350px] gap-3 p-4 md:w-[450px]">
                           {item.submenu?.map((subitem) => (
                             <ListItem
                               key={subitem.label}
@@ -153,49 +164,53 @@ export default function NavBar() {
                             </ListItem>
                           ))}
                         </ul> */}
-                      </NavigationMenuContent>
-                    </NavigationMenuItem>
-                  ) : (
-                    <NavigationMenuItem key={item.label}>
-                      <NavigationMenuLink
-                        asChild
-                        className={navigationMenuTriggerStyle()}
-                      >
-                        <Link href={item.href} className="flex-row items-center gap-2 px-2 lg:px-4 ">
-                          {item.icon}
-                          <span className="md:text-base xl:text-lg 2xl:text-xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">{item.label}</span>
-                        </Link>
-                      </NavigationMenuLink>
-                    </NavigationMenuItem>
-                  )
-                )}
-              </NavigationMenuList>
-            </NavigationMenu>
-          </div>
+                        </NavigationMenuContent>
+                      </NavigationMenuItem>
+                    ) : (
+                      <NavigationMenuItem key={item.label}>
+                        <NavigationMenuLink
+                          asChild
+                          className={navigationMenuTriggerStyle()}
+                        >
+                          <Link
+                            href={item.href}
+                            className="flex-row items-center gap-2 px-2 lg:px-4 "
+                          >
+                            {item.icon}
+                            <span className="md:text-base xl:text-lg 2xl:text-xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
+                              {item.label}
+                            </span>
+                          </Link>
+                        </NavigationMenuLink>
+                      </NavigationMenuItem>
+                    )
+                  )}
+                </NavigationMenuList>
+              </NavigationMenu>
+            </div>
 
-          {/* Right side - Contact & Theme */}
-          <div className="hidden lg:flex items-center gap-4 pl-4">
-          <Button size="lg" className="text-sm xl:text-base 2xl:text-lg">РЕЗЕРВИРАЙ</Button>
+            {/* Right side - Contact & Theme */}
+            <div className="hidden lg:flex items-center gap-4 pl-4">
+              <Button size="lg" className="text-sm xl:text-base 2xl:text-lg">
+                РЕЗЕРВИРАЙ
+              </Button>
+            </div>
 
-          </div>
-
-          {/* Mobile menu button & theme toggle */}
-          <div className="flex md:hidden items-center gap-2">
-            <AnimatedHamburgerButton
-              isOpen={mobileOpen}
-              onClick={() => setMobileOpen(!mobileOpen)}
-            />
+            {/* Mobile menu button & theme toggle */}
+            <div className="flex md:hidden items-center gap-2">
+              <AnimatedHamburgerButton
+                isOpen={mobileOpen}
+                onClick={() => setMobileOpen(!mobileOpen)}
+              />
+            </div>
           </div>
         </div>
       </div>
-      {/* === CHANGED: Mobile Navigation (Now overlays) === */}
+
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            // NEW: Added absolute positioning to overlay content
-            // 'top-20' matches the 'h-20' of the header
-            // 'bg-background' ensures it's not transparent
-            className="absolute top-20 left-0 right-0 z-40 md:hidden space-y-2 border-t border-border pt-4 overflow-hidden bg-background"
+            className="absolute top-20 left-0 right-0 z-40 md:hidden space-y-2 border-t border-border/10 pt-4 overflow-hidden bg-black/50 backdrop-blur-2xl "
             initial="closed"
             animate="open"
             exit="closed"
@@ -204,10 +219,10 @@ export default function NavBar() {
             {navItems.map((item) =>
               "submenu" in item ? (
                 <div key={item.label} className="space-y-2">
-                  <div className="px-3 py-2 text-foreground font-medium">
+                  <div className="px-3 py-2 text-foreground font-medium ">
                     {item.label}
                   </div>
-                  {item.submenu?.map((subitem) => (
+                  {/* {item.submenu?.map((subitem) => (
                     <Link
                       key={subitem.label}
                       href={subitem.href}
@@ -217,20 +232,25 @@ export default function NavBar() {
                       {subitem.icon}
                       <span>{subitem.label}</span>
                     </Link>
-                  ))}
+                  ))} */}
                 </div>
               ) : (
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="block px-3 py-2 text-foreground hover:text-primary transition-colors"
+                  className="block px-8 py-4 text-white  text-xl"
                   onClick={() => setMobileOpen(false)}
                 >
-                  {item.label}
+                  <div className="flex gap-4 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
+                    {item.icon}
+                    {item.label}
+                  </div>
                 </Link>
               )
             )}
-            <Button className="">РЕЗЕРВИРАЙ</Button>
+            <Button size="lg" className="flex mx-auto my-8 text-xl  ">
+              <h1 className="drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">РЕЗЕРВИРАЙ</h1>
+            </Button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -249,7 +269,7 @@ const AnimatedHamburgerButton = ({
   return (
     <motion.button
       onClick={onClick}
-      className="p-2 text-secondary-foreground"
+      className="p-2 text-white"
       aria-label="Toggle menu"
       animate={isOpen ? "open" : "closed"}
       initial={false}

@@ -39,7 +39,7 @@ export const Loader = () => {
         <Image
           src={LOGO}
           alt="Global Travel Loading..."
-          className="object-contain w-64 h-auto animate-pulse" // Keep the pulse
+          className="object-contain w-64 h-auto animate-pulse " // Keep the pulse
           width={250}
           height={125}
           priority
@@ -68,7 +68,7 @@ const Logo = () => {
         alt="Global Travel Logo"
         className="
           object-contain
-          w-14 h-14 md:w-12 md:h-12 lg:w-14 lg:h-14
+          w-14 h-14 md:w-12 md:h-12 lg:w-14 lg:h-14  drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]
         "
         width={60}
         height={60}
@@ -78,7 +78,7 @@ const Logo = () => {
         alt="Global Travel Logo"
         className="
           object-contain
-          w-48 h-auto md:w-36 lg:w-48  
+          w-48 h-auto md:w-36 lg:w-48  drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]  
         "
         width={200}
         height={100}
