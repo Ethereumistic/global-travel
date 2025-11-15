@@ -121,9 +121,9 @@ export default function NavBar() {
     // === CHANGED: Conditionally apply bg/border on desktop based on scroll ===
     <nav
       className={cn(
-        "sticky top-0 z-50 w-full border-b border-border/20 bg-secondary ", // Base styles (mobile-first)
-        "transition-colors duration-300 ease-in-out", // Add a nice transition
-        !scrolled && pathname === "/bg" && "/en" && "md:bg-transparent md:border-transparent"
+        "sticky top-0 z-50 w-full bg-black/50  backdrop-blur-2xl", // Base styles (mobile-first)
+        "transition-all duration-300 ease-in-out", // Add a nice transition
+        !scrolled && pathname === "/bg" && "/en" && "md:bg-transparent md:backdrop-filter-none md:border-transparent"
       )}
     >
       <div className="mx-auto  px-4 md:px-8 lg:px-12 xl:px-16">
@@ -161,9 +161,9 @@ export default function NavBar() {
                         asChild
                         className={navigationMenuTriggerStyle()}
                       >
-                        <Link href={item.href} className="flex-row items-center gap-2 px-2 lg:px-4">
+                        <Link href={item.href} className="flex-row items-center gap-2 px-2 lg:px-4 ">
                           {item.icon}
-                          <span className="md:text-base xl:text-lg 2xl:text-xl">{item.label}</span>
+                          <span className="md:text-base xl:text-lg 2xl:text-xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">{item.label}</span>
                         </Link>
                       </NavigationMenuLink>
                     </NavigationMenuItem>
@@ -201,7 +201,7 @@ export default function NavBar() {
             exit="closed"
             variants={mobileMenuVariants as any}
           >
-            {/* {navItems.map((item) =>
+            {navItems.map((item) =>
               "submenu" in item ? (
                 <div key={item.label} className="space-y-2">
                   <div className="px-3 py-2 text-foreground font-medium">
@@ -229,7 +229,7 @@ export default function NavBar() {
                   {item.label}
                 </Link>
               )
-            )} */}
+            )}
             <Button className="">РЕЗЕРВИРАЙ</Button>
           </motion.div>
         )}

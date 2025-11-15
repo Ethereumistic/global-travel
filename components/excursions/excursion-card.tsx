@@ -26,6 +26,7 @@ export function ExcursionCard({ package: pkg }: ExcursionCardProps) {
   }, [pkg.countries]);
 
   return (
+    <Link href={`/excursions/${pkg.id}`}>
     <Card className="group flex flex-col h-full overflow-hidden hover:shadow-lg transition-shadow duration-300 pt-0 bg-secondary-foreground/30">
       <div className="relative h-56 w-full bg-gray-200">
         {pkg.thumbnail ? (
@@ -128,5 +129,6 @@ export function ExcursionCard({ package: pkg }: ExcursionCardProps) {
         </Button>
       </CardFooter>
     </Card>
+    </Link>
   );
 }

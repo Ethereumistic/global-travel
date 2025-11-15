@@ -40,7 +40,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale}>
-      <body className={`${balsamiq.variable} ${geologica.variable} antialiased font-balsamiq`} >
+      <body className={`${balsamiq.variable} ${geologica.variable} antialiased font-geologica`} >
         <NextIntlClientProvider messages={messages}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
 
