@@ -1,75 +1,91 @@
+// /app/[locale]/excursions/[id]/utils/priceNoteParser.ts (UPDATED)
+
 import { ParsedPriceNote, parserKeys, FlightInfoSection, FlightTable } from '../types';
 
-/**
- * Parses the raw content of a list-based section (like "Цената включва").
- * @param contentLines The raw text lines of the section.
- * @returns An array of strings, one for each list item.
- */
 function parseList(contentLines: string[]): string[] {
+  // (No changes to this function)
   return contentLines
-    .map(l => l.trim().replace(/^[•\-\*]/, '').trim()) // Remove leading bullets/dashes
-    .filter(s => s); // Filter out empty lines
+    .map(l => l.trim().replace(/^[•\-\*]/, '').trim())
+    .filter(s => s);
 }
 
 /**
  * Parses the content of a single flight information section.
+ * --- REFACTORED to find MULTIPLE tables ---
  * @param title The title of the section (e.g., "Информация за полетите за група...")
  * @param contentLines The raw text lines of the section.
- * @returns A FlightInfoSection object with a parsed table or fallback text.
+ * @returns A FlightInfoSection object with an array of parsed tables or fallback text.
  */
 function parseFlightSection(title: string, contentLines: string[]): FlightInfoSection {
+  const tables: FlightTable[] = [];
   const lines = contentLines.map(s => s.trim()).filter(s => s);
-  
-  // Use .includes() and .toLowerCase() for flexibility
-  const headerIdx1 = lines.findIndex(l => l.toLowerCase().includes('дестинация'));
-  const headerIdx2 = lines.findIndex(l => l.toLowerCase().includes('полет'));
-  const headerIdx3 = lines.findIndex(l => l.toLowerCase().includes('излита'));
 
-  // If we can't find all three headers, fall back to text
-  if (headerIdx1 === -1 || headerIdx2 === -1 || headerIdx3 === -1) {
-    return { title, table: null, textFallback: lines.join('\n') };
+  // 1. Find the starting index of *each* table (marked by "Дестинация")
+  const tableStartIndices = lines
+    .map((line, index) => (line.toLowerCase().includes('дестинация') ? index : -1))
+    .filter(index => index !== -1);
+
+  // 2. If no "Дестинация" lines are found, fall back to text
+  if (tableStartIndices.length === 0) {
+    return { title, tables: [], textFallback: lines.join('\n') };
   }
 
-  // Find the actual header text from the lines
-  const headers = [lines[headerIdx1], lines[headerIdx2], lines[headerIdx3]];
+  // 3. Loop over each found table start and parse it
+  for (let i = 0; i < tableStartIndices.length; i++) {
+    const startIndex = tableStartIndices[i];
+    // The end index is the start of the *next* table, or the end of the lines
+    const endIndex = (i + 1 < tableStartIndices.length) ? tableStartIndices[i + 1] : lines.length;
+    const tableLines = lines.slice(startIndex, endIndex);
 
-  // Assume headers are sequential and data follows the last header
-  const dataStartIndex = Math.max(headerIdx1, headerIdx2, headerIdx3) + 1;
-  const dataLines = lines.slice(dataStartIndex).filter(s => s.trim());
+    // 4. Use the *original* parsing logic on this *subset* of lines
+    const headerIdx1 = 0; // We know this is 0 because we started at "дестинация"
+    const headerIdx2 = tableLines.findIndex(l => l.toLowerCase().includes('полет'));
+    const headerIdx3 = tableLines.findIndex(l => l.toLowerCase().includes('излита'));
 
-  const rows: string[][] = [];
-  
-  // The flight data reliably comes in chunks of 3 lines
-  for (let i = 0; i < dataLines.length; i += 3) {
-    if (dataLines[i + 2]) { // Ensure we have a full chunk of 3
-      rows.push([dataLines[i], dataLines[i + 1], dataLines[i + 2]]);
-    } else if (dataLines[i]) {
-      // Handle dangling lines
-      rows.push([dataLines[i], dataLines[i+1] || 'N/A', 'N/A']);
+    // If we can't find all headers in this block, skip it
+    if (headerIdx1 === -1 || headerIdx2 === -1 || headerIdx3 === -1) {
+      continue;
+    }
+
+    const headers = [tableLines[headerIdx1], tableLines[headerIdx2], tableLines[headerIdx3]];
+
+    const dataStartIndex = Math.max(headerIdx1, headerIdx2, headerIdx3) + 1;
+    const dataLines = tableLines.slice(dataStartIndex).filter(s => s.trim());
+
+    const rows: string[][] = [];
+    
+    for (let j = 0; j < dataLines.length; j += 3) {
+      if (dataLines[j + 2]) {
+        rows.push([dataLines[j], dataLines[j + 1], dataLines[j + 2]]);
+      } else if (dataLines[j]) {
+        rows.push([dataLines[j], dataLines[j+1] || 'N/A', 'N/A']);
+      }
+    }
+
+    if (rows.length > 0) {
+      tables.push({ headers, rows });
     }
   }
 
-  if (rows.length > 0) {
-    const table: FlightTable = { headers, rows };
-    return { title, table, textFallback: null };
+  // 5. Return the final result
+  if (tables.length > 0) {
+    return { title, tables, textFallback: null };
   } else {
-    // No rows were parsed, so just show the raw text
-    return { title, table: null, textFallback: lines.join('\n') };
+    // We found headers but no rows? Fallback.
+    return { title, tables: [], textFallback: lines.join('\n') };
   }
 }
 
 /**
  * Main parser function.
- * Takes the raw priceNote2 string and returns a structured ParsedPriceNote object.
- * @param priceNote2 The raw string from the API.
- * @returns A ParsedPriceNote object.
+ * (No changes needed in this function, but included for context)
  */
 export function parsePriceNote2(priceNote2: string | null): ParsedPriceNote | null {
   if (!priceNote2) return null;
 
   const initialData: ParsedPriceNote = {
     includes: [],
-    excludes: [], // Matches your type file
+    excludes: [],
     excursions: [],
     discounts: [],
     surcharges: [],
@@ -77,18 +93,22 @@ export function parsePriceNote2(priceNote2: string | null): ParsedPriceNote | nu
     flightInfo: [], // This is an array
   };
 
-  // This regex is the key. It splits the text by all known headers.
-  // It finds any line that STARTS with one of our key phrases.
-  // Note: 'Информация за полетите' is special, it matches anything after it on the same line.
   const allHeadersRegex =
     /^(Цената включва:|Цената не включва:|Допълнителни екскурзии:|Отстъпки:|Доплащане:|Доплащания:|Други условия по програмата:|Информация за полетите.*?$)/gim;
 
-  // Split the text into parts, separated by our headers.
-  // We filter out empty strings that result from the split.
+  const isHeaderRegex =
+    /^(Цената включва:|Цената не включва:|Допълнителни екскурзии:|Отстъпки:|Доплащане:|Доплащания:|Други условия по програмата:|Информация за полетите.*?)$/i;
+    
   const parts = priceNote2.split(allHeadersRegex).filter(p => p.trim() !== '');
 
-  // Process the parts in pairs (header, content)
-  for (let i = 0; i < parts.length; i += 2) {
+  let i = 0; 
+  if (parts.length > 0 && !isHeaderRegex.test(parts[0].trim())) {
+    const contentLines = parts[0].trim().split(/[\r\n]+/).filter(Boolean);
+    initialData.conditions.push(...parseList(contentLines));
+    i = 1; 
+  }
+
+  for (; i < parts.length; i += 2) {
     const header = parts[i]?.trim();
     const content = parts[i + 1]?.trim();
 
@@ -96,17 +116,16 @@ export function parsePriceNote2(priceNote2: string | null): ParsedPriceNote | nu
       continue;
     }
     
-    // Split content into lines for the helper functions
     const contentLines = content.split(/[\r\n]+/).filter(Boolean);
 
-    // Use flexible matching to find the correct section
     if (/^Информация за полетите/i.test(header)) {
-      // This is the fix: We PUSH onto the array
+      // This correctly calls our *new* parseFlightSection
       initialData.flightInfo.push(parseFlightSection(header, contentLines));
     }
     else if (header === parserKeys.includes) {
       initialData.includes = parseList(contentLines);
     } 
+    // ... (rest of the else/if blocks are unchanged) ...
     else if (header === parserKeys.excludes) {
       initialData.excludes = parseList(contentLines);
     }
@@ -120,10 +139,9 @@ export function parsePriceNote2(priceNote2: string | null): ParsedPriceNote | nu
       initialData.surcharges = parseList(contentLines);
     }
     else if (header === parserKeys.conditions) {
-      initialData.conditions = parseList(contentLines);
+      initialData.conditions.push(...parseList(contentLines));
     }
     else {
-      // Handle unknown sections by adding them to conditions
       initialData.conditions.push(`**${header}**`, ...parseList(contentLines));
     }
   }

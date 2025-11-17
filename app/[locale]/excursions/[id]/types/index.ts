@@ -5,7 +5,7 @@ export type FlightTable = {
 
   export interface FlightInfoSection {
     title: string;
-    table: FlightTable | null;
+    tables: FlightTable[];
     textFallback: string | null;
   }  
 

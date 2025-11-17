@@ -12,7 +12,7 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel";
-import { AlertCircle, ArrowRight } from "lucide-react";
+import { AlertCircle, ArrowRight, Sparkle } from "lucide-react";
 
 interface AdditionalTabProps {
   additionalPayments: Array<{
@@ -80,24 +80,25 @@ export function AdditionalTab({
       {uniqueAdditionalPayments.length > 0 && (
         <Card className="border-0 shadow-sm">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-primary" />
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <AlertCircle className="size-6 text-primary" />
               Допълнителни плащания
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* **MODIFIED:** Map over the new 'uniqueAdditionalPayments' array */}
               {uniqueAdditionalPayments.map((payment, idx) => (
                 <div
                   key={idx} // Using index is fine here as the list is stable after filter
-                  className="flex justify-between items-center p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                  className="flex justify-between items-center p-4 bg-secondary-foreground/30 hover:bg-secondary-foreground/50 rounded-lg  transition-colors"
                 >
+
                   {/* Also trim the final output title just to remove any
                     trailing spaces from the display.
                   */}
-                  <span className="text-sm font-medium">{payment.title.trim()}</span>
-                  <span className="font-semibold text-primary">
+                  <span className="text-sm font-medium ">{payment.title.trim()}</span>
+                  <span className="font-bold text-xl text-primary text-nowrap">
                     {payment.price} {payment.currency}
                   </span>
                 </div>
