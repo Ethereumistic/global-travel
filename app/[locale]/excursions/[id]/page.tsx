@@ -152,7 +152,7 @@ export default function ExcursionDetailPage({
       </div>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="overview" className="space-y-2">
+      <Tabs defaultValue="overview" className="mt-2 space-y-3">
         <TabsList className="grid w-full grid-cols-4 lg:w-fit">
           <TabsTrigger value="overview">Преглед</TabsTrigger>
           <TabsTrigger value="schedule">Програма</TabsTrigger>

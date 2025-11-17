@@ -42,10 +42,12 @@ function parseFlightSection(title: string, contentLines: string[]): FlightInfoSe
     const headerIdx2 = tableLines.findIndex(l => l.toLowerCase().includes('полет'));
     const headerIdx3 = tableLines.findIndex(l => l.toLowerCase().includes('излита'));
 
-    // If we can't find all headers in this block, skip it
-    if (headerIdx1 === -1 || headerIdx2 === -1 || headerIdx3 === -1) {
+    // --- THIS IS THE FIX ---
+    // Removed the (headerIdx1 === -1) check, as it caused the build error.
+    if (headerIdx2 === -1 || headerIdx3 === -1) {
       continue;
     }
+    // --- END OF FIX ---
 
     const headers = [tableLines[headerIdx1], tableLines[headerIdx2], tableLines[headerIdx3]];
 
