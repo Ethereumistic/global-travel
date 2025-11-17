@@ -113,7 +113,7 @@ export default function ExcursionsPage() {
   return (
     <div>
       <HeroSlider
-        heightClass="h-112"
+        className="h-112"
         title="Екскурзии и Почивки"
         subtitle="Открийте най-добрите оферти за пътувания и екскурзии"
         icon={Palmtree}
