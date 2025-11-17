@@ -8,6 +8,13 @@ export type FlightTable = {
     table: FlightTable | null;
     textFallback: string | null;
   }  
+
+  export interface HotelDetailSection {
+    title: string;
+    content: string;
+    // These are the names of the Lucide icons
+    icon: "MapPin" | "BedDouble" | "ConciergeBell" | "Utensils" | "Info";
+  }
   
   export type ParsedPriceNote = {
     includes: string[];
@@ -19,6 +26,8 @@ export type FlightTable = {
     flightInfo: FlightInfoSection[]; // <-- This is the key change
 
   };
+
+  
   
   export const parserKeys = {
     includes: "Цената включва:",

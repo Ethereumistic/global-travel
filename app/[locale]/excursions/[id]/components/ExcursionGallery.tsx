@@ -49,11 +49,11 @@ export function ExcursionGallery({ images, title }: ExcursionGalleryProps) {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="left-4" />
-          <CarouselNext className="right-4" />
+          <CarouselPrevious variant="glass" className="left-4" />
+          <CarouselNext variant="glass" className="right-4" />
           {images.length > 1 && (
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
-              <Badge className="bg-white text-secondary">
+              <Badge variant="glass" >
                 {mainImageIndex + 1} / {images.length}
               </Badge>
             </div>

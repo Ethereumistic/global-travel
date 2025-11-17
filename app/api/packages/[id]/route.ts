@@ -1,6 +1,12 @@
-// app/api/packages/[id]/route.ts
+// app/api/packages/[id]/route.ts (Corrected and Updated)
 import { NextResponse } from "next/server";
 import { XMLParser } from "fast-xml-parser";
+
+// --- NEW IMPORTS ---
+// Import the new parser and the type definition
+import { parseHotelDetails } from "../../../[locale]/excursions/[id]/utils/hotelDetailsParser";  // <-- CHANGED (Adjust path if needed)
+import { HotelDetailSection } from "../../../[locale]/excursions/[id]/types"; // <-- CHANGED (Adjust path if needed)
+// ---------------------
 
 // --- Expanded Type Definitions for Package Detail ---
 
@@ -41,7 +47,8 @@ export type PackageDetail = {
     website?: string;
     images: string[];
     overview?: string;
-    details?: string;
+    // details?: string; // <-- CHANGED: This is removed
+    detailsSections: HotelDetailSection[]; // <-- CHANGED: This is added
     board?: string;
     minPriceInDouble?: number;
     currency?: string;
@@ -65,6 +72,7 @@ export type PackageDetail = {
 
 // --- Helper Functions ---
 
+// This function is correct as you provided it.
 function decodeHtmlEntities(text: string): string {
   if (!text) return "";
   const entities: Record<string, string> = {
@@ -86,16 +94,13 @@ function decodeHtmlEntities(text: string): string {
     return entities[match] || match;
   });
 
-  // Filter out <p> and </p> tags, handling attributes in the opening tag.
   result = result.replace(/<p\b[^>]*>|<\/p>/gi, ''); 
-
-  // NEW: Filter out <div> and <h2> tags, handling attributes in the opening tag.
-  // This will eliminate the user's pattern: <div style='...'><h2>...</h2></div>
   result = result.replace(/<(div|h2)\b[^>]*>|<\/(div|h2)>/gi, '');
   
   return result;
 }
 
+// This function is correct as you provided it.
 async function fetchXML(url: string): Promise<any> {
   const response = await fetch(url, {
     cache: "no-store",
@@ -121,6 +126,7 @@ async function fetchXML(url: string): Promise<any> {
   return parser.parse(xmlText);
 }
 
+// This function is correct as you provided it.
 function normalizeArray<T>(data: T | T[] | undefined): T[] {
   if (!data) return [];
   return Array.isArray(data) ? data : [data];
@@ -142,7 +148,6 @@ export async function GET(
   }
 
   try {
-    // Fetch the specific package details
     const detailXml = await fetchXML(
       `https://www.profitours.bg/api/xml/GLOBALTRAVELMENIDJMA/Package/${id}`
     );
@@ -153,32 +158,29 @@ export async function GET(
       return NextResponse.json({ error: "Package not found" }, { status: 404 });
     }
 
-    // Parse images
+    // --- All parsing logic below is correct from your file ---
     const images = normalizeArray(pkg.Images?.Image).map((img: any) => img.Url || img);
-
-    // Parse countries
     const countries = normalizeArray(pkg.Countries?.Country).map((c: any) => ({
       id: String(c.Id || Math.random()),
       name: decodeHtmlEntities(c.Name || "")
     }));
-
-    // Parse cities
     const cities = normalizeArray(pkg.Cities?.City).map((c: any) => ({
       id: String(c.Id || Math.random()),
       name: decodeHtmlEntities(c.Name || "")
     }));
-
-    // Parse daily schedule
     const dailySchedule = normalizeArray(pkg.DailySchedule?.Day).map((day: any) => ({
       id: String(day.Id || Math.random()),
       title: decodeHtmlEntities(day.Title || ""),
       details: decodeHtmlEntities(day.Details || "")
     }));
 
-    // Parse hotels
+    // --- MODIFIED HOTEL PARSING ---
     const hotels = normalizeArray(pkg.Hotels?.Hotel).map((hotel: any) => {
       const hotelImages = normalizeArray(hotel.Images?.Image).map((img: any) => img.Url || img);
       
+      // 1. Decode the raw details string first
+      const rawDetails = hotel.Details ? decodeHtmlEntities(hotel.Details) : null; // <-- CHANGED
+
       return {
         id: String(hotel.Id || Math.random()),
         name: decodeHtmlEntities(hotel.Name || ""),
@@ -187,21 +189,22 @@ export async function GET(
         website: hotel.Website || undefined,
         images: hotelImages,
         overview: hotel.Overview ? decodeHtmlEntities(hotel.Overview) : undefined,
-        details: hotel.Details ? decodeHtmlEntities(hotel.Details) : undefined,
+        
+        // 2. Use the parser to create the detailsSections array
+        detailsSections: parseHotelDetails(rawDetails), // <-- CHANGED
+
         board: hotel.Board?.Name ? decodeHtmlEntities(hotel.Board.Name) : undefined,
         minPriceInDouble: hotel.MinPriceInDouble || undefined,
         currency: hotel.Currency || undefined
       };
     });
+    // --- END OF MODIFIED HOTEL PARSING ---
 
-    // Parse additional payments
     const additionalPayments = normalizeArray(pkg.AdditionalPayments?.AdditionalPayment).map((payment: any) => ({
       title: decodeHtmlEntities(payment.Title || ""),
       price: String(payment.Price || ""),
       currency: payment.Currency || "BGN"
     }));
-
-    // Parse additional excursions - FIXED: using AdditionalExcursion not Excursion
     const additionalExcursions = normalizeArray(pkg.AdditionalExcursions?.AdditionalExcursion).map((excursion: any) => {
       const excursionImages = normalizeArray(excursion.Images?.Image).map((img: any) => img.Url || img);
       
@@ -243,20 +246,21 @@ export async function GET(
       overview: pkg.Overview ? decodeHtmlEntities(pkg.Overview) : undefined,
       additionalConditions: pkg.AdditionalConditions ? decodeHtmlEntities(pkg.AdditionalConditions) : undefined,
       dailySchedule,
-      hotels,
+      hotels, // This now contains `detailsSections`
       additionalPayments,
       additionalExcursions
     };
 
     console.log("Successfully parsed package:", packageDetail.id);
-    console.log("Images count:", packageDetail.images.length);
     console.log("Hotels count:", packageDetail.hotels.length);
-    console.log("Daily schedule count:", packageDetail.dailySchedule.length);
+    if (packageDetail.hotels.length > 0) {
+      console.log("Hotel 0 detailsSections:", packageDetail.hotels[0].detailsSections); // <-- Good check
+    }
 
     return NextResponse.json(packageDetail, {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Cache-Control": "public, max-age=3600"
+        "Cache-Control": "public, max-age=3600" // You can lower this during dev
       },
     });
 
@@ -265,15 +269,9 @@ export async function GET(
     if (error instanceof Error) {
       console.error("Error details:", error.message);
     }
-    if (error instanceof Error && error.message.includes("404")) {
-      return NextResponse.json(
-        { error: "Package not found" },
-        { status: 404 }
-      );
-    }
     return NextResponse.json(
       { error: "Failed to fetch package details" },
       { status: 500 }
     );
   }
-} 
+}
