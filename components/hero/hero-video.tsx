@@ -23,10 +23,12 @@ const BULGARIAN_SLOGANS = [
     "Нови места, нови приятели, нов свят."
   ];
 
-const handleDestinationSelect = (destination: DestinationListItem) => {
-    console.log('Selected destination:', destination);
-    // You can add navigation or other logic here
-  };
+// --- MODIFICATION: This handler is no longer needed here ---
+// const handleDestinationSelect = (destination: DestinationListItem) => {
+//     console.log('Selected destination:', destination);
+//     // You can add navigation or other logic here
+//   };
+// --- END MODIFICATION ---
 
 export default function HeroVideo({
   webmSrc = "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/hero-video.webm",
@@ -38,6 +40,11 @@ export default function HeroVideo({
   const [index, setIndex] = useState(0);
   const intervalRef = useRef<number | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // --- MODIFICATION: Add state for the searchbar ---
+  const [selectedDestination, setSelectedDestination] = 
+    useState<DestinationListItem | null>(null);
+  // --- END MODIFICATION ---
 
   const slogans = useMemo(() => BULGARIAN_SLOGANS, []);
 
@@ -66,6 +73,21 @@ export default function HeroVideo({
       });
     }
   }, []);
+
+  // --- MODIFICATION: Add handlers for the searchbar ---
+  const handleSelect = (destination: DestinationListItem) => {
+    setSelectedDestination(destination);
+    console.log('Selected:', destination);
+    // You can add navigation logic here, e.g.:
+    // router.push(`/destinations/${destination.id}`);
+  };
+
+  const handleClear = () => {
+    setSelectedDestination(null);
+    console.log('Cleared selection');
+  };
+  // --- END MODIFICATION ---
+
 
   return (
     <section
@@ -121,23 +143,17 @@ export default function HeroVideo({
             transition={{ delay: 0.5, duration: 0.6 }}
             className="mt-6 flex justify-center gap-4"
           >
-            {/* <a
-              href="/excursii"
-              className="rounded-full bg-white/10 px-5 py-2 text-sm backdrop-blur-sm hover:bg-white/20 transition"
-              aria-label="Виж екскурзиите"
-            >
-              Виж екскурзиите
-            </a>
-            <a
-              href="/contact"
-              className="rounded-full bg-transparent border border-white/20 px-5 py-2 text-sm hover:bg-white/5 transition"
-              aria-label="Свържи се с нас"
-            >
-              Свържи се с нас
-            </a> */}
-                      <div className="absolute bottom-[33%] left-0 right-0 transform -translate-y-1/2 z-10 w-full">
-        <DestinationSearchbar onSelect={handleDestinationSelect} />
-      </div>
+            {/* ... commented out links ... */}
+            
+            {/* --- MODIFICATION: Update Searchbar props --- */}
+            <div className="absolute bottom-[33%] left-0 right-0 transform -translate-y-1/2 z-10 w-full">
+                <DestinationSearchbar
+                    selectedDestination={selectedDestination}
+                    onSelect={handleSelect}
+                    onClear={handleClear}
+                />
+            </div>
+            {/* --- END MODIFICATION --- */}
           </motion.div>
 
 
