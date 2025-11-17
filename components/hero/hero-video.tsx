@@ -69,7 +69,7 @@ export default function HeroVideo({
 
   return (
     <section
-      className={`relative w-full h-[90vh] overflow-hidden bg-black ${className}`}
+      className={`relative w-full h-[90vh] overflow-hidden bg-black rounded-b-2xl ${className}`}
       aria-label="Hero video"
     >
       {/* Video element */}

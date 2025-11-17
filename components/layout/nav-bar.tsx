@@ -129,11 +129,14 @@ export default function NavBar() {
       {/* This new div now holds the bg/blur styles for the H-20 bar */}
       <div
         className={cn(
-          "w-full bg-black/50 backdrop-blur-2xl", // Base styles
-          "transition-all duration-300 ease-in-out", // Kept transition
+          // 1. Base styles: This is the default (scrolled, or on pages like [id])
+          "w-full bg-black/40 backdrop-blur-2xl",
+          "transition-all duration-300 ease-in-out",
+          
+          // 2. Conditional transparency:
+          // Becomes transparent ONLY if NOT scrolled AND on one of these EXACT paths
           !scrolled &&
-            // pathname === "/bg" &&
-            "/en" &&
+            (pathname === "/bg/excursions" || pathname === "/en/excursions" || pathname === "/en/destinations" || pathname === "/bg/destinations") &&
             "md:bg-transparent md:backdrop-filter-none md:border-transparent"
         )}
       >

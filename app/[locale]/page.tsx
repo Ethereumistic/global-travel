@@ -39,12 +39,11 @@ export default async function HomePage() {
 
   return (
     <div>
-      <div className='-mt-20'>
+      <div className='-mt-20 '>
         <HeroVideo />
-        <h2 className='text-4xl text-center  py-8 text-white drop-shadow-[0_2px_2px_rgba(0,0,0,1)]'>Hello</h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto mt-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto px-4 py-4">
           {/* This now works, because 'pkg' is the full 'PackageListItem' 
             and has all the data 'ExcursionCard' expects.
           */}
@@ -53,13 +52,9 @@ export default async function HomePage() {
           ))}
         </div>
 
-      <h1>{t('title')}</h1>
+      {/* <h1>{t('title')}</h1>
       <p>{t('description')}</p>
-      
-      <LanguageSelector />
-
-      <h2>Hello</h2>
-      {/* ...rest of your page content... */}
+      <LanguageSelector /> */}
     </div>
   );
 }

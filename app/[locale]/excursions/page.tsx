@@ -2,27 +2,38 @@
 "use client";
 
 import * as React from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation"; // Unchanged
+import useSWR from "swr"; // Unchanged
+
 import { ExcursionCard } from "@/components/excursions/excursion-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, Palmtree, X } from "lucide-react";
+import { AlertCircle, Palmtree } from "lucide-react";
 import type { PackageListItem } from "@/app/api/packages/route";
 import type { DestinationListItem } from "@/app/api/destinations/route";
-import { Button } from "@/components/ui/button";
-import { HeroSlider } from "@/components/layout/hero-slider"; // <-- MODIFICATION: Import the new component
-import { DestinationSearchbar } from "@/components/hero/destination-searchbar";
+import { HeroSlider } from "@/components/layout/hero-slider";
 
-// --- REMOVED the ExcursionsPageHeader component, heroImages, and imageBaseUrl ---
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function ExcursionsPage() {
-  // ... all your state (packages, isLoading, etc) remains the same ...
   const [packages, setPackages] = React.useState<PackageListItem[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [selectedDestination, setSelectedDestination] =
     React.useState<DestinationListItem | null>(null);
 
-  // ... useEffect and filteredPackages logic remains the same ...
+  // --- MODIFICATION: Add state to track initial load ---
+  const [isInitialLoad, setIsInitialLoad] = React.useState(true);
+  // --- END MODIFICATION ---
+
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { data: destinations, isLoading: destinationsLoading } = useSWR<
+    DestinationListItem[]
+  >("/api/destinations", fetcher);
+
+  // ... useEffect for fetching packages (this is unchanged) ...
   React.useEffect(() => {
     async function fetchPackages() {
       try {
@@ -41,6 +52,29 @@ export default function ExcursionsPage() {
     fetchPackages();
   }, []);
 
+  // --- MODIFICATION: This effect now ONLY runs on load to sync URL -> State ---
+  React.useEffect(() => {
+    // Wait for destinations to load AND only run if isInitialLoad is true
+    if (destinationsLoading || !destinations || !isInitialLoad) return;
+
+    const destAbbr = searchParams.get("destination");
+
+    if (destAbbr) {
+      // If URL has a destination, find and set it
+      const foundDest = destinations.find(
+        (d) => d.abbr.toLowerCase() === destAbbr.toLowerCase()
+      );
+      if (foundDest) {
+        setSelectedDestination(foundDest);
+      }
+    }
+    // After this runs once, set isInitialLoad to false
+    setIsInitialLoad(false);
+  
+  // We only want this to run when these values are ready, plus our flag
+  }, [searchParams, destinations, destinationsLoading, isInitialLoad]);
+  // --- END MODIFICATION ---
+
   const filteredPackages = React.useMemo(() => {
     if (!selectedDestination) {
       return packages;
@@ -50,20 +84,44 @@ export default function ExcursionsPage() {
     );
   }, [packages, selectedDestination]);
 
-  return (
-      <div>
+  // --- MODIFICATION: This handler is now the single source of truth ---
+  const handleDestinationSelect = (destination: DestinationListItem | null) => {
+    // 1. Update the state
+    setSelectedDestination(destination);
 
+    // 2. If the user interacts, we are definitely past the initial load
+    if (isInitialLoad) {
+      setIsInitialLoad(false);
+    }
+
+    // 3. Update the URL
+    const currentParams = new URLSearchParams(window.location.search);
+    if (destination) {
+      currentParams.set("destination", destination.abbr);
+    } else {
+      currentParams.delete("destination");
+    }
+    
+    const newSearch = currentParams.toString();
+    const newUrl = `${pathname}${newSearch ? `?${newSearch}` : ''}`;
+    
+    // Use 'replace' for filters—it's better for browser back-button history
+    router.replace(newUrl, { scroll: false });
+  };
+  // --- END MODIFICATION ---
+
+  return (
+    <div>
       <HeroSlider
         heightClass="h-112"
         title="Екскурзии и Почивки"
         subtitle="Открийте най-добрите оферти за пътувания и екскурзии"
         icon={Palmtree}
         selectedDestination={selectedDestination}
-        onDestinationSelect={setSelectedDestination}
+        onDestinationSelect={handleDestinationSelect} // This uses the updated handler
       />
 
-      <div className="max-w-7xl mx-auto px-4 -mt-12 relative z-10">
-        
+      <div className="max-w-7xl mx-auto px-4 -mt-20 py-8 relative z-10">
         {/* ... Rest of your page (error, isLoading, grid) remains identical ... */}
         {error && (
           <Alert variant="destructive" className="mb-6">
@@ -73,8 +131,7 @@ export default function ExcursionsPage() {
           </Alert>
         )}
 
-        {isLoading ? (
-          // ... Skeleton loading state ...
+        {isLoading || destinationsLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="space-y-3">
@@ -87,7 +144,6 @@ export default function ExcursionsPage() {
             ))}
           </div>
         ) : filteredPackages.length === 0 ? (
-          // ... No results state ...
           <div className="text-center py-10">
             <p className="text-muted-foreground">
               {selectedDestination
@@ -96,7 +152,6 @@ export default function ExcursionsPage() {
             </p>
           </div>
         ) : (
-          // ... Results grid ...
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPackages.map((pkg) => (
               <ExcursionCard key={pkg.id} package={pkg} />

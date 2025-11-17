@@ -1,19 +1,32 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, ChevronDown } from 'lucide-react';
+// --- MODIFICATION: Import X icon ---
+import { Search, ChevronDown, X } from 'lucide-react';
+// --- END MODIFICATION ---
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import useSWR from 'swr';
 import type { DestinationListItem } from '@/app/api/destinations/route';
 
+// --- MODIFICATION: Update props interface ---
 interface DestinationSearchbarProps {
   onSelect?: (destination: DestinationListItem) => void;
+  selectedDestination: DestinationListItem | null;
+  onClear: () => void;
 }
+// --- END MODIFICATION ---
 
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-export function DestinationSearchbar({ onSelect }: DestinationSearchbarProps) {
+// --- MODIFICATION: Update function signature ---
+export function DestinationSearchbar({
+  onSelect,
+  selectedDestination,
+  onClear,
+}: DestinationSearchbarProps) {
+// --- END MODIFICATION ---
+
   const { data: destinations = [], isLoading } = useSWR<DestinationListItem[]>(
     '/api/destinations',
     fetcher
@@ -27,9 +40,17 @@ export function DestinationSearchbar({ onSelect }: DestinationSearchbarProps) {
   const typewriterRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Typewriter effect for cycling through destinations
+  // Typewriter effect
   useEffect(() => {
-    if (isActive || searchValue) return;
+    // --- MODIFICATION: Stop typewriter if a destination is selected ---
+    if (isActive || searchValue || selectedDestination) {
+      // Clear display text if we just selected something
+      if (selectedDestination && displayText) {
+        setDisplayText('');
+      }
+      return;
+    }
+    // --- END MODIFICATION ---
 
     if (!destinations.length) return;
 
@@ -57,9 +78,19 @@ export function DestinationSearchbar({ onSelect }: DestinationSearchbarProps) {
     }, !isDeleting && displayText.length === targetText.length ? deleteDelay : typeSpeed);
 
     return () => clearTimeout(typewriterRef.current as NodeJS.Timeout);
-  }, [displayText, isDeleting, typewriterIndex, isActive, searchValue, destinations]);
+  // --- MODIFICATION: Add selectedDestination to dependency array ---
+  }, [
+    displayText,
+    isDeleting,
+    typewriterIndex,
+    isActive,
+    searchValue,
+    destinations,
+    selectedDestination,
+  ]);
+  // --- END MODIFICATION ---
 
-  // Filter destinations based on search value
+  // ... filteredDestinations logic remains the same ...
   const filteredDestinations = searchValue
     ? destinations.filter(
         (dest) =>
@@ -70,14 +101,13 @@ export function DestinationSearchbar({ onSelect }: DestinationSearchbarProps) {
       )
     : destinations.slice(0, 50);
 
-  // Handle click outside
+  // ... handleClickOutside logic remains the same ...
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsActive(false);
       }
     };
-
     if (isActive) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -85,23 +115,37 @@ export function DestinationSearchbar({ onSelect }: DestinationSearchbarProps) {
   }, [isActive]);
 
   return (
-    <div ref={containerRef} className="relative max-w-xs mx-auto px-4 z-6000">
+    <div ref={containerRef} className="relative max-w-xs mx-auto z-50"> {/* Removed px-4, z-6000 */}
       {/* Search Input */}
       <div
-        className={`relative bg-white/10 backdrop-blur-xs px-4 py-2 transition-colors duration-300 hover:bg-white/15 cursor-text shadow-lg ${ // <-- FIX: Changed 'transition-all' to 'transition-colors'
+        // --- MODIFICATION: Update onClick ---
+        className={`relative bg-white/10 backdrop-blur-xs px-4 py-2 transition-colors duration-300 hover:bg-white/15 cursor-text shadow-lg ${
           isActive
             ? 'rounded-t-2xl border-x border-t border-white/20'
             : 'rounded-2xl border border-white/20'
         }`}
         onClick={() => {
-          setIsActive(true);
-          setSearchValue('');
-          setDisplayText('');
+          if (!isActive) {
+            setIsActive(true);
+            setSearchValue('');
+          }
         }}
+        // --- END MODIFICATION ---
       >
+        {/* --- MODIFICATION: Main display logic change --- */}
         <div className="flex items-center gap-3">
-          <Search className="w-5 h-5 text-white/60 flex-shrink-0" />
-          
+          {/* Show Flag if selected and inactive, otherwise show Search icon */}
+          {!isActive && selectedDestination ? (
+            <img
+              src={`https://flagcdn.com/${selectedDestination.abbr}.svg`}
+              alt={`${selectedDestination.name} flag`}
+              className="w-6 h-4 rounded-sm object-cover flex-shrink-0"
+            />
+          ) : (
+            <Search className="w-5 h-5 text-white/60 flex-shrink-0" />
+          )}
+
+          {/* Show input if active */}
           {isActive ? (
             <input
               type="text"
@@ -111,6 +155,12 @@ export function DestinationSearchbar({ onSelect }: DestinationSearchbarProps) {
               placeholder="Търсете дестинация..."
               className="flex-1 bg-transparent text-white placeholder:text-white/50 focus:outline-none text-lg"
             />
+          // Show selected name if inactive and selected
+          ) : selectedDestination ? (
+            <span className="text-white text-lg font-medium flex-1 truncate">
+              {selectedDestination.name}
+            </span>
+          // Show typewriter if inactive and nothing selected
           ) : (
             <span className="text-white/70 text-lg font-medium">
               {displayText}
@@ -119,14 +169,36 @@ export function DestinationSearchbar({ onSelect }: DestinationSearchbarProps) {
               )}
             </span>
           )}
+
+{/* Show Clear Button (X) */}
+{(isActive && searchValue) || (!isActive && selectedDestination) ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation(); // Stop click from bubbling to the div
+                if (isActive) {
+                  setSearchValue(''); // Clear search input
+                } else {
+                  // --- FIX: Add this line ---
+                  setDisplayText(''); // Instantly clear typewriter text
+                  // --- END FIX ---
+                  onClear(); // Clear selected destination
+                }
+              }}
+              title={isActive ? "Изчисти търсENEто" : "Изчисти филтъра"}
+              className="text-white/60 hover:text-white p-0.5"
+            >
+              <X className="size-5" />
+            </button>
+          ) : null}
         </div>
+        {/* --- END MODIFICATION --- */}
       </div>
 
       {/* Dropdown Menu */}
       {isActive && (
-        <div className="absolute max-w-2xs min-w-2xs top-full rounded-b-2xl bg-white/10 backdrop-blur-xs border-x border-b border-white/20 shadow-2xl overflow-hidden z-9999 px-4">
-          <ScrollArea className="h-28 w-full my-2">
-            <div className="space-y-2 pr-4">
+        <div className="absolute w-full top-full rounded-b-2xl bg-white/10 backdrop-blur-xs border-x border-b border-white/20 shadow-2xl overflow-hidden z-40"> {/* Removed min/max-w, px-4, z-9999 */}
+          <ScrollArea className="h-32 w-full my-2"> {/* Increased height */}
+            <div className="space-y-1 pr-2 pl-2"> {/* Adjusted padding */}
               {isLoading ? (
                 <div className="text-center py-8 text-white/60">Зареждане на дестинации...</div>
               ) : filteredDestinations.length === 0 ? (
@@ -141,6 +213,7 @@ export function DestinationSearchbar({ onSelect }: DestinationSearchbarProps) {
                       onSelect?.(destination);
                       setIsActive(false);
                       setSearchValue('');
+                      // We no longer clear displayText here
                     }}
                   />
                 ))
@@ -153,6 +226,7 @@ export function DestinationSearchbar({ onSelect }: DestinationSearchbarProps) {
   );
 }
 
+// --- MODIFICATION: DestinationItem styling ---
 function DestinationItem({
   destination,
   isExpanded,
@@ -167,33 +241,32 @@ function DestinationItem({
   return (
     <button
       onClick={onClick}
-      className="w-full rounded-[6px] bg-white/8 hover:bg-white/15 transition-colors px-4 py-1 text-left group"
+      className="w-full rounded-lg bg-white/5 hover:bg-white/15 transition-colors px-3 py-2 text-left group" // Adjusted padding/radius
     >
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3"> {/* Adjusted gap */}
         <img
           src={`https://flagcdn.com/${destination.abbr}.svg`}
           alt={`${destination.name} flag`}
           className="w-6 h-4 rounded-sm object-cover"
         />
         <div className="flex-1">
-          <p className="text-white font-semibold group-hover:text-white/90 transition">
+          <p className="text-white font-medium group-hover:text-white transition"> {/* Adjusted font/color */}
             {destination.name}
           </p>
-          {/* <p className="text-white/50 text-sm">{destination.continent}</p> */}
         </div>
       </div>
 
       {/* Cities List */}
       {isExpanded && destination.cities.length > 0 && (
-        <div className="ml-9 mt-3 space-y-2">
-          <div className="flex flex-wrap gap-2">
+        <div className="ml-9 mt-2 space-y-2"> {/* Adjusted margin */}
+          <div className="flex flex-wrap gap-1.5"> {/* Adjusted gap */}
             {(showMore
               ? destination.cities
               : destination.cities.slice(0, 3)
             ).map((city) => (
               <span
                 key={city}
-                className="inline-block bg-white/10 hover:bg-white/20 transition rounded-full px-3 py-1 text-xs text-white/80"
+                className="inline-block bg-white/10 hover:bg-white/20 transition rounded-full px-2.5 py-0.5 text-xs text-white/80" // Adjusted padding
               >
                 {city}
               </span>
@@ -205,9 +278,9 @@ function DestinationItem({
                 e.stopPropagation();
                 setShowMore(!showMore);
               }}
-              className="text-xs text-white/60 hover:text-white/80 transition flex items-center gap-1"
+              className="text-xs text-white/60 hover:text-white/80 transition flex items-center gap-1 mt-1.5" // Adjusted margin
             >
-              {showMore ? 'Show less' : `+${destination.cities.length - 3} more`}
+              {showMore ? 'По-малко' : `+${destination.cities.length - 3} още`}
               <ChevronDown className={`w-3 h-3 transition-transform ${showMore ? 'rotate-180' : ''}`} />
             </button>
           )}
