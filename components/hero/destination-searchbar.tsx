@@ -124,8 +124,8 @@ export function DestinationSearchbar({ onSelect }: DestinationSearchbarProps) {
 
       {/* Dropdown Menu */}
       {isActive && (
-        <div className="absolute max-w-2xs min-w-2xs top-full mt-0 rounded-b-2xl bg-white/10 backdrop-blur-xs border-x border-b border-white/20 shadow-2xl overflow-hidden z-9999 px-4">
-          <ScrollArea className="h-28 w-full my-4">
+        <div className="absolute max-w-2xs min-w-2xs top-full rounded-b-2xl bg-white/10 backdrop-blur-xs border-x border-b border-white/20 shadow-2xl overflow-hidden z-9999 px-4">
+          <ScrollArea className="h-28 w-full my-2">
             <div className="space-y-2 pr-4">
               {isLoading ? (
                 <div className="text-center py-8 text-white/60">Зареждане на дестинации...</div>

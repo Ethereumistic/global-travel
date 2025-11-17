@@ -1,7 +1,6 @@
 // page.tsx
 
 import { ExcursionCard } from '@/components/excursions/excursion-card';
-import { DestinationSearch } from '@/components/layout/destination-search';
 import { LanguageSelector } from '@/components/ui/language-switcher';
 import { getTranslations } from 'next-intl/server';
 
