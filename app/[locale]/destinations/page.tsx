@@ -106,7 +106,7 @@ export default function DestinationsPage() {
   return (
     <div className=" mx-auto">
       <HeroSlider
-        heightClass="h-112"
+        className="h-112"
         title="Дестинации и Държави"
         subtitle="Открийте най-добрите оферти за пътувания и екскурзии"
         icon={Globe}

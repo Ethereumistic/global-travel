@@ -136,7 +136,7 @@ export default function NavBar() {
           // 2. Conditional transparency:
           // Becomes transparent ONLY if NOT scrolled AND on one of these EXACT paths
           !scrolled &&
-            (pathname === "/bg/excursions" || pathname === "/en/excursions" || pathname === "/en/destinations" || pathname === "/bg/destinations") &&
+            (pathname === "/en" || pathname === "/bg" || pathname === "/bg/excursions" || pathname === "/en/excursions" || pathname === "/en/destinations" || pathname === "/bg/destinations")  &&
             "md:bg-transparent md:backdrop-filter-none md:border-transparent"
         )}
       >
