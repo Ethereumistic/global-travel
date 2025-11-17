@@ -59,19 +59,34 @@ export default function DestinationsPage() {
       )}
 
       {isLoading ? (
-        // Updated Skeleton for the new card layout
+        // ПРОМЯНА: Актуализиран скелет, за да съответства на новата карта
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="space-y-3">
+            // Мимикрираме структурата на Card
+            <div key={i} className="flex flex-col rounded-lg border bg-card overflow-hidden">
+              {/* 1. Снимка */}
               <Skeleton className="h-56 w-full" />
-              <Skeleton className="h-8 w-3/4" />
-              <Skeleton className="h-5 w-1/2" />
-              <div className="flex flex-wrap gap-2 pt-2">
-                <Skeleton className="h-6 w-20" />
-                <Skeleton className="h-6 w-24" />
-                <Skeleton className="h-6 w-16" />
+              
+              {/* 2. Хедър (Флаг + Заглавие) */}
+              <div className="flex items-center gap-3 p-6">
+                <Skeleton className="size-8 rounded-full shrink-0" />
+                <Skeleton className="h-8 w-3/4" />
               </div>
-              <Skeleton className="h-10 w-full" />
+
+              {/* 3. Съдържание (Линия + Баджове) */}
+              <div className="space-y-4 p-6 pt-0">
+                <Skeleton className="h-5 w-1/2" />
+                <div className="flex flex-wrap gap-2">
+                  <Skeleton className="h-6 w-20" />
+                  <Skeleton className="h-6 w-24" />
+                  <Skeleton className="h-6 w-16" />
+                </div>
+              </div>
+
+              {/* 4. Футър (Бутон) */}
+              <div className="p-6 pt-2 mt-auto"> {/* mt-auto за бутона да е долу */}
+                <Skeleton className="h-10 w-full" />
+              </div>
             </div>
           ))}
         </div>

@@ -40,7 +40,7 @@ export default async function HomePage() {
 
   return (
     <div>
-      <div className='-mt-22'>
+      <div className='-mt-20'>
         <HeroVideo />
         <h2 className='text-4xl text-center  py-8 text-white drop-shadow-[0_2px_2px_rgba(0,0,0,1)]'>Hello</h2>
       </div>

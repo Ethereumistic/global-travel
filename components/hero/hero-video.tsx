@@ -16,12 +16,12 @@ type Props = {
 };
 
 const BULGARIAN_SLOGANS = [
-  "Открий красотата на България — всяка обиколка е спомен.",
-  "Приключения близо до дома — екскурзии за всеки сезон.",
-  "Местни маршрути, световни емоции — пътувай из България.",
-  "Комфорт, сигурност, вълнение — резервирай своето пътуване днес.",
-  "От планината до морето — преживявания, които помнят."
-];
+    "Твоето следващо приключение те очаква.",
+    "Създай спомени, които остават завинаги.",
+    "Светът е книга. Отвори нова страница.",
+    "Открий непознатото. Изживей повече.",
+    "Нови места, нови приятели, нов свят."
+  ];
 
 const handleDestinationSelect = (destination: DestinationListItem) => {
     console.log('Selected destination:', destination);
@@ -108,7 +108,7 @@ export default function HeroVideo({
             initial={reduceMotion ? {} : { opacity: 0, y: 8 }}
             animate={reduceMotion ? {} : { opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-3xl sm:text-4xl md:text-5xl font-semibold drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]
+            className="text-2xl sm:text-3xl md:text-5xl font-semibold drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]
 
  "
           >

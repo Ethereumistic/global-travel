@@ -50,7 +50,7 @@ export default function NavBar() {
     // NEW: Add scroll event listener
     const handleScroll = () => {
       // Set scrolled to true if user has scrolled more than 10px
-      setScrolled(window.scrollY > 200)
+      setScrolled(window.scrollY > 80)
     }
 
     window.addEventListener("scroll", handleScroll)
@@ -132,7 +132,7 @@ export default function NavBar() {
           "w-full bg-black/50 backdrop-blur-2xl", // Base styles
           "transition-all duration-300 ease-in-out", // Kept transition
           !scrolled &&
-            pathname === "/bg" &&
+            // pathname === "/bg" &&
             "/en" &&
             "md:bg-transparent md:backdrop-filter-none md:border-transparent"
         )}

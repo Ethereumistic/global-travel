@@ -1,20 +1,21 @@
+// app/api/destinations/route.ts
+
 import { NextResponse } from "next/server";
 import { ALL_COUNTRIES } from "@/lib/constants"; // Assuming constants.ts is in lib/
 import { XMLParser } from "fast-xml-parser";
 
-// --- Тип за дестинация (както преди) ---
+// --- Тип за дестинация (ПРОМЯНА: Добавен thumbnail) ---
 export interface DestinationListItem {
   id: string; // Използваме абревиатурата на държавата
   name: string; // Име на държавата
   abbr: string; // Абревиатура на държавата
   continent: string;
   cities: string[]; // Списък с градове в тази държава
+  thumbnail: string | null; // НОВО: Снимка за картата
 }
 
 // --- Типове и помощни функции, копирани от /api/packages/route.ts ---
-// Това е необходимо, за да можем да извлечем и обработим същите данни
-// ---
-
+// ... (всички типове и функции от 'PackageListItem' до 'enrichPackageWithThumbnail' остават същите) ...
 export type PackageListItem = {
   id: string;
   title: string;
@@ -122,14 +123,19 @@ async function enrichPackageWithThumbnail(pkg: XmlPackage): Promise<PackageListI
   let thumbnail: string | null = null;
 
   try {
+    // ПРОМЯНА: Взимаме данните от пакета, а не от хотела.
+    // Използваме съществуващото извличане на 'thumbnail' от /api/packages/route.ts
+    // което вече гледа 'detailXml?.Package?.Images?.Image'
     const detailXml = await fetchXML(
       `https://www.profitours.bg/api/xml/GLOBALTRAVELMENIDJMA/Package/${pkg.Id}`
     );
     
+    // Този 'images' е от <Package><Images>...
     const images = detailXml?.Package?.Images?.Image;
     const imageArray = normalizeArray(images);
     
     if (imageArray.length > 0) {
+      // Взимаме първата снимка от <Package><Images>, както е в XML примера
       thumbnail = imageArray[0].Url;
     }
     
@@ -147,7 +153,7 @@ async function enrichPackageWithThumbnail(pkg: XmlPackage): Promise<PackageListI
       cities,
       minPrice: decodeHtmlEntities(pkg.MinPrice?.Price || ""),
       priceNote: pkg.MinPrice?.PriceNoteShort ? decodeHtmlEntities(pkg.MinPrice.PriceNoteShort) : "",
-      thumbnail,
+      thumbnail, // Този thumbnail вече е извлечен правилно
       period: {
         from: pkg.Period?.FromDate || "",
         to: pkg.Period?.ToDate || "",
@@ -170,7 +176,6 @@ export async function GET() {
     );
 
     const packages = parsePackages(packagesXml);
-    // Обработваме *всички* пакети, не само първите 20, за да получим всички дестинации
     const enrichedPackagesResults = await Promise.all(
       packages.map(pkg => enrichPackageWithThumbnail(pkg))
     );
@@ -180,15 +185,15 @@ export async function GET() {
     );
 
     // 2. Агрегираме данните
-    // Използваме Map за събиране на уникални градове за всяка държава
+    // ПРОМЯНА: Map-ът вече съдържа и 'thumbnail'
     const destinationMap = new Map<string, {
       countryData: (typeof ALL_COUNTRIES)[0];
       cities: Set<string>;
+      thumbnail: string | null; // НОВО
     }>();
 
     for (const pkg of validPackages) {
       for (const countryName of pkg.countries) {
-        // Намираме съответната държава в нашия константен списък
         const countryInfo = ALL_COUNTRIES.find(c => c.name === countryName);
 
         if (countryInfo) {
@@ -197,17 +202,21 @@ export async function GET() {
             destinationMap.set(countryName, {
               countryData: countryInfo,
               cities: new Set<string>(),
+              thumbnail: pkg.thumbnail, // НОВО: Взимаме thumbnail от първия пакет
             });
           }
 
-          // Добавяме всички градове от този пакет към Set-a на държавата
-          // Set() автоматично се грижи за дублажите
           const entry = destinationMap.get(countryName)!;
+
+          // Добавяме всички градове
           pkg.cities.forEach(city => entry.cities.add(city));
+          
+          // НОВО: Ако текущият entry няма thumbnail, а този пакет има, го задаваме
+          // Това гарантира, че ще вземем първия наличен thumbnail
+          if (entry.thumbnail === null && pkg.thumbnail !== null) {
+            entry.thumbnail = pkg.thumbnail;
+          }
         }
-        // else {
-        //   console.warn(`Country "${countryName}" from package ${pkg.id} not found in ALL_COUNTRIES`);
-        // }
       }
     }
 
@@ -218,7 +227,8 @@ export async function GET() {
         name: entry.countryData.name,
         abbr: entry.countryData.abbr,
         continent: entry.countryData.continent,
-        cities: Array.from(entry.cities).sort((a, b) => a.localeCompare(b, 'bg')), // Сортираме градовете
+        cities: Array.from(entry.cities).sort((a, b) => a.localeCompare(b, 'bg')),
+        thumbnail: entry.thumbnail, // НОВО: Добавяме thumbnail-а към отговора
       }))
       .sort((a, b) => a.name.localeCompare(b.name, 'bg')); // Сортираме държавите
 

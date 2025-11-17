@@ -1,7 +1,6 @@
 // components/destinations/destination-card.tsx
 "use client";
 
-import * as React from "react";
 // import Image from "next/image"; // Грешката идва от тук - заменяме го с <img>
 // import Link from "next/link"; // ... и от тук - заменяме го с <a>
 import { MapPin, Globe } from "lucide-react";
@@ -22,36 +21,47 @@ interface DestinationCardProps {
 }
 
 export function DestinationCard({ destination }: DestinationCardProps) {
-  const flagUrl = `https://flagcdn.com/w320/${destination.abbr}.png`; // Use .png for better consistency in cards
+  // ПРОМЯНА: Вече не дефинираме flagUrl тук
+  // const flagUrl = `https://flagcdn.com/w320/${destination.abbr}.png`; // Use .png for better consistency in cards
 
   return (
       <Card className="group flex flex-col h-full overflow-hidden hover:shadow-lg transition-shadow duration-300 pt-0 bg-secondary-foreground/30">
-        {/* Flag as the main image */}
+        
+        {/* ПРОМЯНА: Основната снимка вече е thumbnail */}
         <div className="relative h-56 w-full bg-gray-200">
-          {/* Заменяме <Image> с <img>. Премахваме 'fill', добавяме 'w-full h-full' */}
           <img
-            src={flagUrl}
-            alt={`${destination.name} flag`}
+            // Използваме thumbnail. Ако няма, слагаме placeholder
+            src={destination.thumbnail || "https://placehold.co/600x400/e2e8f0/64748b?text=Image"}
+            alt={`${destination.name} destination image`}
             className="object-cover transition-transform duration-300 group-hover:scale-105 w-full h-full"
-            // Use a simple placeholder if the flag fails to load
+            // onError остава, за да хване ако thumbnail URL-ът е счупен
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = "https://placehold.co/600x400/e2e8f0/64748b?text=Flag";
+              target.src = "https://placehold.co/600x400/e2e8f0/64748b?text=Image";
               target.onerror = null;
             }}
           />
           <div className="absolute top-2 right-2">
-            <Badge variant="secondary" className="bg-primary/90 text-primary-foreground text-sm backdrop-blur-sm">
+            <Badge className="bg-transparent text-primary-foreground text-sm backdrop-blur-2xl border-border/30  drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
               <Globe className="size-4 mr-1.5" />
               {destination.continent}
             </Badge>
           </div>
         </div>
 
+        {/* ПРОМЯНА: Хедърът вече съдържа флаг + име */}
         <CardHeader className="space-y-2">
-          <h3 className="font-semibold text-third text-2xl transition-all duration-300 group-hover:text-primary">
-            {destination.name}
-          </h3>
+          <div className="flex items-center gap-3">
+            {/* НОВО: Малък флаг */}
+            <img
+              src={`https://flagcdn.com/w40/${destination.abbr}.png`}
+              alt={`${destination.name} flag`}
+              className="size-8 rounded-full object-cover border" // size-8 = 2rem
+            />
+            <h3 className="font-semibold text-third text-2xl transition-all duration-300 group-hover:text-primary">
+              {destination.name}
+            </h3>
+          </div>
         </CardHeader>
 
         <CardContent className="space-y-4 flex-grow">
@@ -72,8 +82,8 @@ export function DestinationCard({ destination }: DestinationCardProps) {
                     className="basis-auto flex-shrink-0 pr-2" // 'basis-auto' за авто-ширина, 'pr-2' за разстояние
                   >
                     <Badge
-                      variant="outline"
-                      className="bg-background/70 whitespace-nowrap" // 'whitespace-nowrap' е важно
+                      
+                      className=" whitespace-nowrap" // 'whitespace-nowrap' е важно
                     >
                       {city}
                     </Badge>
@@ -83,7 +93,7 @@ export function DestinationCard({ destination }: DestinationCardProps) {
             </Carousel>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Няма добавени градове.
+              
             </p>
           )}
           {/* КРАЙ НА ПРОМЯНАТА */}

@@ -4,7 +4,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, MapPin, Plane, Clock, Sparkles, Sparkle, Moon } from "lucide-react";
+import { Calendar, MapPin, Plane, Clock, Sparkles, Sparkle, Moon, Bus } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,22 @@ import { ALL_COUNTRIES } from "@/lib/constants"; // <-- 1. IMPORT CONSTANTS (adj
 
 interface ExcursionCardProps {
   package: PackageListItem;
+}
+
+function TransportIcon({ transportName }: { transportName: string }) {
+  // Класовете "size-4 mr-1.5" са извадени тук, за да са еднакви
+  const iconClasses = "size-4 mr-1.5";
+
+  if (transportName === "Самолет" || transportName === "Директен полет") {
+    return <Plane className={iconClasses} />;
+  }
+
+  if (transportName === "Автобус") {
+    return <Bus className={iconClasses} />;
+  }
+
+  // Ако не съвпада с никое, не връщаме икона
+  return null;
 }
 
 export function ExcursionCard({ package: pkg }: ExcursionCardProps) {
@@ -44,7 +60,7 @@ export function ExcursionCard({ package: pkg }: ExcursionCardProps) {
         )}
 
     {countryData.length > 0 && (
-      <div className="absolute bottom-2 left-2">
+      <div className="absolute bottom-2 left-2  border border-border/10">
         {countryData.map((country) => (
           <div
             key={country.abbr}
@@ -64,7 +80,8 @@ export function ExcursionCard({ package: pkg }: ExcursionCardProps) {
     )}
 
         <div className="absolute top-2 right-2">
-          <Badge variant="secondary" className="bg-primary text-primary-foreground text-sm backdrop-blur-sm">
+          <Badge  className="bg-black/15 px-4 py-1 text-primary-foreground text-sm backdrop-blur-2xl border-border/30  drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
+          <TransportIcon transportName={pkg.transport} />
             {pkg.transport}
           </Badge>
         </div>
@@ -122,7 +139,7 @@ export function ExcursionCard({ package: pkg }: ExcursionCardProps) {
       <CardFooter className="justify-between pt-2">
         <div>
           <p className="text-xs text-muted-foreground">Цена от</p>
-          <p className="text-2xl font-bold text-primary">{pkg.minPrice}</p>
+          <p className="text-3xl font-black text-primary">{pkg.minPrice}</p>
         </div>
         <Button asChild>
           <Link href={`/excursions/${pkg.id}`}>Виж повече</Link>
