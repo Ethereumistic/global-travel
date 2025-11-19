@@ -1,4 +1,4 @@
-// HotelsTab.tsx (Updated)
+// HotelsTab.tsx (Reverted to include Accordion, with conditional logic)
 "use client";
 
 import * as React from "react";
@@ -97,14 +97,16 @@ function HotelEntry({ hotel }: { hotel: Hotel }) {
     <div className="space-y-4">
       {/* Row 1: The 2-column grid (image + info) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-        {/* Column 1: Main Carousel */}
-        <HotelImageGallery
-          images={hotel.images}
-          hotelName={hotel.name}
-          setApi={setHotelCarouselApi}
-        />
+        {/* Column 1: Main Carousel - ONLY render if images exist */}
+        {hotel.images.length > 0 && (
+          <HotelImageGallery
+            images={hotel.images}
+            hotelName={hotel.name}
+            setApi={setHotelCarouselApi}
+          />
+        )}
 
-        {/* Column 2: The Info Card (accordions are no longer in here) */}
+        {/* Column 2: The Info Card */}
         <HotelCard
           hotel={hotel}
           images={hotel.images}
@@ -115,13 +117,18 @@ function HotelEntry({ hotel }: { hotel: Hotel }) {
         />
       </div>
 
-      {/* --- ACCORDION GRID LAYOUT --- */}
+      {/* --- ACCORDION GRID LAYOUT - CONDITIONAL RENDERING --- */}
       {hotel.detailsSections && hotel.detailsSections.length > 0 && (
         <div 
           className="grid grid-cols-1 md:grid-cols-2 gap-2  items-start"
-          //  ^--- ЕДИНСТВЕНАТА ПРОМЯНА Е ТУК: `items-start` е добавен
         >
           {hotel.detailsSections.map((section, idx) => {
+            // New Condition: Only render this section if it's NOT the single injected room section from the new API.
+            // We use a heuristic: if there are NO images AND the icon is BedDouble, skip it.
+            if (hotel.images.length === 0 && section.icon === 'BedDouble') {
+                 return null;
+            }
+            
             const Icon = iconMap[section.icon] || Info;
             return (
               // Each item is now its own Card + Accordion

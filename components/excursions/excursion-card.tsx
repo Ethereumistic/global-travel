@@ -85,12 +85,14 @@ export function ExcursionCard({ package: pkg }: ExcursionCardProps) {
       </div>
     )}
 
-        <div className="absolute top-2 right-2">
-          <Badge  className="bg-black/15 px-4 py-1 text-primary-foreground text-sm backdrop-blur-2xl border-border/30  drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
-          <TransportIcon transportName={pkg.transport} />
-            {pkg.transport}
-          </Badge>
-        </div>
+{pkg.transport && pkg.transport !== "None" && (
+          <div className="absolute top-2 right-2">
+            <Badge  className="bg-black/15 px-4 py-1 text-primary-foreground text-sm backdrop-blur-2xl border-border/30  drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
+            <TransportIcon transportName={pkg.transport} />
+              {pkg.transport}
+            </Badge>
+          </div>
+        )}
       </div>
 
       <CardHeader className="space-y-2">
@@ -112,7 +114,7 @@ export function ExcursionCard({ package: pkg }: ExcursionCardProps) {
           <MapPin className="size-5 text-third shrink-0" />
           <span className="line-clamp-1">
               {/* FIX: Map to .name before joining */}
-              {pkg.countries.map((c) => c.name).join(", ")}
+              {/* {pkg.countries.map((c) => c.name).join(", ")} */}
               
               {pkg.cities.length > 0 && ` • ${pkg.cities[0]}`}
               {pkg.cities.length > 1 && ` +${pkg.cities.length - 1}`}

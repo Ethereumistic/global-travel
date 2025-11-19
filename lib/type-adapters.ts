@@ -107,6 +107,29 @@ export type UnifiedPackageDetail = {
 
 export type XmlPackage = any; 
 
+// --- NEW TYPES FOR ACCOMMODATIONS ---
+type PriceDetail = {
+    value: number | null;
+    currency: string | null;
+};
+
+type Accommodation = {
+    id: number;
+    total_price: {
+        value: number | null;
+        display_currency: string | null;
+        main?: PriceDetail; // Optional main price (EUR)
+        secondary?: PriceDetail; // Optional secondary price (BGN)
+    };
+    accommodation_id: string;
+    accommodation_type: string;
+    hotel_name: string | null;
+    description: string;
+    holiday: string;
+};
+// ------------------------------------
+
+
 export type NewApiPackage = {
   id: string;
   main_image: { image: string } | null;
@@ -144,6 +167,9 @@ export type NewApiPackageDetail = NewApiPackage & {
     included?: Array<{ text: string }>;
     not_included?: Array<{ text: string }>;
     daily_program?: DailyProgramItem[];
+    // --- MODIFICATION: ADD ACCOMMODATIONS ---
+    accommodations?: Accommodation[];
+    // --- END MODIFICATION ---
 };
 
 
@@ -328,11 +354,74 @@ export function adaptNewApiPackageDetail(pkg: NewApiPackageDetail): UnifiedPacka
         }));
     }
 
-    // FIXED: Check 'iso_code' OR 'country' (which contains "DE")
     const rawIso = pkg.country?.iso_code || pkg.country?.country;
     const isoCode = (rawIso && rawIso.length === 2) ? rawIso : undefined;
     
     const flagUrl = generateFlagUrl(isoCode);
+
+    let hotels: UnifiedPackageDetail["hotels"] = [];
+
+    if (pkg.accommodations && pkg.accommodations.length > 0) {
+        
+        const accommodationData = pkg.accommodations.map(acc => {
+            const description = decodeHtmlEntities(acc.description);
+            const eurPrice = acc.total_price?.main?.value;
+            const eurCurrency = acc.total_price?.main?.currency || "EUR";
+            
+            let priceString = "";
+            if (eurPrice !== null && eurPrice !== undefined) {
+                priceString = `Цена: ${eurPrice} ${eurCurrency}`;
+            } else {
+                priceString = ""; // No price string if price is null/undefined
+            }
+
+            return {
+                ...acc,
+                description,
+                priceString,
+                eurPrice,
+                eurCurrency
+            };
+        });
+
+        const firstAccommodation = accommodationData[0];
+        
+        const hotelName = firstAccommodation.hotel_name || "Настаняване"; // MODIFIED: Set virtual name to "Настаняване"
+        // Put the room list into overview for the HotelCard to display
+        const overview = accommodationData
+            .map(acc => {
+                const priceLine = acc.priceString ? ` (${acc.priceString})` : '';
+                return `• ${acc.description}${priceLine}`;
+            })  
+            .join('\n');
+
+        // This section is kept for data consistency, but will be filtered from the Accordion grid
+        const accommodationsSection: HotelDetailSection = {
+            title: "Оферти за Настаняване (Стаи)",
+            // The content remains the same as overview, minus the bullet point prefix (for compatibility)
+            content: accommodationData
+                .map(acc => {
+                    const priceDetail = acc.priceString ? ` | ${acc.priceString}` : '';
+                    return `• ${acc.description}${priceDetail}`;
+                })
+                .join('\n'),
+            icon: "BedDouble",
+        };
+
+        hotels.push({
+            id: hotelName,
+            name: hotelName,
+            country: pkg.country.name,
+            city: pkg.route ? pkg.route.split(" - ")[0] : "Неизвестен град",
+            website: undefined,
+            images: [],
+            overview: overview, // This will show the room list in HotelCard
+            detailsSections: [accommodationsSection],
+            board: undefined,
+            minPriceInDouble: firstAccommodation.eurPrice || undefined,
+            currency: firstAccommodation.eurCurrency || undefined
+        });
+    }
 
     return {
         id: pkg.id,
@@ -359,7 +448,7 @@ export function adaptNewApiPackageDetail(pkg: NewApiPackageDetail): UnifiedPacka
         dailySchedule,
         includes: pkg.included ? pkg.included.map(i => i.text) : [],
         excludes: pkg.not_included ? pkg.not_included.map(i => i.text) : [],
-        hotels: [], 
+        hotels: hotels, 
         additionalPayments: [],
         additionalExcursions: [],
         board: undefined, 

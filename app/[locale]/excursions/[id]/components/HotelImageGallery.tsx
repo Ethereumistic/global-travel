@@ -29,7 +29,7 @@ export function HotelImageGallery({
     return (
        <div className="relative w-full aspect-square rounded-lg overflow-hidden shadow-md bg-gray-100">
          <Image
-           src={"/placeholder.svg"}
+           src={"/placeholder.svg"} // This placeholder image will be shown
            alt={`${hotelName} placeholder`}
            fill
            className="object-cover"
@@ -37,7 +37,7 @@ export function HotelImageGallery({
        </div>
     );
   }
-
+  
   return (
     // --- ПРЕМАХНАТ Е ВЪНШНИЯТ `div` ---
     <Carousel setApi={setApi} className="w-full">

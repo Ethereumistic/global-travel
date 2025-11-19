@@ -40,5 +40,45 @@ export type FlightTable = {
     flightInfo: "Информация за полетите",
   };
   
+// lib/types-yachts.ts
 
+export interface YachtSpecs {
+  [key: string]: string;
+}
+
+export interface Yacht {
+  id: string;
+  name: string;
+  model: string;
+  home_port: string;
+  country: string;
+  description: string;
   
+  // Capacity
+  guests: string;
+  cabins: string;
+  wc: string;
+  
+  // Images
+  main_image: {
+    image: string;
+  } | null;
+  // Assuming the API might provide a gallery in the future, 
+  // otherwise we stick to main_image for now
+  images?: { image: string }[]; 
+
+  // Pricing
+  min_price: {
+    value: number;
+    display_currency: string;
+  };
+
+  // Details
+  specs: YachtSpecs[]; // Array of objects like [{ "Draft": "1.5m", "Beam": "3m" }]
+  inventory: Record<string, string[]> | null; // { "Kitchen": ["Sink", "Fridge"], ... }
+}
+  
+  export interface YachtApiResponse {
+    yachts: Yacht[];
+    total_count: number;
+  }
