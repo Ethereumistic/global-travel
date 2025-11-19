@@ -9,14 +9,14 @@ import { ExcursionCard } from "@/components/excursions/excursion-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Palmtree } from "lucide-react";
-import type { PackageListItem } from "@/app/api/packages/route";
+import type { UnifiedPackage } from "@/lib/type-adapters";
 import type { DestinationListItem } from "@/app/api/destinations/route";
 import { HeroSlider } from "@/components/layout/hero-slider";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function ExcursionsPage() {
-  const [packages, setPackages] = React.useState<PackageListItem[]>([]);
+  const [packages, setPackages] = React.useState<UnifiedPackage[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [selectedDestination, setSelectedDestination] =
@@ -80,10 +80,12 @@ export default function ExcursionsPage() {
       return packages;
     }
     return packages.filter((pkg) =>
-      pkg.countries.includes(selectedDestination.name)
+      // --- FIX: Use .some() and check the object's 'name' property ---
+      pkg.countries.some(
+        (country) => country.name === selectedDestination.name
+      )
     );
   }, [packages, selectedDestination]);
-
   // --- MODIFICATION: This handler is now the single source of truth ---
   const handleDestinationSelect = (destination: DestinationListItem | null) => {
     // 1. Update the state

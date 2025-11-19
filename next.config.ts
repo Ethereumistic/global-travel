@@ -25,6 +25,18 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "**", // Allows all images from this host
       },
+      {
+        protocol: "https",
+        hostname: "planet-media.s3.amazonaws.com",
+        port: "",
+        pathname: "**", // Allows all images from this host
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+        port: "",
+        pathname: "**", // Allows all images from this host
+      },
     ],
   },};
 

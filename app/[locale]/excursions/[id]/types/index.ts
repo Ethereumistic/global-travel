@@ -24,7 +24,7 @@ export type FlightTable = {
     surcharges: string[];
     conditions: string[];
     flightInfo: FlightInfoSection[]; // <-- This is the key change
-
+    
   };
 
   

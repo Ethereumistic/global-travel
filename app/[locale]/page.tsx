@@ -1,27 +1,29 @@
-// page.tsx
+// app/[locale]/page.tsx
 
 import { ExcursionCard } from '@/components/excursions/excursion-card';
-import { LanguageSelector } from '@/components/ui/language-switcher';
 import { getTranslations } from 'next-intl/server';
-
-// 1. IMPORT the correct, shared type from your API route
-import type { PackageListItem } from '@/app/api/packages/route';
 import HeroVideo from '@/components/hero/hero-video';
 
-// 2. REMOVE the local, incomplete 'Package' type definition.
-//    We will use 'PackageListItem' instead.
+// 1. FIX: Import the correct type from type-adapters, not the API route
+import type { UnifiedPackage } from '@/lib/type-adapters';
 
-// --- Your data-fetching function (now using the correct type) ---
-async function getPackages(): Promise<PackageListItem[]> { // 3. Use PackageListItem[]
+// 2. Helper type alias if you prefer using 'PackageListItem' in your component code
+type PackageListItem = UnifiedPackage;
+
+async function getPackages(): Promise<PackageListItem[]> {
   try {
+    // Use an absolute URL for server-side fetches or a relative one if using client components (but this is a server component)
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    
+    // Ensure the URL matches your file structure: app/api/packages/route.ts -> /api/packages
     const response = await fetch(`${baseUrl}/api/packages`, {
       cache: 'no-store',
     });
+
     if (!response.ok) {
       throw new Error('Failed to fetch packages');
     }
-    // 4. Ensure the JSON response is cast to the correct type
+
     const data: PackageListItem[] = await response.json(); 
     return data;
   } catch (error) {
@@ -32,11 +34,10 @@ async function getPackages(): Promise<PackageListItem[]> { // 3. Use PackageList
 
 export default async function HomePage() {
   const [packages, t] = await Promise.all([
-    getPackages(), // This now returns the FULL package data
+    getPackages(),
     getTranslations('HomePage')
   ]);
   
-
   return (
     <div>
       <div className='-mt-20 '>
@@ -44,17 +45,11 @@ export default async function HomePage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto px-4 py-4">
-          {/* This now works, because 'pkg' is the full 'PackageListItem' 
-            and has all the data 'ExcursionCard' expects.
-          */}
           {packages.map((pkg) => (
+            // Ensure ExcursionCard can handle the UnifiedPackage type
             <ExcursionCard key={pkg.id} package={pkg} />
           ))}
         </div>
-
-      {/* <h1>{t('title')}</h1>
-      <p>{t('description')}</p>
-      <LanguageSelector /> */}
     </div>
   );
 }

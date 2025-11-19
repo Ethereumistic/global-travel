@@ -1,99 +1,28 @@
 // app/api/packages/route.ts
 import { NextResponse } from "next/server";
 import { XMLParser } from "fast-xml-parser";
+import {
+  adaptNewApiPackage,
+  adaptXmlPackage,
+  NewApiPackage,
+  UnifiedPackage,
+  XmlPackage,
+} from "@/lib/type-adapters";
 
-// --- Type Definitions ---
-export type PackageListItem = {
-  id: string;
-  title: string;
-  subtitle: string;
-  duration: number;
-  overnights: number;
-  transport: string;
-  countries: string[];
-  cities: string[];
-  minPrice: string;
-  priceNote: string;
-  thumbnail: string | null;
-  period: {
-    from: string;
-    to: string;
-  };
-};
-
-export type XmlPackage = {
-  Id: string;
-  Title: string;
-  Subtitle?: string;
-  Duration: number;
-  Overnights: number;
-  Transport: {
-    Name: string;
-  };
-  Period: {
-    FromDate: string;
-    ToDate: string;
-  };
-  Countries: {
-    Country: { Name: string } | { Name: string }[];
-  };
-  Cities: {
-    City: { Name: string } | { Name: string }[];
-  };
-  MinPrice: {
-    Price: string;
-    PriceNoteShort?: string;
-  };
-  Images?: {
-    Image: { Url: string } | { Url: string }[];
-  };
-};
-
-function decodeHtmlEntities(text: string): string {
-  if (!text) return "";
-  const entities: Record<string, string> = {
-    '&amp;': '&',
-    '&lt;': '<',
-    '&gt;': '>',
-    '&quot;': '"',
-    '&#39;': "'",
-  };
-  
-  return text.replace(/&[#\w]+;/g, (match) => {
-    if (match.startsWith('&#x')) {
-      const hex = match.slice(3, -1);
-      return String.fromCharCode(parseInt(hex, 16));
-    } else if (match.startsWith('&#')) {
-      const decimal = match.slice(2, -1);
-      return String.fromCharCode(parseInt(decimal, 10));
-    }
-    return entities[match] || match;
-  });
-}
+// --- Helper Functions ---
 
 async function fetchXML(url: string): Promise<any> {
   const response = await fetch(url, {
     cache: "no-store",
-    headers: {
-      "Accept": "application/xml, text/xml, */*",
-    },
+    headers: { "Accept": "application/xml, text/xml, */*" },
   });
-
-  if (!response.ok) {
-    // Тази грешка ще бъде хваната от enrichPackageWithThumbnail
-    throw new Error(`Failed to fetch XML: ${response.statusText}`);
-  }
-
+  if (!response.ok) throw new Error(`Failed to fetch XML: ${response.statusText}`);
+  
   const buffer = await response.arrayBuffer();
   const decoder = new TextDecoder("windows-1251");
   const xmlText = decoder.decode(buffer);
-
-  const parser = new XMLParser({
-    ignoreAttributes: false,
-    parseAttributeValue: true,
-    processEntities: false,
-  });
-
+  
+  const parser = new XMLParser({ ignoreAttributes: false, parseAttributeValue: true, processEntities: false });
   return parser.parse(xmlText);
 }
 
@@ -102,76 +31,73 @@ function normalizeArray<T>(data: T | T[] | undefined): T[] {
   return Array.isArray(data) ? data : [data];
 }
 
-function parsePackages(packagesXml: any): XmlPackage[] {
+// --- XML API Functions ---
+
+function parsePackagesXml(packagesXml: any): XmlPackage[] {
   const packages = packagesXml?.Packages?.Package;
   return normalizeArray(packages);
 }
 
-// ПРОМЯНА: Функцията вече връща Promise<PackageListItem | null>
-async function enrichPackageWithThumbnail(pkg: XmlPackage): Promise<PackageListItem | null> {
-  let thumbnail: string | null = null;
-
+async function enrichAndAdaptXmlPackage(pkg: XmlPackage): Promise<UnifiedPackage | null> {
   try {
-    // Опитваме се да вземем детайлите (и thumbnail)
-    const detailXml = await fetchXML(
-      `https://www.profitours.bg/api/xml/GLOBALTRAVELMENIDJMA/Package/${pkg.Id}`
-    );
-    
+    const detailXml = await fetchXML(`https://www.profitours.bg/api/xml/GLOBALTRAVELMENIDJMA/Package/${pkg.Id}`);
     const images = detailXml?.Package?.Images?.Image;
     const imageArray = normalizeArray(images);
+    const thumbnail = imageArray.length > 0 ? imageArray[0].Url : null;
     
-    if (imageArray.length > 0) {
-      thumbnail = imageArray[0].Url;
-    }
-    
-    // Ако успеем, връщаме пълния обект
-    const countries = normalizeArray(pkg.Countries?.Country).map(c => decodeHtmlEntities(c.Name));
-    const cities = normalizeArray(pkg.Cities?.City).map(c => decodeHtmlEntities(c.Name));
-
-    return {
-      id: pkg.Id,
-      title: decodeHtmlEntities(pkg.Title),
-      subtitle: pkg.Subtitle ? decodeHtmlEntities(pkg.Subtitle) : "",
-      duration: pkg.Duration,
-      overnights: pkg.Overnights,
-      transport: decodeHtmlEntities(pkg.Transport?.Name || ""),
-      countries,
-      cities,
-      minPrice: decodeHtmlEntities(pkg.MinPrice?.Price || ""),
-      priceNote: pkg.MinPrice?.PriceNoteShort ? decodeHtmlEntities(pkg.MinPrice.PriceNoteShort) : "",
-      thumbnail,
-      period: {
-        from: pkg.Period?.FromDate || "",
-        to: pkg.Period?.ToDate || "",
-      },
-    };
-
+    return adaptXmlPackage(pkg, thumbnail);
   } catch (error) {
-    // ПРОМЯНА: Ако има 404 или друга грешка, логваме я и връщаме null
-    // Това ID е невалидно (връща 404) или има друг проблем
-    console.warn(`Package ${pkg.Id} (${pkg.Title}) failed to fetch details. Skipping. Error:`, (error as Error).message);
+    console.warn(`XML Package ${pkg.Id} (${pkg.Title}) failed to fetch details. Skipping. Error:`, (error as Error).message);
     return null;
   }
 }
 
+// --- New JSON API Functions ---
+
+async function fetchNewApiPackages(): Promise<UnifiedPackage[]> {
+    try {
+        const response = await fetch("https://live.planet.bg/api/v1/holidays/?limit=20&offset=0", {
+            cache: "no-store",
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to fetch new API: ${response.statusText}`);
+        }
+        const data = await response.json();
+        const holidays = data.holidays as NewApiPackage[];
+        
+        return holidays.map(adaptNewApiPackage);
+
+    } catch (error) {
+        console.error("Failed to fetch or adapt packages from new API:", error);
+        return []; // Return empty array on error
+    }
+}
+
+
+// --- Main GET Handler ---
+
 export async function GET() {
   try {
-    // Fetch all packages
-    const packagesXml = await fetchXML(
-      "https://www.profitours.bg/api/xml/GLOBALTRAVELMENIDJMA/Packages"
-    );
-
-    const packages = parsePackages(packagesXml);
-    const packagesToProcess = packages.slice(0, 20);
+    // 1. Fetch and process data from the old XML API
+    const packagesXml = await fetchXML("https://www.profitours.bg/api/xml/GLOBALTRAVELMENIDJMA/Packages");
+    const xmlPackagesRaw = parsePackagesXml(packagesXml);
+    const xmlPackagesToProcess = xmlPackagesRaw.slice(0, 20);
     
-    const enrichedPackagesResults = await Promise.all(
-      packagesToProcess.map(pkg => enrichPackageWithThumbnail(pkg))
+    const enrichedXmlPackagesResults = await Promise.all(
+      xmlPackagesToProcess.map(pkg => enrichAndAdaptXmlPackage(pkg))
     );
+    const validXmlPackages = enrichedXmlPackagesResults.filter((p): p is UnifiedPackage => p !== null);
 
-    // ПРОМЯНА: Филтрираме всички, които са върнали 'null'
-    const validPackages = enrichedPackagesResults.filter(pkg => pkg !== null);
+    // 2. Fetch and process data from the new JSON API
+    const newApiPackages = await fetchNewApiPackages();
 
-    return NextResponse.json(validPackages, {
+    // 3. Combine the results
+    const combinedPackages = [...validXmlPackages, ...newApiPackages];
+
+    // 4. Sort by a common property if desired, e.g., title
+    combinedPackages.sort((a, b) => a.title.localeCompare(b.title));
+
+    return NextResponse.json(combinedPackages, {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
         "Cache-Control": "public, max-age=3600", // Cache for 1 hour

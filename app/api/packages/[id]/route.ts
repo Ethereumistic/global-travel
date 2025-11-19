@@ -1,135 +1,43 @@
-// app/api/packages/[id]/route.ts (Corrected and Updated)
+// app/api/packages/[id]/route.ts
 import { NextResponse } from "next/server";
 import { XMLParser } from "fast-xml-parser";
-
-// --- NEW IMPORTS ---
-// Import the new parser and the type definition
-import { parseHotelDetails } from "../../../[locale]/excursions/[id]/utils/hotelDetailsParser";  // <-- CHANGED (Adjust path if needed)
-import { HotelDetailSection } from "../../../[locale]/excursions/[id]/types"; // <-- CHANGED (Adjust path if needed)
-// ---------------------
-
-// --- Expanded Type Definitions for Package Detail ---
-
-export type PackageDetail = {
-  id: string;
-  title: string;
-  subtitle: string;
-  duration: number;
-  overnights: number;
-  transport: string;
-  countries: Array<{ id: string; name: string }>;
-  cities: Array<{ id: string; name: string }>;
-  minPrice: {
-    price: string;
-    priceNote: string;
-    priceNoteShort: string;
-  };
-  board?: string;
-  priceNote1?: string;
-  priceNote2?: string;
-  images: string[];
-  period: {
-    from: string;
-    to: string;
-  };
-  overview?: string;
-  additionalConditions?: string;
-  dailySchedule: Array<{
-    id: string;
-    title: string;
-    details: string;
-  }>;
-  hotels: Array<{
-    id: string;
-    name: string;
-    country: string;
-    city: string;
-    website?: string;
-    images: string[];
-    overview?: string;
-    // details?: string; // <-- CHANGED: This is removed
-    detailsSections: HotelDetailSection[]; // <-- CHANGED: This is added
-    board?: string;
-    minPriceInDouble?: number;
-    currency?: string;
-  }>;
-  additionalPayments: Array<{
-    title: string;
-    price: string;
-    currency: string;
-  }>;
-  additionalExcursions: Array<{
-    id: string;
-    title: string;
-    subtitle?: string;
-    type?: string;
-    price?: string;
-    images: string[];
-    overview?: string;
-    details?: string;
-  }>;
-};
+import {
+  adaptXmlPackageDetail,
+  adaptNewApiPackageDetail,
+  NewApiPackageDetail,
+  UnifiedPackageDetail,
+} from "@/lib/type-adapters";
 
 // --- Helper Functions ---
 
-// This function is correct as you provided it.
-function decodeHtmlEntities(text: string): string {
-  if (!text) return "";
-  const entities: Record<string, string> = {
-    '&amp;': '&',
-    '&lt;': '<',
-    '&gt;': '>',
-    '&quot;': '"',
-    '&#39;': "'",
-  };
-  
-  let result = text.replace(/&[#\w]+;/g, (match) => {
-    if (match.startsWith('&#x')) {
-      const hex = match.slice(3, -1);
-      return String.fromCharCode(parseInt(hex, 16));
-    } else if (match.startsWith('&#')) {
-      const decimal = match.slice(2, -1);
-      return String.fromCharCode(parseInt(decimal, 10));
-    }
-    return entities[match] || match;
-  });
-
-  result = result.replace(/<p\b[^>]*>|<\/p>/gi, ''); 
-  result = result.replace(/<(div|h2)\b[^>]*>|<\/(div|h2)>/gi, '');
-  
-  return result;
-}
-
-// This function is correct as you provided it.
-async function fetchXML(url: string): Promise<any> {
+async function fetcher(url: string, isXml: boolean = false): Promise<any> {
   const response = await fetch(url, {
     cache: "no-store",
-    headers: {
-      "Accept": "application/xml, text/xml, */*",
-    },
+    headers: isXml ? { "Accept": "application/xml, text/xml, */*" } : {},
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch XML: ${response.statusText} (URL: ${url})`);
+    throw new Error(`Failed to fetch: ${response.statusText} (URL: ${url})`);
   }
 
-  const buffer = await response.arrayBuffer();
-  const decoder = new TextDecoder("windows-1251");
-  const xmlText = decoder.decode(buffer);
+  if (isXml) {
+    const buffer = await response.arrayBuffer();
+    const decoder = new TextDecoder("windows-1251");
+    const xmlText = decoder.decode(buffer);
+    const parser = new XMLParser({
+      ignoreAttributes: false,
+      parseAttributeValue: true,
+      processEntities: false,
+    });
+    return parser.parse(xmlText);
+  }
 
-  const parser = new XMLParser({
-    ignoreAttributes: false,
-    parseAttributeValue: true,
-    processEntities: false,
-  });
-
-  return parser.parse(xmlText);
+  return response.json();
 }
 
-// This function is correct as you provided it.
-function normalizeArray<T>(data: T | T[] | undefined): T[] {
-  if (!data) return [];
-  return Array.isArray(data) ? data : [data];
+function isUuid(id: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id);
 }
 
 // --- GET Function for Single Package Detail ---
@@ -138,137 +46,48 @@ export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  const params = await context.params;
-  const id = params.id;
-
-  console.log("Fetching package with ID:", id);
+  const { id } = await context.params;
 
   if (!id) {
     return NextResponse.json({ error: "Package ID is required" }, { status: 400 });
   }
 
   try {
-    const detailXml = await fetchXML(
-      `https://www.profitours.bg/api/xml/GLOBALTRAVELMENIDJMA/Package/${id}`
-    );
+    let packageDetail: UnifiedPackageDetail;
 
-    const pkg = detailXml?.Package;
-
-    if (!pkg) {
-      return NextResponse.json({ error: "Package not found" }, { status: 404 });
-    }
-
-    // --- All parsing logic below is correct from your file ---
-    const images = normalizeArray(pkg.Images?.Image).map((img: any) => img.Url || img);
-    const countries = normalizeArray(pkg.Countries?.Country).map((c: any) => ({
-      id: String(c.Id || Math.random()),
-      name: decodeHtmlEntities(c.Name || "")
-    }));
-    const cities = normalizeArray(pkg.Cities?.City).map((c: any) => ({
-      id: String(c.Id || Math.random()),
-      name: decodeHtmlEntities(c.Name || "")
-    }));
-    const dailySchedule = normalizeArray(pkg.DailySchedule?.Day).map((day: any) => ({
-      id: String(day.Id || Math.random()),
-      title: decodeHtmlEntities(day.Title || ""),
-      details: decodeHtmlEntities(day.Details || "")
-    }));
-
-    // --- MODIFIED HOTEL PARSING ---
-    const hotels = normalizeArray(pkg.Hotels?.Hotel).map((hotel: any) => {
-      const hotelImages = normalizeArray(hotel.Images?.Image).map((img: any) => img.Url || img);
+    if (isUuid(id)) {
+      // --- Fetch from the New JSON API ---
+      const url = `https://live.planet.bg/api/v1/holidays/${id}/`;
+      const rawNewApiPackage = await fetcher(url) as NewApiPackageDetail;
       
-      // 1. Decode the raw details string first
-      const rawDetails = hotel.Details ? decodeHtmlEntities(hotel.Details) : null; // <-- CHANGED
-
-      return {
-        id: String(hotel.Id || Math.random()),
-        name: decodeHtmlEntities(hotel.Name || ""),
-        country: decodeHtmlEntities(hotel.Country?.Name || ""),
-        city: decodeHtmlEntities(hotel.City?.Name || ""),
-        website: hotel.Website || undefined,
-        images: hotelImages,
-        overview: hotel.Overview ? decodeHtmlEntities(hotel.Overview) : undefined,
-        
-        // 2. Use the parser to create the detailsSections array
-        detailsSections: parseHotelDetails(rawDetails), // <-- CHANGED
-
-        board: hotel.Board?.Name ? decodeHtmlEntities(hotel.Board.Name) : undefined,
-        minPriceInDouble: hotel.MinPriceInDouble || undefined,
-        currency: hotel.Currency || undefined
-      };
-    });
-    // --- END OF MODIFIED HOTEL PARSING ---
-
-    const additionalPayments = normalizeArray(pkg.AdditionalPayments?.AdditionalPayment).map((payment: any) => ({
-      title: decodeHtmlEntities(payment.Title || ""),
-      price: String(payment.Price || ""),
-      currency: payment.Currency || "BGN"
-    }));
-    const additionalExcursions = normalizeArray(pkg.AdditionalExcursions?.AdditionalExcursion).map((excursion: any) => {
-      const excursionImages = normalizeArray(excursion.Images?.Image).map((img: any) => img.Url || img);
+      if (!rawNewApiPackage) {
+        return NextResponse.json({ error: "Package not found from New API" }, { status: 404 });
+      }
       
-      return {
-        id: String(excursion.Id || Math.random()),
-        title: decodeHtmlEntities(excursion.Title || ""),
-        subtitle: excursion.Subtitle ? decodeHtmlEntities(excursion.Subtitle) : undefined,
-        type: excursion.Type ? decodeHtmlEntities(excursion.Type) : undefined,
-        price: excursion.Price ? decodeHtmlEntities(excursion.Price) : undefined,
-        images: excursionImages,
-        overview: excursion.Overview ? decodeHtmlEntities(excursion.Overview) : undefined,
-        details: excursion.Details ? decodeHtmlEntities(excursion.Details) : undefined
-      };
-    });
+      packageDetail = adaptNewApiPackageDetail(rawNewApiPackage);
 
-    // Build the complete package detail
-    const packageDetail: PackageDetail = {
-      id: String(pkg.Id),
-      title: decodeHtmlEntities(pkg.Title || ""),
-      subtitle: pkg.Subtitle ? decodeHtmlEntities(pkg.Subtitle) : "",
-      duration: pkg.Duration || 0,
-      overnights: pkg.Overnights || 0,
-      transport: decodeHtmlEntities(pkg.Transport?.Name || ""),
-      countries,
-      cities,
-      minPrice: {
-        price: decodeHtmlEntities(pkg.MinPrice?.Price || ""),
-        priceNote: pkg.MinPrice?.PriceNote ? decodeHtmlEntities(pkg.MinPrice.PriceNote) : "",
-        priceNoteShort: pkg.MinPrice?.PriceNoteShort ? decodeHtmlEntities(pkg.MinPrice.PriceNoteShort) : ""
-      },
-      board: pkg.Board?.Name ? decodeHtmlEntities(pkg.Board.Name) : undefined,
-      priceNote1: pkg.PriceNote1 ? decodeHtmlEntities(pkg.PriceNote1) : undefined,
-      priceNote2: pkg.PriceNote2 ? decodeHtmlEntities(pkg.PriceNote2) : undefined,
-      images,
-      period: {
-        from: pkg.Period?.FromDate || "",
-        to: pkg.Period?.ToDate || ""
-      },
-      overview: pkg.Overview ? decodeHtmlEntities(pkg.Overview) : undefined,
-      additionalConditions: pkg.AdditionalConditions ? decodeHtmlEntities(pkg.AdditionalConditions) : undefined,
-      dailySchedule,
-      hotels, // This now contains `detailsSections`
-      additionalPayments,
-      additionalExcursions
-    };
+    } else {
+      // --- Fetch from the Old XML API ---
+      const url = `https://www.profitours.bg/api/xml/GLOBALTRAVELMENIDJMA/Package/${id}`;
+      const detailXml = await fetcher(url, true);
+      const pkg = detailXml?.Package;
 
-    console.log("Successfully parsed package:", packageDetail.id);
-    console.log("Hotels count:", packageDetail.hotels.length);
-    if (packageDetail.hotels.length > 0) {
-      console.log("Hotel 0 detailsSections:", packageDetail.hotels[0].detailsSections); // <-- Good check
+      if (!pkg) {
+        return NextResponse.json({ error: "Package not found from XML API" }, { status: 404 });
+      }
+      
+      packageDetail = adaptXmlPackageDetail(pkg);
     }
 
     return NextResponse.json(packageDetail, {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Cache-Control": "public, max-age=3600" // You can lower this during dev
+        "Cache-Control": "public, max-age=3600",
       },
     });
 
   } catch (error) {
     console.error(`API Route Error (Package ID: ${id}):`, error);
-    if (error instanceof Error) {
-      console.error("Error details:", error.message);
-    }
     return NextResponse.json(
       { error: "Failed to fetch package details" },
       { status: 500 }

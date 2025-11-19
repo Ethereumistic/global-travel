@@ -5,7 +5,6 @@
 "use client";
 
 import * as React from "react";
-import { use } from "react";
 import Link from "next/link";
 import { ChevronLeft, AlertCircle, Check, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,9 +12,9 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { PackageDetail } from "@/app/api/packages/[id]/route";
+import type { UnifiedPackageDetail } from "@/lib/type-adapters";
 import { ALL_COUNTRIES } from "@/lib/constants";
-
+import type { ParsedPriceNote } from "./types"; // Уверете се, че импортвате типа
 // Import all new components
 import { ExcursionHeader } from "./components/ExcursionHeader";
 import { ExcursionGallery } from "./components/ExcursionGallery";
@@ -36,34 +35,65 @@ export default function ExcursionDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = use(params);
-  const [packageDetail, setPackageDetail] = React.useState<PackageDetail | null>(null);
+  const { id } = React.use(params);
+  const [packageDetail, setPackageDetail] = React.useState<UnifiedPackageDetail | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
   // Derive country data with flags
-  const countryData = React.useMemo(() => {
-    if (!packageDetail) return [];
+  // const countryData = React.useMemo(() => {
+  //   if (!packageDetail) return [];
 
-    return packageDetail.countries
-      .map((country) => ALL_COUNTRIES.find((c) => c.name === country.name))
-      .filter(Boolean) as { name: string; abbr: string }[];
-  }, [packageDetail]);
+  //   return packageDetail.countries
+  //     .map((country) => ALL_COUNTRIES.find((c) => c.name === country.name))
+  //     .filter(Boolean) as { name: string; abbr: string }[];
+  // }, [packageDetail]);
 
   // Parse price note
   const parsedPriceNote2 = React.useMemo(() => {
-    if (!packageDetail?.priceNote2) return null;
-    return parsePriceNote2(packageDetail.priceNote2);
-  }, [packageDetail?.priceNote2]);
+    // 1. Инициализираме празна структура
+    const combinedData: ParsedPriceNote = {
+      includes: [],
+      excludes: [],
+      excursions: [],
+      discounts: [],
+      surcharges: [],
+      conditions: [],
+      flightInfo: [],
+    };
+
+    // 2. Ако имаме стар текст (XML), опитваме да го парснем
+    if (packageDetail?.priceNote2) {
+      const parsedFromText = parsePriceNote2(packageDetail.priceNote2);
+      if (parsedFromText) {
+        Object.assign(combinedData, parsedFromText);
+      }
+    }
+
+    // 3. ВАЖНО: Ако новото API връща структурирани масиви, те ПРЕЗАПИСВАТ парснатите данни
+    if (packageDetail?.includes?.length) {
+      combinedData.includes = packageDetail.includes;
+    }
+    
+    if (packageDetail?.excludes?.length) {
+      combinedData.excludes = packageDetail.excludes;
+    }
+
+    // Връщаме null, само ако наистина няма никакви данни (за да не гърми UI)
+    const hasData = Object.values(combinedData).some(
+      (val) => Array.isArray(val) && val.length > 0
+    );
+
+    return hasData ? combinedData : null;
+  }, [packageDetail]);
 
   // Fetch package detail
   React.useEffect(() => {
+    // The `use` hook above ensures `id` is available here.
     async function fetchPackageDetail() {
-      if (!id) {
-        setError("Invalid Page ID");
-        setIsLoading(false);
-        return;
-      }
+      setIsLoading(true);
+      setError(null);
+      setPackageDetail(null); // Clear previous data
 
       try {
         const response = await fetch(`/api/packages/${id}`);
@@ -82,7 +112,9 @@ export default function ExcursionDetailPage({
       }
     }
 
-    fetchPackageDetail();
+    if (id) {
+      fetchPackageDetail();
+    }
   }, [id]);
 
   // Loading state
@@ -121,8 +153,7 @@ export default function ExcursionDetailPage({
   return (
     <div className="max-w-6xl mx-auto py-6 px-4">
       {/* Header with flags and title */}
-      <ExcursionHeader title={packageDetail.title} countries={countryData} />
-
+      <ExcursionHeader title={packageDetail.title} countries={packageDetail.countries} />
       {/* Image Gallery */}
       <ExcursionGallery images={packageDetail.images} title={packageDetail.title} />
 
@@ -131,12 +162,12 @@ export default function ExcursionDetailPage({
         <div className="lg:col-span-1">
           <CityRouteCarousel cities={packageDetail.cities} transport={packageDetail.transport} />
           <TravelInfoGrid
-          duration={packageDetail.duration}
-          countries={countryData}
-          transport={packageDetail.transport}
-          minPrice={packageDetail.minPrice.price}
-          period={packageDetail.period}
-        />
+  duration={packageDetail.duration}
+  countries={packageDetail.countries} // <-- NEW: Pass direct array
+  transport={packageDetail.transport}
+  minPrice={packageDetail.minPrice.price}
+  period={packageDetail.period}
+/>
         </div>
 
         <div className="lg:col-span-1 mb-3">

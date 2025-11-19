@@ -8,11 +8,11 @@ import { Calendar, MapPin, Plane, Clock, Sparkles, Sparkle, Moon, Bus } from "lu
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { PackageListItem } from "@/app/api/packages/route";
-import { ALL_COUNTRIES } from "@/lib/constants"; // <-- 1. IMPORT CONSTANTS (adjust path if needed)
+import type { UnifiedPackage } from "@/lib/type-adapters";
+import { ALL_COUNTRIES } from "@/lib/constants";
 
 interface ExcursionCardProps {
-  package: PackageListItem;
+  package: UnifiedPackage;
 }
 
 function TransportIcon({ transportName }: { transportName: string }) {
@@ -35,10 +35,16 @@ export function ExcursionCard({ package: pkg }: ExcursionCardProps) {
   // 2. Find the country data (including abbreviation) for each country in the package
   const countryData = React.useMemo(() => {
     return pkg.countries
-      .map((countryName) =>
-        ALL_COUNTRIES.find((c) => c.name === countryName)
-      )
-      .filter(Boolean) as { name: string; abbr: string }[]; // Filter out any undefined matches
+      .map((country) => {
+        // A. Priority: Use ISO code from API if available (New API)
+        if (country.isoCode) {
+          return { name: country.name, abbr: country.isoCode.toLowerCase() };
+        }
+        // B. Fallback: Look up by name (XML API)
+        const match = ALL_COUNTRIES.find((c) => c.name === country.name);
+        return match ? { name: country.name, abbr: match.abbr } : null;
+      })
+      .filter(Boolean) as { name: string; abbr: string }[];
   }, [pkg.countries]);
 
   return (
@@ -105,10 +111,12 @@ export function ExcursionCard({ package: pkg }: ExcursionCardProps) {
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <MapPin className="size-5 text-third shrink-0" />
           <span className="line-clamp-1">
-            {pkg.countries.join(", ")}
-            {pkg.cities.length > 0 && ` • ${pkg.cities[0]}`}
-            {pkg.cities.length > 1 && ` +${pkg.cities.length - 1}`}
-          </span>
+              {/* FIX: Map to .name before joining */}
+              {pkg.countries.map((c) => c.name).join(", ")}
+              
+              {pkg.cities.length > 0 && ` • ${pkg.cities[0]}`}
+              {pkg.cities.length > 1 && ` +${pkg.cities.length - 1}`}
+            </span>
         </div>
 
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
