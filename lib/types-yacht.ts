@@ -37,7 +37,7 @@ export interface YachtImage {
     
     // Inventory is a dictionary: "For your comfort": ["Item 1", "Item 2"]
     inventory: Record<string, string[]> | null; 
-    
+    facilities?: Record<string, string[]> | null;
     // Specs is an array containing one object with localized keys
     specs: Record<string, string>[]; 
   

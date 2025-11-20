@@ -1,59 +1,93 @@
 "use client";
 
+import * as React from "react";
 import Image from "next/image";
-import { useState } from "react";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { ImageIcon } from "lucide-react";
-import type { YachtImage } from "@/lib/types-yacht"; 
+import { Badge } from "@/components/ui/badge";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+  type CarouselApi,
+} from "@/components/ui/carousel";
+import type { YachtImage } from "@/lib/types-yacht";
 
-export function YachtGallery({ images, title }: { images: YachtImage[], title: string }) {
-  const displayImages = images.slice(0, 5);
-  const remaining = images.length - 5;
+interface YachtGalleryProps {
+  images: YachtImage[];
+  title: string;
+}
+
+export function YachtGallery({ images, title }: YachtGalleryProps) {
+  const [mainCarouselApi, setMainCarouselApi] = React.useState<CarouselApi>();
+  const [mainImageIndex, setMainImageIndex] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!mainCarouselApi) return;
+
+    mainCarouselApi.on("select", () => {
+      setMainImageIndex(mainCarouselApi.selectedScrollSnap());
+    });
+  }, [mainCarouselApi]);
+
+  if (!images || images.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-2 h-[300px] md:h-[400px] rounded-xl overflow-hidden mb-6 relative">
-      {/* Main Large Image */}
-      <div className="md:col-span-2 md:row-span-2 relative h-full w-full bg-gray-100">
-        {displayImages[0] && (
-          <Image
-            src={displayImages[0].image}
-            alt={`${title} main`}
-            fill
-            className="object-cover hover:scale-105 transition-transform duration-500"
-            priority
-          />
-        )}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-6">
+      {/* LEFT SIDE: Main Carousel */}
+      <div className="lg:col-span-1 relative">
+        <Carousel setApi={setMainCarouselApi} className="w-full">
+          <CarouselContent>
+            {images.map((img, idx) => (
+              <CarouselItem key={img.id || idx}>
+                <div className="relative w-full aspect-square rounded-l-xl overflow-hidden shadow-lg bg-slate-100">
+                  <Image
+                    src={img.image || "/placeholder.svg"}
+                    alt={`${title} ${idx + 1}`}
+                    fill
+                    className="object-cover"
+                    priority={idx === 0}
+                  />
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          
+          {/* Navigation Arrows */}
+          <CarouselPrevious variant="ghost" className="left-4 bg-white/20 hover:bg-white/40 border-0 text-white backdrop-blur-sm" />
+          <CarouselNext variant="ghost" className="right-4 bg-white/20 hover:bg-white/40 border-0 text-white backdrop-blur-sm" />
+          
+          {/* Counter Badge */}
+          {images.length > 1 && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
+              <Badge variant="secondary" className="bg-black/50 text-white hover:bg-black/60 backdrop-blur-md border-0">
+                {mainImageIndex + 1} / {images.length}
+              </Badge>
+            </div>
+          )}
+        </Carousel>
       </div>
 
-      {/* Smaller Images Grid */}
-      <div className="hidden md:grid grid-cols-2 md:col-span-2 md:row-span-2 gap-2">
-        {displayImages.slice(1).map((img, idx) => (
-          <div key={img.id} className="relative w-full h-full bg-gray-100">
+      {/* RIGHT SIDE: 2x2 Thumbnails Grid */}
+      <div className="grid grid-cols-2 gap-2 h-full">
+        {images.slice(1, 5).map((img, idx) => (
+          <button
+            key={img.id || idx}
+            onClick={() => mainCarouselApi?.scrollTo(idx + 1)}
+            className={`relative w-full aspect-square overflow-hidden group cursor-pointer shadow-md hover:shadow-lg transition-shadow bg-slate-100 ${
+              idx === 1 ? "rounded-tr-xl" : idx === 3 ? "rounded-br-xl" : ""
+            }`}
+          >
             <Image
-              src={img.image}
-              alt={`${title} ${idx + 1}`}
+              src={img.image || "/placeholder.svg"}
+              alt={`${title} ${idx + 2}`}
               fill
-              className="object-cover hover:scale-105 transition-transform duration-500"
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
             />
-            {idx === 3 && remaining > 0 && (
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                 <span className="text-white font-bold text-lg">+{remaining} снимки</span>
-              </div>
-            )}
-          </div>
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+          </button>
         ))}
       </div>
-
-      {/* Mobile "Show All" Button (simplistic approach) */}
-      <Button 
-        variant="secondary" 
-        size="sm" 
-        className="absolute bottom-4 right-4 shadow-lg gap-2"
-      >
-        <ImageIcon className="w-4 h-4" />
-        Галерия
-      </Button>
     </div>
   );
 }

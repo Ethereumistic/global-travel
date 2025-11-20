@@ -15,6 +15,7 @@ import {
   Plane,
   TreePalm,
   MapPin,
+  Sailboat,
 } from "lucide-react"
 import Link from "next/link"
 import { useTheme } from "next-themes"
@@ -76,6 +77,11 @@ export default function NavBar() {
       label: "Самолетни Билети",
       href: "/flights", // Using /flights as a placeholder
       icon: <Plane className="size-7 md:size-5 text-white " />,
+    },
+    {
+      label: "Яхти",
+      href: "/yachts", // Using /flights as a placeholder
+      icon: <Sailboat className="size-7 md:size-5 text-white " />,
     },
 
     // {

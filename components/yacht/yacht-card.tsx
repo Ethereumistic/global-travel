@@ -1,123 +1,104 @@
-// components/yacht-card.tsx
-"use client";
-
-import * as React from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { MapPin, Anchor, Users, BedDouble, Droplets, Moon } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Users, DoorOpen, Bath, MapPin } from "lucide-react";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Yacht } from "@/lib/types-yacht"; // Import the type we defined earlier
+import { Yacht } from "@/lib/types-yacht";
+import { ALL_COUNTRIES } from "@/lib/constants";
+import Link from "next/link";
 
 interface YachtCardProps {
   yacht: Yacht;
 }
 
 export function YachtCard({ yacht }: YachtCardProps) {
-  // Helper to format price
-  const formattedPrice = new Intl.NumberFormat("bg-BG", {
-    style: "currency",
-    currency: yacht.min_price.display_currency,
-    maximumFractionDigits: 0,
-  }).format(yacht.min_price.value);
-
-  const flagUrl = yacht.country 
-    ? `https://flagcdn.com/${yacht.country.toLowerCase()}.svg` 
-    : null;
+  // Resolve full country name from constants if possible
+  const countryObj = ALL_COUNTRIES.find(
+    (c) => c.abbr === yacht.country?.toLowerCase()
+  );
+  const countryName = countryObj ? countryObj.name : yacht.country;
+  
+  // Get lowercase code for flagcdn (assuming yacht.country is the ISO code e.g. "BG")
+  const countryCode = yacht.country?.toLowerCase();
+  const yachtLink = yacht.id ? `/yachts/${yacht.id}` : "#";
 
   return (
-    <Link href={`/yachts/${yacht.id}`}>
-      <Card className="group flex flex-col h-full overflow-hidden hover:shadow-lg transition-shadow duration-300 pt-0 bg-secondary-foreground/30">
+    <Link href={`/yachts/${yacht.id}?c=${yacht.country}`} 
+    className="block h-full group focus:outline-none">
+    <Card className="group overflow-hidden border-none shadow-lg transition-all hover:shadow-xl flex flex-col h-full p-0">
+      {/* Image Section */}
+      <div className="relative aspect-4/3 overflow-hidden">
+        <Image
+          src={yacht.main_image.image}
+          alt={yacht.name}
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-110"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
+        <div className="absolute top-3 right-3">
+          <Badge variant="glass">
+             {yacht.available_as}
+          </Badge>
+        </div>
         
-        {/* --- Image Section --- */}
-        <div className="relative h-56 w-full bg-gray-200">
-          {yacht.main_image?.image ? (
-            <Image
-              src={yacht.main_image.image}
-              alt={yacht.name}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-          ) : (
-            <div className="flex items-center justify-center h-full bg-gradient-to-br from-blue-100 to-blue-200">
-              <Anchor className="h-16 w-16 text-blue-300" />
+        {/* Flag Overlay (Bottom Left of Image) - Replaced Price */}
+        {countryCode && (
+            <div className="absolute bottom-3 left-3">
+                <div className="relative w-8 h-6 rounded shadow-sm overflow-hidden border border-white/20">
+                    {/* Using standard img for external flagcdn to avoid Next/Image config allowlist issues, 
+                        or you can use Next Image if flagcdn is in your next.config.js */}
+                    <img 
+                        src={`https://flagcdn.com/${countryCode}.svg`} 
+                        alt={countryName}
+                        className="w-full h-full object-cover"
+                    />
+                </div>
             </div>
-          )}
+        )}
+      </div>
 
-          {/* Flag */}
-          {flagUrl && (
-            <div className="absolute bottom-2 left-2 border border-border/10">
-              <div className="relative w-8 h-6 flex-shrink-0" title={yacht.country}>
-                <Image
-                  src={flagUrl}
-                  alt={`${yacht.country} flag`}
-                  fill
-                  className="object-contain rounded-xs"
-                  sizes="28px"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Badge (Model Year or Type) */}
-          <div className="absolute top-2 right-2">
-            <Badge className="bg-black/15 px-4 py-1 text-primary-foreground text-sm backdrop-blur-2xl border-border/30 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
-              <Anchor className="size-4 mr-1.5" />
-              {yacht.model.split(",")[0]} {/* Displays "Beneteau" etc */}
-            </Badge>
+      {/* Content Section */}
+      <CardContent className="p-4 pt-0 flex-grow ">
+        <div className="flex items-start justify-between mb-2">
+          <div>
+            <h3 className="font-bold text-lg line-clamp-1 text-foreground group-hover:text-blue-600 transition-colors">
+                {yacht.name}
+            </h3>
+            <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+              <MapPin className="w-3.5 h-3.5 text-blue-500" />
+              {yacht.home_port}, {countryName}
+            </p>
           </div>
         </div>
 
-        {/* --- Header Section --- */}
-        <CardHeader className="space-y-2 pb-2">
-          <h3 className="font-semibold text-third text-xl line-clamp-2 transition-all duration-300 group-hover:scale-105 group-hover:text-primary">
-            {yacht.name}
-          </h3>
-          <p className="text-sm text-muted-foreground line-clamp-1">
-            {yacht.model}
-          </p>
-        </CardHeader>
-
-        {/* --- Content / Specs Section --- */}
-        <CardContent className="space-y-3 flex-grow">
-          {/* Location */}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <MapPin className="size-5 text-third shrink-0" />
-            <span className="line-clamp-1">{yacht.home_port}</span>
-          </div>
-
-          {/* Specs Grid */}
-          <div className="grid grid-cols-3 gap-2 pt-2">
-            <div className="flex flex-col items-center justify-center p-2 bg-background/50 rounded-md border border-border/50">
-                <Users className="size-5 text-third mb-1" />
-                <span className="text-xs text-muted-foreground text-center">{yacht.guests} Гости</span>
+        <div className="grid grid-cols-3 gap-2 mt-4 py-2 border-t border-border/50">
+            <div className="flex flex-col items-center justify-center text-center p-2 bg-muted/30 rounded-lg">
+                <Users className="w-5 h-5 mb-1 text-gray-600" />
+                <span className="text-xs text-muted-foreground">Гости</span>
+                <span className="text-sm font-semibold">{yacht.guests}</span>
             </div>
-            <div className="flex flex-col items-center justify-center p-2 bg-background/50 rounded-md border border-border/50">
-                <BedDouble className="size-5 text-third mb-1" />
-                <span className="text-xs text-muted-foreground text-center">{yacht.cabins} Каюти</span>
+            <div className="flex flex-col items-center justify-center text-center p-2 bg-muted/30 rounded-lg">
+                <DoorOpen className="w-5 h-5 mb-1 text-gray-600" />
+                <span className="text-xs text-muted-foreground">Каюти</span>
+                <span className="text-sm font-semibold">{yacht.cabins}</span>
             </div>
-            <div className="flex flex-col items-center justify-center p-2 bg-background/50 rounded-md border border-border/50">
-                <Droplets className="size-5 text-third mb-1" />
-                <span className="text-xs text-muted-foreground text-center">{yacht.wc} WC</span>
+            <div className="flex flex-col items-center justify-center text-center p-2 bg-muted/30 rounded-lg">
+                <Bath className="w-5 h-5 mb-1 text-gray-600" />
+                <span className="text-xs text-muted-foreground">WC</span>
+                <span className="text-sm font-semibold">{yacht.wc || 0}</span>
             </div>
-          </div>
-        </CardContent>
+        </div>
 
-        {/* --- Footer / Price Section --- */}
-        <CardFooter className="justify-between pt-2 border-t border-border/50 mt-2">
-          <div>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-               Цена от <Moon className="size-3" />
-            </p>
-            <p className="text-2xl font-black text-primary">{formattedPrice}</p>
-          </div>
-          <Button asChild>
-            <Link href={`/yachts/${yacht.id}`}>Виж яхта</Link>
-          </Button>
-        </CardFooter>
-      </Card>
+        <div className="">
+        <span className="text-sm font-light opacity-90 ">Цени от</span>
+        <Button size="lg" className="w-full bg-blue-600 hover:bg-blue-700 text-white flex justify-center mt-2">
+            <span className="text-xl font-bold">€ {yacht.min_price.value}</span>
+            <span className="text-xs font-normal opacity-80"> / седмица</span>
+        </Button>
+        </div>
+      </CardContent>
+
+    </Card>
     </Link>
   );
 }

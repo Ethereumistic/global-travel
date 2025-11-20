@@ -1,81 +1,111 @@
-import * as React from "react";
-import { YachtList } from "@/components/yacht/yacht-list";
-import { Ship } from "lucide-react";
+import { PageSlider } from "@/components/layout/page-slider";
+import { YachtCard } from "@/components/yacht/yacht-card";
+import { Anchor } from "lucide-react";
+import { Yacht } from "@/lib/types-yacht";
+import { ALL_COUNTRIES } from "@/lib/constants";
 
-// Metadata for SEO
-export const metadata = {
-  title: "Яхти под наем | Planet Travel",
-  description: "Разгледайте нашата селекция от ветроходни яхти и катамарани за незабравими морски приключения.",
-};
+const YACHT_HERO_IMAGES = [
+  "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/turkey.png",
+  "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/brazil.png",
+  "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/rome.png",
+];
 
-async function getInitialYachts() {
-  // We fetch the first 9 items on the server
-  const apiUrl = "https://live.planet.bg/api/v1/yachts/?limit=9&offset=0";
-  
+// Function to fetch data directly from the external API
+// It is better to fetch externally in Server Components to avoid localhost DNS issues during build/deploy
+async function getYachts(limit = 50, offset = 0): Promise<Yacht[]> {
   try {
+    const apiUrl = `https://live.planet.bg/api/v1/yachts/?limit=${limit}&offset=${offset}`;
     const res = await fetch(apiUrl, {
-      // Revalidate every hour (3600 seconds)
-      next: { revalidate: 3600 },
-      headers: { "Content-Type": "application/json" }
+      next: { revalidate: 3600 }, // Revalidate every hour
     });
 
     if (!res.ok) {
-      throw new Error(`Failed to fetch yachts: ${res.status}`);
+      console.error("Failed to fetch yachts:", res.statusText);
+      return [];
     }
 
-    return await res.json();
+    const data = await res.json();
+    return data.yachts || [];
   } catch (error) {
-    console.error(error);
-    return { yachts: [], total_count: 0 };
+    console.error("Error fetching yachts:", error);
+    return [];
   }
 }
 
-export default async function YachtsPage() {
-  const data = await getInitialYachts();
+interface PageProps {
+  // In Next.js 15+, searchParams is a Promise
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function YachtsPage(props: PageProps) {
+  // 1. Await the params to resolve the Promise
+  const resolvedParams = await props.searchParams;
+  
+  // 2. Extract the country filter
+  const countryFilter = typeof resolvedParams.country === 'string' 
+    ? resolvedParams.country.toLowerCase() 
+    : null;
+
+  // 3. Fetch data
+  const allYachts = await getYachts(100); // Fetching 100 to ensure we have enough for client-side filtering demo
+
+  // 4. Filter data
+  const filteredYachts = countryFilter
+    ? allYachts.filter((y) => y.country?.toLowerCase() === countryFilter)
+    : allYachts;
+
+  // Helper to get readable country name for the header
+  const countryName = countryFilter
+    ? ALL_COUNTRIES.find(c => c.abbr === countryFilter)?.name || countryFilter.toUpperCase()
+    : "Всички дестинации";
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero / Header Section */}
-      <div className="relative bg-slate-900 text-white py-16 mb-8">
-        <div className="absolute inset-0 overflow-hidden">
-          {/* Abstract Background or Image Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-900 to-slate-900 opacity-90" />
-          {/* Optional: Add a real background image here via next/image with fill & object-cover */}
-        </div>
-        
-        <div className="container relative mx-auto px-4">
-          <div className="flex flex-col items-center text-center space-y-4">
-            <div className="p-3 bg-white/10 rounded-full backdrop-blur-sm mb-2">
-               <Ship className="h-8 w-8 text-blue-200" />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
-              Яхти под наем
-            </h1>
-            <p className="max-w-2xl text-lg text-blue-100">
-              Открийте свободата на морето с нашата премиум селекция от яхти. 
-              Перфектният избор за вашата почивка в Гърция и Средиземноморието.
-            </p>
-          </div>
-        </div>
-      </div>
+    <main className="min-h-screen bg-slate-50/50">
+      <PageSlider
+        images={YACHT_HERO_IMAGES}
+        title="Наемете Яхта"
+        subtitle="Открийте свободата на морето с нашата селекция от премиум яхти."
+        // Rendered Icon passed here
+        icon={<Anchor className="h-8 w-8 text-white" />}
+        className="h-96"
+        searchType="yachts"
+      />
 
-      {/* Main Content Container */}
-      <div className="container mx-auto px-4 md:px-8 pb-16">
-        <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold text-third">
-                Налични предложения
+      <div className="container mx-auto py-12 px-4">
+        <div className="flex items-center gap-3 mb-8">
+            {countryFilter && (
+                <img 
+                    src={`https://flagcdn.com/${countryFilter}.svg`} 
+                    alt="flag" 
+                    className="w-8 h-auto shadow-sm rounded-sm"
+                />
+            )}
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+            {countryFilter ? `Яхти в ${countryName}` : "Нашите Предложения"}
             </h2>
-            <span className="text-sm text-muted-foreground">
-                Общо {data.total_count} резултата
+            <span className="ml-auto text-sm text-muted-foreground bg-white px-3 py-1 rounded-full border shadow-sm">
+                {filteredYachts.length} резултата
             </span>
         </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+           {filteredYachts.map((yacht) => (
+             <div key={yacht.id} className="h-full">
+                <YachtCard yacht={yacht} />
+             </div>
+           ))}
+        </div>
 
-        {/* The Client Component handles the grid and pagination */}
-        <YachtList 
-          initialYachts={data.yachts || []} 
-          initialTotal={data.total_count || 0} 
-        />
+        {filteredYachts.length === 0 && (
+           <div className="text-center py-20">
+             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
+                <Anchor className="h-8 w-8 text-slate-400" />
+             </div>
+             <h3 className="text-lg font-medium text-slate-900">Няма намерени яхти</h3>
+             <p className="text-slate-500 mt-2">Нямаме налични лодки за тази дестинация в момента.</p>
+           </div>
+        )}
       </div>
-    </div>
+    </main>
   );
 }
