@@ -33,7 +33,7 @@ export function YachtGallery({ images, title }: YachtGalleryProps) {
   if (!images || images.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 ">
       {/* LEFT SIDE: Main Carousel */}
       <div className="lg:col-span-1 relative">
         <Carousel setApi={setMainCarouselApi} className="w-full">
@@ -52,11 +52,11 @@ export function YachtGallery({ images, title }: YachtGalleryProps) {
               </CarouselItem>
             ))}
           </CarouselContent>
-          
+
           {/* Navigation Arrows */}
           <CarouselPrevious variant="ghost" className="left-4 bg-white/20 hover:bg-white/40 border-0 text-white backdrop-blur-sm" />
           <CarouselNext variant="ghost" className="right-4 bg-white/20 hover:bg-white/40 border-0 text-white backdrop-blur-sm" />
-          
+
           {/* Counter Badge */}
           {images.length > 1 && (
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
@@ -74,9 +74,8 @@ export function YachtGallery({ images, title }: YachtGalleryProps) {
           <button
             key={img.id || idx}
             onClick={() => mainCarouselApi?.scrollTo(idx + 1)}
-            className={`relative w-full aspect-square overflow-hidden group cursor-pointer shadow-md hover:shadow-lg transition-shadow bg-slate-100 ${
-              idx === 1 ? "rounded-tr-xl" : idx === 3 ? "rounded-br-xl" : ""
-            }`}
+            className={`relative w-full aspect-square overflow-hidden group cursor-pointer shadow-md hover:shadow-lg transition-shadow bg-slate-100 ${idx === 1 ? "rounded-tr-xl" : idx === 3 ? "rounded-br-xl" : ""
+              }`}
           >
             <Image
               src={img.image || "/placeholder.svg"}

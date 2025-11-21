@@ -70,7 +70,7 @@ export default function NavBar() {
     },
     {
       label: "Екскурзии",
-      href: "/excursions",
+      href: "/holidays",
       icon: <TreePalm className="size-7 md:size-5 text-white" />,
     },
     {
@@ -138,12 +138,12 @@ export default function NavBar() {
           // 1. Base styles: This is the default (scrolled, or on pages like [id])
           "w-full bg-black/40 backdrop-blur-2xl",
           "transition-all duration-300 ease-in-out",
-          
+
           // 2. Conditional transparency:
           // Becomes transparent ONLY if NOT scrolled AND on one of these EXACT paths
           !scrolled &&
-            (pathname === "/en" || pathname === "/bg" || pathname === "/bg/excursions" || pathname === "/en/excursions" || pathname === "/en/destinations" || pathname === "/bg/destinations")  &&
-            "md:bg-transparent md:backdrop-filter-none md:border-transparent"
+          (pathname === "/en" || pathname === "/bg" || pathname === "/bg/excursions" || pathname === "/en/excursions" || pathname === "/en/destinations" || pathname === "/bg/destinations") &&
+          "md:bg-transparent md:backdrop-filter-none md:border-transparent"
         )}
       >
         <div className="mx-auto  px-4 md:px-8 lg:px-12 xl:px-16">

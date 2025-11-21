@@ -26,7 +26,7 @@ interface PageSliderProps {
   subtitle: string;
   icon: React.ReactNode;
   className?: string;
-  searchType: "yachts" | "excursions";
+  searchType: "yachts" | "excursions" | "holidays";
 }
 
 interface CountryOption {
@@ -96,6 +96,33 @@ export function PageSlider({
             });
             setOptions(Array.from(uniqueCountries.values()));
           }
+        } else if (searchType === "holidays") {
+          const res = await fetch("/api/holidays?limit=100");
+          const data = await res.json();
+
+          if (data.holidays) {
+            const uniqueCountries = new Map<string, CountryOption>();
+            data.holidays.forEach((holiday: any) => {
+              if (holiday.country && holiday.country.iso_code) {
+                const countryCodeLower = holiday.country.iso_code.toLowerCase();
+                // Use country name from API or fallback to constant if needed, 
+                // but API provides name so we can use it directly or lookup in constants for consistency
+                // Let's try to match with constants to get the Bulgarian name if possible, 
+                // or just use the name from API if constants fail.
+                const countryData = ALL_COUNTRIES.find(
+                  (c) => c.abbr === countryCodeLower
+                );
+
+                if (!uniqueCountries.has(countryCodeLower)) {
+                  uniqueCountries.set(countryCodeLower, {
+                    value: countryCodeLower,
+                    label: countryData ? countryData.name : holiday.country.name,
+                  });
+                }
+              }
+            });
+            setOptions(Array.from(uniqueCountries.values()));
+          }
         }
       } catch (error) {
         console.error("Failed to fetch destinations", error);
@@ -150,7 +177,7 @@ export function PageSlider({
       */}
       <div className="container relative z-10 mx-auto px-4 pt-20 ">
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 items-center">
-          
+
           {/* LEFT COLUMN: Title */}
           <div className="flex flex-col justify-center text-white animate-in fade-in slide-in-from-left-5 duration-700">
             <div className="flex items-center gap-3">
@@ -173,7 +200,7 @@ export function PageSlider({
                 <Search className="w-4 h-4" />
                 Изберете дестинация
               </h3>
-              
+
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -190,10 +217,10 @@ export function PageSlider({
                       </div>
                     ) : selectedOption ? (
                       <div className="flex items-center gap-2">
-                        <img 
-                           src={`https://flagcdn.com/${selectedOption.value}.svg`} 
-                           alt="flag" 
-                           className="w-6 h-auto object-cover border border-gray-200"
+                        <img
+                          src={`https://flagcdn.com/${selectedOption.value}.svg`}
+                          alt="flag"
+                          className="w-6 h-auto object-cover border border-gray-200"
                         />
                         <span className="truncate font-medium">{selectedOption.label}</span>
                       </div>
@@ -227,10 +254,10 @@ export function PageSlider({
                                 value === option.value ? "opacity-100" : "opacity-0"
                               )}
                             />
-                            <img 
-                               src={`https://flagcdn.com/${option.value}.svg`} 
-                               alt={option.label}
-                               className="mr-2 w-6 h-auto object-cover  border border-gray-100"
+                            <img
+                              src={`https://flagcdn.com/${option.value}.svg`}
+                              alt={option.label}
+                              className="mr-2 w-6 h-auto object-cover  border border-gray-100"
                             />
                             {option.label}
                           </CommandItem>
@@ -241,7 +268,7 @@ export function PageSlider({
                 </PopoverContent>
               </Popover>
 
-              <Button 
+              <Button
                 className="w-full mt-4 bg-blue-600 hover:bg-blue-700 h-12 text-lg font-medium transition-all active:scale-95 shadow-lg"
                 onClick={handleSearch}
               >
