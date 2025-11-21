@@ -107,7 +107,7 @@ export function HolidayCard({ holiday }: HolidayCardProps) {
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Clock className="size-5 text-third shrink-0" />
                         <span>
-                            {holiday.duration} дни / {holiday.nights} нощувки
+                            {holiday.duration} дни / {holiday.duration - 1} нощувки
                         </span>
                     </div>
 

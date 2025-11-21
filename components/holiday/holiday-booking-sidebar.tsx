@@ -52,9 +52,24 @@ export function HolidayBookingSidebar({ holiday }: HolidayBookingSidebarProps) {
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [isSuccess, setIsSuccess] = React.useState(false);
 
-    // Determine country info
-    const countryCode = holiday.country?.iso_code?.toLowerCase() || holiday.country?.country?.toLowerCase() || "bg";
-    const countryName = holiday.country?.name || "Unknown";
+    // Determine country info with translation
+    const countryData = React.useMemo(() => {
+        if (!holiday.country) return { code: "bg", name: "Unknown" };
+
+        const match = ALL_COUNTRIES.find(
+            c => c.name.toLowerCase() === holiday.country?.name?.toLowerCase() ||
+                c.abbr.toLowerCase() === holiday.country?.iso_code?.toLowerCase() ||
+                c.abbr.toLowerCase() === holiday.country?.country?.toLowerCase()
+        );
+
+        if (match) {
+            return { code: match.abbr.toLowerCase(), name: match.name };
+        }
+
+        // Fallback
+        const code = holiday.country.iso_code?.toLowerCase() || holiday.country.country?.toLowerCase() || "bg";
+        return { code, name: holiday.country.name || "Unknown" };
+    }, [holiday.country]);
 
     const FormSchema = z.object({
         fullName: z.string().min(2, { message: "Моля въведете име" }),
@@ -117,7 +132,7 @@ export function HolidayBookingSidebar({ holiday }: HolidayBookingSidebarProps) {
 
             formData.append("holiday_id", holiday.id);
             formData.append("holiday_title", holiday.title);
-            formData.append("destination", countryName);
+            formData.append("destination", countryData.name);
 
             if (calculation) {
                 formData.append("estimated_total", `${calculation.currency} ${calculation.total}`);
@@ -161,9 +176,9 @@ export function HolidayBookingSidebar({ holiday }: HolidayBookingSidebarProps) {
 
                     <div className="flex gap-2 items-center justify-center mt-4">
                         <div className="relative w-6 h-4 shadow-sm rounded-[2px] overflow-hidden shrink-0">
-                            <Image src={`https://flagcdn.com/${countryCode}.svg`} alt={countryName} fill className="object-cover" />
+                            <Image src={`https://flagcdn.com/${countryData.code}.svg`} alt={countryData.name} fill className="object-cover" />
                         </div>
-                        <span className="text-base"><strong>{countryName}</strong></span>
+                        <span className="text-base"><strong>{countryData.name}</strong></span>
                     </div>
                     <p className="mt-8 text-green-700">
                         Наш агент ще се свърже с Вас в най-скоро време!
@@ -185,9 +200,9 @@ export function HolidayBookingSidebar({ holiday }: HolidayBookingSidebarProps) {
                         <CardTitle className="text-xl font-bold text-slate-900 leading-tight line-clamp-2">{holiday.title}</CardTitle>
                         <div className="flex items-center gap-2 mt-2 text-sm text-slate-600">
                             <div className="relative w-6 h-4 shadow-sm rounded-[2px] overflow-hidden shrink-0">
-                                <Image src={`https://flagcdn.com/${countryCode}.svg`} alt={countryName} fill className="object-cover" />
+                                <Image src={`https://flagcdn.com/${countryData.code}.svg`} alt={countryData.name} fill className="object-cover" />
                             </div>
-                            <span className="font-medium">{countryName}</span>
+                            <span className="font-medium">{countryData.name}</span>
                         </div>
                     </div>
                 </CardHeader>
@@ -210,11 +225,32 @@ export function HolidayBookingSidebar({ holiday }: HolidayBookingSidebarProps) {
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                {holiday.trips?.map((trip) => (
-                                                    <SelectItem key={trip.trip_id} value={trip.trip_id}>
-                                                        {format(new Date(trip.departure_date), "dd MMM yyyy", { locale: bg })} - {trip.total_price.main.value} {trip.total_price.main.currency}
-                                                    </SelectItem>
-                                                ))}
+                                                {(() => {
+                                                    // If no trips or trips don't have departure_date, create a fallback option
+                                                    const tripsToShow = holiday.trips && holiday.trips.length > 0
+                                                        ? holiday.trips
+                                                        : holiday.available_from
+                                                            ? [{ trip_id: 'fallback', departure_date: holiday.available_from, total_price: holiday.min_price }]
+                                                            : [];
+
+                                                    return tripsToShow.map((trip) => {
+                                                        // Use departure_date or fallback to available_from
+                                                        const startDateStr = trip.departure_date || holiday.available_from;
+                                                        const startDate = startDateStr ? new Date(startDateStr) : null;
+                                                        const endDate = startDate ? new Date(startDate.getTime() + (holiday.duration * 24 * 60 * 60 * 1000)) : null;
+
+                                                        const formatDate = (date: Date | null) => {
+                                                            if (!date) return "N/A";
+                                                            return date.toLocaleDateString('bg-BG', { day: 'numeric', month: 'short' });
+                                                        };
+
+                                                        return (
+                                                            <SelectItem key={trip.trip_id} value={trip.trip_id}>
+                                                                {formatDate(startDate)} - {formatDate(endDate)}
+                                                            </SelectItem>
+                                                        );
+                                                    });
+                                                })()}
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />
@@ -247,9 +283,9 @@ export function HolidayBookingSidebar({ holiday }: HolidayBookingSidebarProps) {
 
                             {/* Contact Fields */}
                             <div className="space-y-3">
-                                <FormField control={form.control} name="fullName" render={({ field }) => (<FormItem><FormLabel>Имена</FormLabel><FormControl><Input placeholder="Вашето име" className="h-11 bg-slate-50/50" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="name@example.com" className="h-11 bg-slate-50/50" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={form.control} name="phone" render={({ field }) => (<FormItem><FormLabel>Телефон</FormLabel><FormControl><Input placeholder="+359..." className="h-11 bg-slate-50/50" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="fullName" render={({ field }) => (<FormItem><FormLabel>Имена</FormLabel><FormControl><Input placeholder="Данаил Русев" className="h-11 bg-slate-50/50" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="dani.rusev@abv.bg" className="h-11 bg-slate-50/50" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="phone" render={({ field }) => (<FormItem><FormLabel>Телефон</FormLabel><FormControl><Input placeholder="+359 884 091 616" className="h-11 bg-slate-50/50" {...field} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
 
                             {/* Price Display */}

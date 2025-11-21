@@ -24,7 +24,11 @@ export function HolidayIncluded({ included, notIncluded }: HolidayIncludedProps)
                     <CardContent>
                         <div className="grid md:grid-cols-2 gap-x-8 gap-y-3">
                             {included.map((item, idx) => (
-                                <div key={idx} className="flex items-start gap-3 text-sm text-slate-800">
+                                <div
+                                    key={idx}
+                                    className={`flex items-start gap-3 text-sm text-slate-800 ${idx === included.length - 1 ? 'md:col-span-2' : ''
+                                        }`}
+                                >
                                     <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
                                     <span>{item.text}</span>
                                 </div>
@@ -46,7 +50,11 @@ export function HolidayIncluded({ included, notIncluded }: HolidayIncludedProps)
                     <CardContent>
                         <div className="grid md:grid-cols-2 gap-x-8 gap-y-3">
                             {notIncluded.map((item, idx) => (
-                                <div key={idx} className="flex items-start gap-3 text-sm text-slate-800">
+                                <div
+                                    key={idx}
+                                    className={`flex items-start gap-3 text-sm text-slate-800 ${idx === notIncluded.length - 1 ? 'md:col-span-2' : ''
+                                        }`}
+                                >
                                     <XCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
                                     <span>{item.text}</span>
                                 </div>

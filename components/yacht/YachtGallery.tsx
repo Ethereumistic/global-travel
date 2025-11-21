@@ -40,7 +40,7 @@ export function YachtGallery({ images, title }: YachtGalleryProps) {
           <CarouselContent>
             {images.map((img, idx) => (
               <CarouselItem key={img.id || idx}>
-                <div className="relative w-full aspect-square rounded-l-xl overflow-hidden shadow-lg bg-slate-100">
+                <div className="relative w-full aspect-square rounded-xl lg:rounded-none lg:rounded-l-xl overflow-hidden shadow-lg bg-slate-100">
                   <Image
                     src={img.image || "/placeholder.svg"}
                     alt={`${title} ${idx + 1}`}
@@ -69,23 +69,33 @@ export function YachtGallery({ images, title }: YachtGalleryProps) {
       </div>
 
       {/* RIGHT SIDE: 2x2 Thumbnails Grid */}
-      <div className="grid grid-cols-2 gap-2 h-full">
-        {images.slice(1, 5).map((img, idx) => (
-          <button
-            key={img.id || idx}
-            onClick={() => mainCarouselApi?.scrollTo(idx + 1)}
-            className={`relative w-full aspect-square overflow-hidden group cursor-pointer shadow-md hover:shadow-lg transition-shadow bg-slate-100 ${idx === 1 ? "rounded-tr-xl" : idx === 3 ? "rounded-br-xl" : ""
-              }`}
-          >
-            <Image
-              src={img.image || "/placeholder.svg"}
-              alt={`${title} ${idx + 2}`}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-          </button>
-        ))}
+      <div className="grid grid-cols-2 gap-2 h-full hidden lg:grid">
+        {(() => {
+          // If 4 or fewer images, fill the grid and repeat main image in last position
+          const thumbnails = images.length <= 4
+            ? [...images.slice(1, 4), images[0]] // Use images 2-4, then repeat main image
+            : images.slice(1, 5); // Use images 2-5 normally
+
+          return thumbnails.map((img, idx) => {
+            const actualIndex = images.length <= 4 && idx === 3 ? 0 : idx + 1;
+            return (
+              <button
+                key={`${img.id || idx}-${actualIndex}`}
+                onClick={() => mainCarouselApi?.scrollTo(actualIndex)}
+                className={`relative w-full aspect-square overflow-hidden group cursor-pointer shadow-md hover:shadow-lg transition-shadow bg-slate-100 ${idx === 1 ? "rounded-tr-xl" : idx === 3 ? "rounded-br-xl" : ""
+                  }`}
+              >
+                <Image
+                  src={img.image || "/placeholder.svg"}
+                  alt={`${title} ${actualIndex + 1}`}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+              </button>
+            );
+          });
+        })()}
       </div>
     </div>
   );

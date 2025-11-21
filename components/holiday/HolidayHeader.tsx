@@ -52,14 +52,26 @@ export function HolidayHeader({ holiday, className }: HolidayHeaderProps) {
     const currentPrice = holiday.min_price.main?.value || holiday.min_price.value;
     const currency = holiday.min_price.main?.currency || holiday.min_price.display_currency;
 
-    // Get Bulgarian Country Name
-    const countryName = React.useMemo(() => {
+    // Get Bulgarian Country Name and Flag
+    const countryData = React.useMemo(() => {
         if (!holiday.country) return null;
         const match = ALL_COUNTRIES.find(
             c => c.name.toLowerCase() === holiday.country?.name?.toLowerCase() ||
-                c.abbr.toLowerCase() === holiday.country?.iso_code?.toLowerCase()
+                c.abbr.toLowerCase() === holiday.country?.iso_code?.toLowerCase() ||
+                c.abbr.toLowerCase() === holiday.country?.country?.toLowerCase()
         );
-        return match ? match.name : holiday.country.name;
+        if (match) {
+            return {
+                name: match.name,
+                flagUrl: `https://flagcdn.com/${match.abbr.toLowerCase()}.svg`
+            };
+        }
+        // Fallback
+        const code = holiday.country.iso_code?.toLowerCase() || holiday.country.country?.toLowerCase();
+        return {
+            name: holiday.country.name,
+            flagUrl: code ? `https://flagcdn.com/${code}.svg` : null
+        };
     }, [holiday.country]);
 
     return (
@@ -96,11 +108,11 @@ export function HolidayHeader({ holiday, className }: HolidayHeaderProps) {
 
             {/* Content Container */}
             {/* pb-24 on mobile ensures text is above the absolute buttons */}
-            <div className="max-w-6xl relative z-10 mx-auto px-4 pb-24 md:pb-20 pt-20 w-full">
+            <div className="max-w-7xl relative z-10 mx-auto px-4 pb-24 md:pb-20 pt-20 w-full">
                 <div className="flex flex-col md:flex-row justify-end md:justify-between items-start md:items-end gap-4 h-full">
 
                     {/* LEFT SIDE: Holiday Info */}
-                    <div className="space-y-2 md:space-y-4 max-w-2xl animate-in fade-in slide-in-from-left-5 duration-700">
+                    <div className="space-y-2 md:space-y-4 max-w-7xl animate-in fade-in slide-in-from-left-5 duration-700">
                         <div className="flex flex-wrap items-center gap-2">
                             <Badge
                                 variant="secondary"
@@ -116,15 +128,19 @@ export function HolidayHeader({ holiday, className }: HolidayHeaderProps) {
                             )}
                         </div>
 
-                        <h1 className="text-white text-3xl md:text-5xl font-bold tracking-tight drop-shadow-lg text-wrap leading-tight line-clamp-2">
+                        <h1 className="text-white text-3xl md:text-4xl font-bold tracking-tight drop-shadow-lg text-wrap leading-[1] line-clamp-2">
                             {holiday.title}
                         </h1>
 
                         <div className="flex items-center gap-4 text-sm md:text-lg text-gray-200 font-medium">
-                            {countryName && (
-                                <div className="flex items-center gap-1">
-                                    <MapPin className="h-4 w-4 md:h-5 md:w-5 text-cyan-400" />
-                                    {countryName}
+                            {countryData && (
+                                <div className="flex items-center gap-2">
+                                    {countryData.flagUrl && (
+                                        <div className="relative w-6 h-4 md:w-8 md:h-6 shadow-sm rounded overflow-hidden shrink-0">
+                                            <Image src={countryData.flagUrl} alt={countryData.name} fill className="object-cover" />
+                                        </div>
+                                    )}
+                                    {countryData.name}
                                 </div>
                             )}
                             <div className="flex items-center gap-1">
@@ -136,7 +152,7 @@ export function HolidayHeader({ holiday, className }: HolidayHeaderProps) {
 
                     {/* RIGHT SIDE: Price Box (DESKTOP ONLY) */}
                     {/* Hidden on mobile (< md), visible on desktop */}
-                    <div className="hidden md:block animate-in fade-in slide-in-from-right-5 duration-700 delay-100">
+                    {/* <div className="hidden md:block animate-in fade-in slide-in-from-right-5 duration-700 delay-100">
                         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-2xl text-right p-6">
                             <p className="text-sm font-medium text-gray-300 mb-1 uppercase tracking-wider">
                                 Цена от
@@ -148,7 +164,7 @@ export function HolidayHeader({ holiday, className }: HolidayHeaderProps) {
                                 на човек
                             </p>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
 

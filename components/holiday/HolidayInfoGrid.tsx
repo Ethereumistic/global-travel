@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, Plane, Euro, MapPin, Bus } from "lucide-react";
+import { Clock, Plane, Euro, MapPin, Bus, Calendar } from "lucide-react";
 import { ALL_COUNTRIES } from "@/lib/constants";
 import type { Holiday } from "@/lib/types-holiday";
 
@@ -56,7 +56,7 @@ export function HolidayInfoGrid({ holiday, showDateCard = false }: HolidayInfoGr
             {showDateCard && (
                 <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
                     <CardContent className="p-4 text-center flex flex-col items-center justify-center h-full">
-                        <Clock className="size-8 mx-auto mb-2 text-primary" />
+                        <Calendar className="size-8 mx-auto mb-2 text-primary" />
                         <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Дати</p>
                         <p className="text-sm font-bold leading-tight">
                             {formatDate(startDate)} - {formatDate(endDate)}
@@ -99,7 +99,7 @@ export function HolidayInfoGrid({ holiday, showDateCard = false }: HolidayInfoGr
             </Card>
 
             {/* Price Card */}
-            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow bg-gradient-to-br from-primary/10 to-primary/5">
+            <Card className={`border-0 shadow-sm col-span-2 ${!showDateCard ? 'col-span-1' : 'col-span-2 md:col-span-1'} hover:shadow-md transition-shadow bg-gradient-to-br from-primary/10 to-primary/5`}>
                 <CardContent className="p-4 text-center flex flex-col items-center justify-center h-full">
                     <Euro className="size-8 mx-auto mb-2 text-primary" />
                     <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Цена от</p>

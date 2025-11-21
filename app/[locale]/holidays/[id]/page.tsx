@@ -72,6 +72,43 @@ export default function HolidayDetailPage({
         return allDestinations;
     }, [holiday]);
 
+    // Determine which tabs should be visible based on available data
+    const availableTabs = React.useMemo(() => {
+        if (!holiday) return [];
+
+        const tabs = [];
+
+        // Program tab - check if daily_program exists and has items
+        if (holiday.daily_program && holiday.daily_program.length > 0) {
+            tabs.push({ value: 'program', label: 'Програма' });
+        }
+
+        // Included tab - check if included or not_included exists
+        if (holiday.included || holiday.not_included) {
+            tabs.push({ value: 'included', label: 'Условия' });
+        }
+
+        // Accommodations tab - check if accommodations exists and has items
+        if (holiday.accommodations && holiday.accommodations.length > 0) {
+            tabs.push({ value: 'accommodations', label: 'Настаняване' });
+        }
+
+        // Services tab - check if additional_services exists and has items
+        if (holiday.additional_services && holiday.additional_services.length > 0) {
+            tabs.push({ value: 'services', label: 'Услуги' });
+        }
+
+        // Useful info tab - check if useful_info exists and has items
+        if (holiday.useful_info && holiday.useful_info.length > 0) {
+            tabs.push({ value: 'useful', label: 'Информация' });
+        }
+
+        return tabs;
+    }, [holiday]);
+
+    // Get the default tab (first available tab)
+    const defaultTab = availableTabs.length > 0 ? availableTabs[0].value : 'program';
+
     if (isLoading || !holiday) {
         return (
             <div className="container py-20 space-y-8">
@@ -87,7 +124,7 @@ export default function HolidayDetailPage({
     }
 
     return (
-        <div className="min-h-screen bg-slate-50/50 ">
+        <div className="min-h-screen bg-slate-50/50 pb-2">
 
             {/* Header with Slider */}
             <HolidayHeader holiday={holiday} />
@@ -123,10 +160,10 @@ export default function HolidayDetailPage({
                     )}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
 
                     {/* LEFT COLUMN - CONTENT */}
-                    <div className="lg:col-span-2 space-y-8">
+                    <div className="lg:col-span-3 space-y-8">
 
                         {/* Description / Overview */}
                         {holiday.description && (
@@ -140,83 +177,83 @@ export default function HolidayDetailPage({
                         )}
 
                         {/* Tabs */}
-                        <div className="relative min-h-[500px]">
-                            <Tabs defaultValue="program" className="w-[99%]">
-                                <div className="sticky top-20 z-30 backdrop-blur-sm pt-1">
-                                    <TabsList className="w-full justify-start bg-slate-100 p-1 rounded-lg shadow-sm overflow-x-auto h-auto flex-wrap">
-                                        <TabsTrigger value="program" className="py-2">Програма</TabsTrigger>
-                                        <TabsTrigger value="included" className="py-2">Условия</TabsTrigger>
-                                        <TabsTrigger value="accommodations" className="py-2">Настаняване</TabsTrigger>
-                                        <TabsTrigger value="services" className="py-2">Услуги</TabsTrigger>
-                                        <TabsTrigger value="useful" className="py-2">Информация</TabsTrigger>
-                                    </TabsList>
-                                </div>
+                        {availableTabs.length > 0 && (
+                            <div className="relative min-h-[500px]">
+                                <Tabs defaultValue={defaultTab} className="w-[99%] pl-4 -pr-6">
+                                    <div className="sticky top-20 z-30 backdrop-blur-sm pt-1">
+                                        <TabsList className="w-full justify-start bg-slate-100 p-1 rounded-lg shadow-sm overflow-x-auto h-auto flex-wrap">
+                                            {availableTabs.map(tab => (
+                                                <TabsTrigger key={tab.value} value={tab.value} className="py-2">
+                                                    {tab.label}
+                                                </TabsTrigger>
+                                            ))}
+                                        </TabsList>
+                                    </div>
 
-                                <div className="mt-6 space-y-6">
+                                    <div className="mt-6 space-y-6 ">
 
-                                    {/* PROGRAM TAB */}
-                                    <TabsContent value="program" className="space-y-6">
-                                        {holiday.daily_program && <HolidayProgram program={holiday.daily_program} />}
-                                    </TabsContent>
-
-                                    {/* INCLUDED TAB (Prices & Conditions) */}
-                                    <TabsContent value="included" className="space-y-6">
-                                        <HolidayIncluded included={holiday.included} notIncluded={holiday.not_included} />
-                                    </TabsContent>
-
-                                    {/* ACCOMMODATIONS TAB */}
-                                    <TabsContent value="accommodations">
-                                        {holiday.accommodations && holiday.accommodations.length > 0 ? (
-                                            <HolidayAccommodations accommodations={holiday.accommodations} />
-                                        ) : (
-                                            <div className="text-center py-10 text-slate-500 bg-white rounded-xl border border-dashed">
-                                                Няма информация за настаняване
-                                            </div>
+                                        {/* PROGRAM TAB */}
+                                        {holiday.daily_program && holiday.daily_program.length > 0 && (
+                                            <TabsContent value="program" className="space-y-6">
+                                                <HolidayProgram program={holiday.daily_program} />
+                                            </TabsContent>
                                         )}
-                                    </TabsContent>
 
-                                    {/* ADDITIONAL SERVICES TAB */}
-                                    <TabsContent value="services">
-                                        {holiday.additional_services && holiday.additional_services.length > 0 ? (
-                                            <HolidayAdditionalServices services={holiday.additional_services} />
-                                        ) : (
-                                            <div className="text-center py-10 text-slate-500 bg-white rounded-xl border border-dashed">
-                                                Няма допълнителни услуги
-                                            </div>
+                                        {/* INCLUDED TAB (Prices & Conditions) */}
+                                        {(holiday.included || holiday.not_included) && (
+                                            <TabsContent value="included" className="space-y-6">
+                                                <HolidayIncluded included={holiday.included} notIncluded={holiday.not_included} />
+                                            </TabsContent>
                                         )}
-                                    </TabsContent>
 
-                                    {/* USEFUL INFO TAB */}
-                                    <TabsContent value="useful">
-                                        <Card>
-                                            <CardContent className="pt-6 space-y-4">
-                                                {holiday.useful_info?.map((info, idx) => (
-                                                    <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-slate-50">
-                                                        <Info className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
-                                                        <div>
-                                                            {info.type && (
-                                                                <span className="text-xs font-bold text-blue-600 uppercase mb-1 block">
-                                                                    {info.type === 'GENERAL' ? 'Обща информация' :
-                                                                        info.type === 'MEDICAL' ? 'Медицински изисквания' :
-                                                                            info.type === 'ENTRY' ? 'Паспортен режим' : info.type}
-                                                                    {info.country_name ? ` - ${info.country_name}` : ''}
-                                                                </span>
-                                                            )}
-                                                            <p className="text-sm text-slate-700">{info.text}</p>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </CardContent>
-                                        </Card>
-                                    </TabsContent>
+                                        {/* ACCOMMODATIONS TAB */}
+                                        {holiday.accommodations && holiday.accommodations.length > 0 && (
+                                            <TabsContent value="accommodations">
+                                                <HolidayAccommodations accommodations={holiday.accommodations} />
+                                            </TabsContent>
+                                        )}
 
-                                </div>
-                            </Tabs>
-                        </div>
+                                        {/* ADDITIONAL SERVICES TAB */}
+                                        {holiday.additional_services && holiday.additional_services.length > 0 && (
+                                            <TabsContent value="services">
+                                                <HolidayAdditionalServices services={holiday.additional_services} />
+                                            </TabsContent>
+                                        )}
+
+                                        {/* USEFUL INFO TAB */}
+                                        {holiday.useful_info && holiday.useful_info.length > 0 && (
+                                            <TabsContent value="useful">
+                                                <Card>
+                                                    <CardContent className="pt-6 space-y-4">
+                                                        {holiday.useful_info.map((info, idx) => (
+                                                            <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-slate-50">
+                                                                <Info className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
+                                                                <div>
+                                                                    {info.type && (
+                                                                        <span className="text-xs font-bold text-blue-600 uppercase mb-1 block">
+                                                                            {info.type === 'GENERAL' ? 'Обща информация' :
+                                                                                info.type === 'MEDICAL' ? 'Медицински изисквания' :
+                                                                                    info.type === 'ENTRY' ? 'Паспортен режим' : info.type}
+                                                                            {info.country_name ? ` - ${info.country_name}` : ''}
+                                                                        </span>
+                                                                    )}
+                                                                    <p className="text-sm text-slate-700">{info.text}</p>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </CardContent>
+                                                </Card>
+                                            </TabsContent>
+                                        )}
+
+                                    </div>
+                                </Tabs>
+                            </div>
+                        )}
                     </div>
 
                     {/* RIGHT COLUMN - SIDEBAR */}
-                    <div className="lg:col-span-1 lg:-translate-x-4">
+                    <div className="lg:col-span-2 lg:-translate-x-4">
                         <HolidayBookingSidebar holiday={holiday} />
                     </div>
 

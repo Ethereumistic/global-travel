@@ -1,0 +1,180 @@
+"use client";
+
+import * as React from "react";
+import { Check, ChevronsUpDown, Loader2, Search } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import { ALL_COUNTRIES } from "@/lib/constants";
+
+interface CountryOption {
+    value: string;
+    label: string;
+}
+
+interface HolidaySearchProps {
+    variant?: "hero" | "page";
+    className?: string;
+    onSearch?: (countryCode: string) => void;
+}
+
+export function HolidaySearch({ variant = "hero", className, onSearch }: HolidaySearchProps) {
+    const [open, setOpen] = React.useState(false);
+    const [value, setValue] = React.useState("");
+    const [loading, setLoading] = React.useState(false);
+    const [options, setOptions] = React.useState<CountryOption[]>([]);
+
+    // --- Fetch Data ---
+    React.useEffect(() => {
+        const fetchDestinations = async () => {
+            setLoading(true);
+            try {
+                const res = await fetch("/api/holidays?limit=100");
+                const data = await res.json();
+
+                if (data.holidays) {
+                    const uniqueCountries = new Map<string, CountryOption>();
+                    data.holidays.forEach((holiday: any) => {
+                        if (holiday.country && holiday.country.iso_code) {
+                            const countryCodeLower = holiday.country.iso_code.toLowerCase();
+                            const countryData = ALL_COUNTRIES.find(
+                                (c) => c.abbr === countryCodeLower
+                            );
+
+                            if (!uniqueCountries.has(countryCodeLower)) {
+                                uniqueCountries.set(countryCodeLower, {
+                                    value: countryCodeLower,
+                                    label: countryData ? countryData.name : holiday.country.name,
+                                });
+                            }
+                        }
+                    });
+                    setOptions(Array.from(uniqueCountries.values()));
+                }
+            } catch (error) {
+                console.error("Failed to fetch destinations", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDestinations();
+    }, []);
+
+    const handleSearch = () => {
+        if (onSearch) {
+            // If onSearch callback is provided, use it (for root page filtering)
+            onSearch(value);
+
+            // Scroll to holidays section
+            const holidaysSection = document.getElementById('holidays-section');
+            if (holidaysSection) {
+                holidaysSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    };
+
+    const selectedOption = options.find((option) => option.value === value);
+
+    // Hero variant (for home page)
+    if (variant === "hero") {
+        return (
+            <div className={cn("relative max-w-xs mx-auto z-40", className)}>
+                <div className="w-full bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 shadow-2xl">
+                    <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                        <Search className="w-4 h-4" />
+                        Изберете дестинация
+                    </h3>
+
+                    <Popover open={open} onOpenChange={setOpen}>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={open}
+                                className="w-full justify-between bg-white/90 text-black hover:bg-white h-12"
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <div className="flex items-center gap-2">
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        Зареждане...
+                                    </div>
+                                ) : selectedOption ? (
+                                    <div className="flex items-center gap-2">
+                                        <img
+                                            src={`https://flagcdn.com/${selectedOption.value}.svg`}
+                                            alt="flag"
+                                            className="w-6 h-auto object-cover border border-gray-200"
+                                        />
+                                        <span className="truncate font-medium">{selectedOption.label}</span>
+                                    </div>
+                                ) : (
+                                    "Всички дестинации..."
+                                )}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-var(--radix-popover-trigger-width) p-0">
+                            <Command>
+                                <CommandInput placeholder="Търси държава..." />
+                                <CommandList>
+                                    <CommandEmpty>Няма намерени резултати.</CommandEmpty>
+                                    <CommandGroup>
+                                        {options.map((option) => (
+                                            <CommandItem
+                                                key={option.value}
+                                                value={option.label}
+                                                onSelect={(currentLabel) => {
+                                                    const found = options.find(o => o.label.toLowerCase() === currentLabel.toLowerCase());
+                                                    if (found) {
+                                                        setValue(found.value);
+                                                        setOpen(false);
+                                                    }
+                                                }}
+                                            >
+                                                <Check
+                                                    className={cn(
+                                                        "mr-2 h-4 w-4",
+                                                        value === option.value ? "opacity-100" : "opacity-0"
+                                                    )}
+                                                />
+                                                <img
+                                                    src={`https://flagcdn.com/${option.value}.svg`}
+                                                    alt={option.label}
+                                                    className="mr-2 w-6 h-auto object-cover border border-gray-100"
+                                                />
+                                                {option.label}
+                                            </CommandItem>
+                                        ))}
+                                    </CommandGroup>
+                                </CommandList>
+                            </Command>
+                        </PopoverContent>
+                    </Popover>
+
+                    <Button
+                        className="w-full mt-4 bg-blue-600 hover:bg-blue-700 h-12 text-lg font-medium transition-all active:scale-95 shadow-lg"
+                        onClick={handleSearch}
+                    >
+                        Търси
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    // Page variant (for holidays page - inline with page-slider)
+    return null;
+}
