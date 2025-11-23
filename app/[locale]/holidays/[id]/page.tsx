@@ -44,10 +44,10 @@ export default function HolidayDetailPage({
     }, [id]);
 
     // Prepare images for gallery
-    const galleryImages = React.useMemo(() => {
-        if (!holiday) return [];
-        return holiday.images?.map(img => img.image) || (holiday.main_image ? [holiday.main_image.image] : []);
-    }, [holiday]);
+    // const galleryImages = React.useMemo(() => {
+    //     if (!holiday) return [];
+    //     return holiday.images?.map(img => img.image) || (holiday.main_image ? [holiday.main_image.image] : []);
+    // }, [holiday]);
 
     // Extract cities for carousel (flattened and deduplicated consecutive)
     const routeCities = React.useMemo(() => {
@@ -130,9 +130,9 @@ export default function HolidayDetailPage({
             <HolidayHeader holiday={holiday} />
 
             {/* Gallery - Moved to top as requested */}
-            {galleryImages.length > 0 && (
+            {(holiday.main_image || (holiday.images && holiday.images.length > 0)) && (
                 <div className="max-w-6xl mx-auto mt-2 relative z-20 px-4 ">
-                    <YachtGallery images={galleryImages.map((img, i) => ({ id: String(i), image: img }))} title={holiday.title} />
+                    <YachtGallery mainImage={holiday.main_image} images={holiday.images || []} title={holiday.title} />
                 </div>
             )}
 

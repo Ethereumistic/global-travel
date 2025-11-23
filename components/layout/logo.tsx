@@ -1,11 +1,9 @@
-// @/components/layout/logo.tsx
-
 "use client"
 
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion'; // Import motion
+import { motion } from 'framer-motion';
 
 // Define logo URLs using the new local paths from /public
 const LOGO = "/logo/logo.svg";
@@ -51,9 +49,49 @@ export const Loader = () => {
 
 /**
  * This is your original default exported Logo component.
- * (No changes needed here)
  */
-const Logo = () => {
+interface LogoProps {
+  variant?: "default" | "primary";
+}
+
+const Logo = ({ variant = "default" }: LogoProps) => {
+  if (variant === "primary") {
+    return (
+      <Link
+        href="/"
+        className="flex items-center gap-2"
+        aria-label="Global Travel Homepage"
+      >
+        <div
+          className="w-14 h-14 md:w-12 md:h-12 lg:w-14 lg:h-14 bg-slate-500 "
+          style={{
+            maskImage: `url(${LOGOMARK})`,
+            maskRepeat: "no-repeat",
+            maskSize: "contain",
+            maskPosition: "center",
+            WebkitMaskImage: `url(${LOGOMARK})`,
+            WebkitMaskRepeat: "no-repeat",
+            WebkitMaskSize: "contain",
+            WebkitMaskPosition: "center",
+          }}
+        />
+        <div
+          className="w-48 h-12 md:w-36 lg:w-48 bg-slate-500 "
+          style={{
+            maskImage: `url(${LOGOTYPE})`,
+            maskRepeat: "no-repeat",
+            maskSize: "contain",
+            maskPosition: "left center",
+            WebkitMaskImage: `url(${LOGOTYPE})`,
+            WebkitMaskRepeat: "no-repeat",
+            WebkitMaskSize: "contain",
+            WebkitMaskPosition: "left center",
+          }}
+        />
+      </Link>
+    );
+  }
+
   return (
     <Link
       href="/"
@@ -68,7 +106,7 @@ const Logo = () => {
         alt="Global Travel Logo"
         className="
           object-contain
-          w-14 h-14 md:w-12 md:h-12 lg:w-14 lg:h-14  drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]
+          w-14 h-14 md:w-12 md:h-12 lg:w-14 lg:h-14  drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)] 
         "
         width={60}
         height={60}

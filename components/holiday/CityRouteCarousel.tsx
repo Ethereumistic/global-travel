@@ -8,6 +8,8 @@ import {
     Carousel,
     CarouselContent,
     CarouselItem,
+    CarouselPrevious,
+    CarouselNext,
 } from "@/components/ui/carousel";
 import { PlaneTakeoff, PlaneLanding, Bus } from "lucide-react";
 
@@ -28,7 +30,7 @@ export function CityRouteCarousel({ cities, transport }: CityRouteCarouselProps)
     return (
         <Card className="border-0 shadow-sm mb-2">
             <CardContent className="">
-                <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
+                <Carousel opts={{ align: "start", dragFree: true }} className="w-full px-6">
                     <CarouselContent className="mx-auto items-center">
                         {cities.map((city, idx) => {
                             const isFirst = idx === 0;
@@ -38,8 +40,8 @@ export function CityRouteCarousel({ cities, transport }: CityRouteCarouselProps)
                                 <React.Fragment key={`${city.id}-${idx}`}>
                                     {/* Connector Line */}
                                     {idx > 0 && (
-                                        <CarouselItem className="basis-auto flex-shrink-0 px-1 flex items-center">
-                                            <div className="w-8 h-px bg-slate-300" />
+                                        <CarouselItem className="basis-auto flex-shrink-0 px-0 flex items-center">
+                                            <div className="w-4 h-px bg-slate-300" />
                                         </CarouselItem>
                                     )}
 
@@ -59,6 +61,8 @@ export function CityRouteCarousel({ cities, transport }: CityRouteCarouselProps)
                             );
                         })}
                     </CarouselContent>
+                    <CarouselPrevious className="-left-3 bg-transparent hover:bg-transparent border-none" />
+                    <CarouselNext className="-right-3 bg-transparent hover:bg-transparent border-none" />
                 </Carousel>
             </CardContent>
         </Card>

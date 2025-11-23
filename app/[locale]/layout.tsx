@@ -3,9 +3,10 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import './globals.css';
-import  NavBar  from '@/components/layout/nav-bar';
+import NavBar from '@/components/layout/nav-bar';
 import { ThemeProvider } from "next-themes";
 import { Balsamiq_Sans, Geologica } from 'next/font/google'
+import Footer from '@/components/layout/footer';
 
 
 const balsamiq = Balsamiq_Sans({
@@ -31,7 +32,7 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  
+
   if (!routing.locales.includes(locale as any)) {
     notFound();
   }
@@ -42,10 +43,11 @@ export default async function LocaleLayout({
     <html lang={locale}>
       <body className={`${balsamiq.variable} ${geologica.variable} antialiased font-geologica`} >
         <NextIntlClientProvider messages={messages}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
 
-          <NavBar />
-          {children}
+            <NavBar />
+            {children}
+            <Footer />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

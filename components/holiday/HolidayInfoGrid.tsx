@@ -37,7 +37,7 @@ export function HolidayInfoGrid({ holiday, showDateCard = false }: HolidayInfoGr
     const mainCountry = holiday.country ? getCountryDisplayData(holiday.country.name, holiday.country.iso_code || holiday.country.country) : null;
 
     const transportIcon = holiday.transport === "Airplane" || holiday.transport === "Самолет" ? <Plane className="size-8 mx-auto mb-2 text-primary" /> : <Bus className="size-8 mx-auto mb-2 text-primary" />;
-    const transportName = holiday.transport === "Airplane" ? "Самолет" : holiday.transport === "Bus" ? "Автобус" : holiday.transport;
+    const transportName = holiday.transport === "Airplane" ? "Самолет" : holiday.transport === "Bus" ? "Автобус" : holiday.transport === "None" ? "Неуточнен" : holiday.transport;
 
     // Date Calculation
     const startDateStr = holiday.trips?.[0]?.departure_date || holiday.available_from;
@@ -99,7 +99,7 @@ export function HolidayInfoGrid({ holiday, showDateCard = false }: HolidayInfoGr
             </Card>
 
             {/* Price Card */}
-            <Card className={`border-0 shadow-sm col-span-2 ${!showDateCard ? 'col-span-1' : 'col-span-2 md:col-span-1'} hover:shadow-md transition-shadow bg-gradient-to-br from-primary/10 to-primary/5`}>
+            <Card className={`border-0 shadow-sm col-span-2 ${!showDateCard ? 'col-span-1' : 'col-span-2 md:col-span-1'} hover:shadow-md transition-shadow `}>
                 <CardContent className="p-4 text-center flex flex-col items-center justify-center h-full">
                     <Euro className="size-8 mx-auto mb-2 text-primary" />
                     <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Цена от</p>
