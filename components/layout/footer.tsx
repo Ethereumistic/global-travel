@@ -72,9 +72,14 @@ const Footer = () => {
                                     Общи условия
                                 </Link>
                             </li>
-                            <li className="text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 bg-primary rounded-full"></span>
-                                Лиценз №5702
+                            <li>
+                                <Link
+                                    href="/license"
+                                    className="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors flex items-center gap-2 group"
+                                >
+                                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full group-hover:bg-primary transition-colors"></span>
+                                    Лиценз №5702
+                                </Link>
                             </li>
                         </ul>
                     </div>
