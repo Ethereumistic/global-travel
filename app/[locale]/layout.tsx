@@ -1,3 +1,4 @@
+import React from 'react';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -45,7 +46,9 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
 
-            <NavBar />
+            <React.Suspense fallback={null}>
+              <NavBar />
+            </React.Suspense>
             {children}
             <Footer />
           </ThemeProvider>

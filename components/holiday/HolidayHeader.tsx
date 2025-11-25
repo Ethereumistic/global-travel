@@ -144,7 +144,7 @@ export function HolidayHeader({ holiday, className }: HolidayHeaderProps) {
                                 </div>
                             )}
                             <div className="flex items-center gap-1">
-                                <Clock className="h-4 w-4 md:h-5 md:w-5 text-cyan-400" />
+                                <Clock className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                                 {holiday.duration} дни
                             </div>
                         </div>
@@ -173,10 +173,10 @@ export function HolidayHeader({ holiday, className }: HolidayHeaderProps) {
             {/* 1. Absolute Bottom Left: Back Button */}
             <div className="absolute top-24 left-2 z-20">
                 <Button
-                    variant="ghost"
+                    variant="glass"
                     size="sm"
                     asChild
-                    className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border border-white/10 shadow-lg"
+                    className=" backdrop-blur-md border border-white/10 shadow-lg"
                 >
                     <Link href="/holidays">
                         <ChevronLeft className="mr-2 h-4 w-4" />

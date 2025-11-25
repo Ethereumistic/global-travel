@@ -26,7 +26,7 @@ interface PageSliderProps {
   subtitle: string;
   icon: React.ReactNode;
   className?: string;
-  searchType: "yachts" | "excursions" | "holidays";
+  searchType: "yachts" | "excursions" | "holidays" | "none";
 }
 
 interface CountryOption {
@@ -105,10 +105,6 @@ export function PageSlider({
             data.holidays.forEach((holiday: any) => {
               if (holiday.country && holiday.country.iso_code) {
                 const countryCodeLower = holiday.country.iso_code.toLowerCase();
-                // Use country name from API or fallback to constant if needed, 
-                // but API provides name so we can use it directly or lookup in constants for consistency
-                // Let's try to match with constants to get the Bulgarian name if possible, 
-                // or just use the name from API if constants fail.
                 const countryData = ALL_COUNTRIES.find(
                   (c) => c.abbr === countryCodeLower
                 );
@@ -194,88 +190,90 @@ export function PageSlider({
           </div>
 
           {/* RIGHT COLUMN: Search Box */}
-          <div className="flex items-center justify-center lg:justify-end w-full">
-            <div className="w-full max-w-md bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 shadow-2xl">
-              <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                <Search className="w-4 h-4" />
-                Изберете дестинация
-              </h3>
+          {searchType !== "none" && (
+            <div className="flex items-center justify-center lg:justify-end w-full">
+              <div className="w-full max-w-md bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 shadow-2xl">
+                <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                  <Search className="w-4 h-4" />
+                  Изберете дестинация
+                </h3>
 
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={open}
-                    className="w-full justify-between bg-white/90 text-black hover:bg-white h-12"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Зареждане...
-                      </div>
-                    ) : selectedOption ? (
-                      <div className="flex items-center gap-2">
-                        <img
-                          src={`https://flagcdn.com/${selectedOption.value}.svg`}
-                          alt="flag"
-                          className="w-6 h-auto object-cover border border-gray-200"
-                        />
-                        <span className="truncate font-medium">{selectedOption.label}</span>
-                      </div>
-                    ) : (
-                      "Всички дестинации..."
-                    )}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-var(--radix-popover-trigger-width) p-0">
-                  <Command>
-                    <CommandInput placeholder="Търси държава..." />
-                    <CommandList>
-                      <CommandEmpty>Няма намерени резултати.</CommandEmpty>
-                      <CommandGroup>
-                        {options.map((option) => (
-                          <CommandItem
-                            key={option.value}
-                            value={option.label}
-                            onSelect={(currentLabel) => {
-                              const found = options.find(o => o.label.toLowerCase() === currentLabel.toLowerCase());
-                              if (found) {
-                                setValue(found.value);
-                                setOpen(false);
-                              }
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                value === option.value ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            <img
-                              src={`https://flagcdn.com/${option.value}.svg`}
-                              alt={option.label}
-                              className="mr-2 w-6 h-auto object-cover  border border-gray-100"
-                            />
-                            {option.label}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+                <Popover open={open} onOpenChange={setOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={open}
+                      className="w-full justify-between bg-white/90 text-black hover:bg-white h-12"
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Зареждане...
+                        </div>
+                      ) : selectedOption ? (
+                        <div className="flex items-center gap-2">
+                          <img
+                            src={`https://flagcdn.com/${selectedOption.value}.svg`}
+                            alt="flag"
+                            className="w-6 h-auto object-cover border border-gray-200"
+                          />
+                          <span className="truncate font-medium">{selectedOption.label}</span>
+                        </div>
+                      ) : (
+                        "Всички дестинации..."
+                      )}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-var(--radix-popover-trigger-width) p-0">
+                    <Command>
+                      <CommandInput placeholder="Търси държава..." />
+                      <CommandList>
+                        <CommandEmpty>Няма намерени резултати.</CommandEmpty>
+                        <CommandGroup>
+                          {options.map((option) => (
+                            <CommandItem
+                              key={option.value}
+                              value={option.label}
+                              onSelect={(currentLabel) => {
+                                const found = options.find(o => o.label.toLowerCase() === currentLabel.toLowerCase());
+                                if (found) {
+                                  setValue(found.value);
+                                  setOpen(false);
+                                }
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  value === option.value ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              <img
+                                src={`https://flagcdn.com/${option.value}.svg`}
+                                alt={option.label}
+                                className="mr-2 w-6 h-auto object-cover  border border-gray-100"
+                              />
+                              {option.label}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
 
-              <Button
-                className="w-full mt-4 bg-blue-600 hover:bg-blue-700 h-12 text-lg font-medium transition-all active:scale-95 shadow-lg"
-                onClick={handleSearch}
-              >
-                Търси
-              </Button>
+                <Button
+                  className="w-full mt-4 bg-blue-600 hover:bg-blue-700 h-12 text-lg font-medium transition-all active:scale-95 shadow-lg"
+                  onClick={handleSearch}
+                >
+                  Търси
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
       </div>

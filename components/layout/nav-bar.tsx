@@ -16,6 +16,8 @@ import {
   TreePalm,
   MapPin,
   Sailboat,
+  Search,
+  Ticket,
 } from "lucide-react"
 import Link from "next/link"
 import { useTheme } from "next-themes"
@@ -34,13 +36,15 @@ import Image from "next/image"
 import { cn } from "@/lib/utils"
 import Logo from "./logo"
 import { Button } from "../ui/button"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 export default function NavBar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname() // Get current page path
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
   // NEW: State to track scroll position
   const [scrolled, setScrolled] = useState(false)
@@ -61,6 +65,31 @@ export default function NavBar() {
       window.removeEventListener("scroll", handleScroll)
     }
   }, []) // Empty dependency array ensures this runs only on mount and unmount
+
+  // NEW: Click outside to close mobile menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (mobileOpen) {
+        // Check if the click is outside the nav element
+        // Since the menu is part of the nav, we can check if the click target is NOT inside the nav
+        // However, the hamburger button is also inside the nav.
+        // A simpler approach for this specific layout:
+        // The menu takes up the full width below the bar. 
+        // If we want to close it when clicking *outside* the menu, we usually mean clicking on the main content.
+        // But the menu is absolute positioned.
+        // Let's check if the click is NOT within the <nav> element.
+        const nav = document.querySelector('nav');
+        if (nav && !nav.contains(event.target as Node)) {
+          setMobileOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [mobileOpen]);
 
   const navItems = [
     {
@@ -83,30 +112,6 @@ export default function NavBar() {
       href: "/yachts", // Using /flights as a placeholder
       icon: <Sailboat className="size-7 md:size-5 text-white " />,
     },
-
-    // {
-    //   label: "Услуги",
-    //   submenu: [
-    //     {
-    //       label: "Пътно строителство и поддръжка",
-    //       href: "/services?tab=roads",
-    //       icon: <Construction className="w-4 h-4" />,
-    //       description: "Изграждане и поддръжка на пътища, мостове и магистрали.",
-    //     },
-    //     {
-    //       label: "Саниране и фасади",
-    //       href: "/services?tab=facades",
-    //       icon: <Building className="w-4 h-4" />,
-    //       description: "Цялостни решения за обновяване и саниране на сгради.",
-    //     },
-    //     {
-    //       label: "Градско и парково строителство",
-    //       href: "/services?tab=urban",
-    //       icon: <Trees className="w-4 h-4" />,
-    //       description: "Озеленяване, паркови алеи и зони за отдих.",
-    //     },
-    //   ],
-    // },
   ]
 
   const mobileMenuVariants = {
@@ -122,25 +127,38 @@ export default function NavBar() {
     },
   }
 
+  const handleReserveClick = () => {
+    setMobileOpen(false);
+    const isHomePage = pathname === "/" || pathname === "/en" || pathname === "/bg";
+    if (isHomePage) {
+      const params = new URLSearchParams(searchParams.toString());
+      if (params.get("action") === "contact") {
+        params.delete("action");
+      } else {
+        params.set("action", "contact");
+      }
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    } else {
+      // If not on home page, go to home with contact action
+      const localePrefix = pathname.startsWith("/en") ? "/en" : pathname.startsWith("/bg") ? "/bg" : "";
+      router.push(`${localePrefix}/?action=contact`);
+    }
+  };
+
+  const isContactMode = pathname && ["/", "/en", "/bg"].includes(pathname) && searchParams.get("action") === "contact";
+  const buttonText = isContactMode ? "ТЪРСИ" : "РЕЗЕРВИРАЙ";
+  const buttonIcon = isContactMode ? <Search className="size-6" /> : <Ticket className="size-6" />;
   return (
-    // === CHANGED: Removed bg/blur styles from <nav> ===
-    // The <nav> is now just a sticky container.
     <nav
       className={cn(
         "sticky top-0 z-50 w-full",
         "transition-all duration-300 ease-in-out"
       )}
     >
-      {/* === NEW WRAPPER: Added this div === */}
-      {/* This new div now holds the bg/blur styles for the H-20 bar */}
       <div
         className={cn(
-          // 1. Base styles: This is the default (scrolled, or on pages like [id])
           "w-full bg-black/40 backdrop-blur-2xl",
           "transition-all duration-300 ease-in-out",
-
-          // 2. Conditional transparency:
-          // Becomes transparent ONLY if NOT scrolled AND on one of these EXACT paths
           !scrolled &&
           (pathname === "/en" || pathname === "/bg" ||
             pathname === "/bg/excursions" || pathname === "/en/excursions" ||
@@ -166,18 +184,6 @@ export default function NavBar() {
                           {item.label}
                         </NavigationMenuTrigger>
                         <NavigationMenuContent>
-                          {/* <ul className="grid w-[350px] gap-3 p-4 md:w-[450px]">
-                          {item.submenu?.map((subitem) => (
-                            <ListItem
-                              key={subitem.label}
-                              title={subitem.label}
-                              href={subitem.href}
-                              icon={subitem.icon}
-                            >
-                              {subitem.description}
-                            </ListItem>
-                          ))}
-                        </ul> */}
                         </NavigationMenuContent>
                       </NavigationMenuItem>
                     ) : (
@@ -205,8 +211,13 @@ export default function NavBar() {
 
             {/* Right side - Contact & Theme */}
             <div className="hidden lg:flex items-center gap-4 pl-4">
-              <Button size="lg" className="text-sm xl:text-base 2xl:text-lg">
-                РЕЗЕРВИРАЙ
+              <Button
+                size="lg"
+                className="text-sm xl:text-base 2xl:text-lg"
+                onClick={handleReserveClick}
+              >
+                {buttonIcon}
+                {buttonText}
               </Button>
             </div>
 
@@ -236,17 +247,6 @@ export default function NavBar() {
                   <div className="px-3 py-2 text-foreground font-medium ">
                     {item.label}
                   </div>
-                  {/* {item.submenu?.map((subitem) => (
-                    <Link
-                      key={subitem.label}
-                      href={subitem.href}
-                      className="flex items-center px-6 py-2 text-foreground/80 hover:text-primary gap-4 transition-colors text-sm"
-                      onClick={() => setMobileOpen(false)}
-                    >
-                      {subitem.icon}
-                      <span>{subitem.label}</span>
-                    </Link>
-                  ))} */}
                 </div>
               ) : (
                 <Link
@@ -262,8 +262,14 @@ export default function NavBar() {
                 </Link>
               )
             )}
-            <Button size="lg" className="flex mx-auto my-8 text-xl  ">
-              <h1 className="drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">РЕЗЕРВИРАЙ</h1>
+            <Button
+              size="lg"
+              className="flex mx-auto my-8 text-xl"
+              onClick={handleReserveClick}
+            >
+              <h1 className="drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
+                {buttonText}
+              </h1>
             </Button>
           </motion.div>
         )}
@@ -272,7 +278,6 @@ export default function NavBar() {
   )
 }
 
-// === AnimatedHamburgerButton Component (Unchanged) ===
 const AnimatedHamburgerButton = ({
   isOpen,
   onClick,
@@ -334,7 +339,6 @@ const AnimatedHamburgerButton = ({
   )
 }
 
-// === ListItem Helper Component (Unchanged) ===
 const ListItem = React.forwardRef<
   React.ElementRef<typeof Link>,
   React.ComponentPropsWithoutRef<typeof Link> & {

@@ -28,7 +28,7 @@ export function YachtHeader({ yacht, className }: YachtHeaderProps) {
   const heroImages = React.useMemo(() => {
     // Map the API response structure to an array of strings
     const apiImages = yacht.images?.map((img: any) => img.image) || [];
-    
+
     // Return API images (limit to first 6 for performance) or fallback
     return apiImages.length > 0 ? apiImages.slice(0, 6) : FALLBACK_HERO_IMAGES;
   }, [yacht.images]);
@@ -70,10 +70,10 @@ export function YachtHeader({ yacht, className }: YachtHeaderProps) {
               index === currentImageIndex ? "opacity-100" : "opacity-0"
             )}
           >
-            <Image 
-              src={img} 
-              alt={`Yacht view ${index + 1}`} 
-              fill 
+            <Image
+              src={img}
+              alt={`Yacht view ${index + 1}`}
+              fill
               className="object-cover"
               priority={index === 0}
             />
@@ -87,12 +87,12 @@ export function YachtHeader({ yacht, className }: YachtHeaderProps) {
       {/* pb-24 on mobile ensures text is above the absolute buttons */}
       <div className="max-w-6xl relative z-10 mx-auto px-4 pb-24 md:pb-20 pt-20 w-full">
         <div className="flex flex-col md:flex-row justify-end md:justify-between items-start md:items-end gap-4 h-full">
-          
+
           {/* LEFT SIDE: Yacht Info */}
           <div className="space-y-2 md:space-y-4 max-w-2xl animate-in fade-in slide-in-from-left-5 duration-700">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge 
-                variant="secondary" 
+              <Badge
+                variant="secondary"
                 className="bg-white/20 text-white hover:bg-white/30 border-0 backdrop-blur-md px-2 py-0.5 md:px-3 md:py-1 text-xs md:text-sm"
               >
                 <Ship className="w-3 h-3 mr-2" />
@@ -110,7 +110,7 @@ export function YachtHeader({ yacht, className }: YachtHeaderProps) {
             </h1>
 
             <div className="flex items-center gap-2 text-sm md:text-lg text-gray-200 font-medium">
-              <MapPin className="h-4 w-4 md:h-5 md:w-5 text-cyan-400" />
+              <MapPin className="h-4 w-4 md:h-5 md:w-5 text-primary" />
               {yacht.home_port}
             </div>
           </div>
@@ -137,15 +137,15 @@ export function YachtHeader({ yacht, className }: YachtHeaderProps) {
 
       {/* 1. Absolute Bottom Left: Back Button */}
       <div className="absolute top-22 left-2 z-20">
-        <Button 
-            variant="ghost" 
-            size="sm" 
-            asChild 
-            className="bg-white/10 hover:bg-white/20 text-white backdrop-blur-md border border-white/10 shadow-lg"
+        <Button
+          variant="glass"
+          size="sm"
+          asChild
+          className="border border-white/10 shadow-lg"
         >
           <Link href="/yachts">
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Всички яхти
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Всички яхти
           </Link>
         </Button>
       </div>
@@ -153,17 +153,17 @@ export function YachtHeader({ yacht, className }: YachtHeaderProps) {
       {/* 2. Absolute Bottom Right: Price Box (MOBILE ONLY) */}
       {/* Same content structure, positioned absolutely like the back button */}
       <div className="absolute bottom-6 right-4 z-20 md:hidden">
-         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-3 text-right shadow-lg">
-            <p className="text-[10px] font-medium text-gray-300 mb-0 uppercase tracking-wider">
-                Цена от
-            </p>
-            <div className="text-xl font-black text-white drop-shadow-md leading-tight">
-                {currentPrice}
-            </div>
-            <p className="text-[10px] text-gray-400 mt-0.5">
-                за седмица
-            </p>
-         </div>
+        <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-3 text-right shadow-lg">
+          <p className="text-[10px] font-medium text-gray-300 mb-0 uppercase tracking-wider">
+            Цена от
+          </p>
+          <div className="text-xl font-black text-white drop-shadow-md leading-tight">
+            {currentPrice}
+          </div>
+          <p className="text-[10px] text-gray-400 mt-0.5">
+            за седмица
+          </p>
+        </div>
       </div>
 
     </div>

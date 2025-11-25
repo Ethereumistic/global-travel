@@ -13,6 +13,7 @@ type Props = {
   poster?: string;    // e.g. "/images/hero-poster.jpg"
   className?: string;
   onSearch?: (countryCode: string) => void;
+  children?: React.ReactNode;
 };
 
 const BULGARIAN_SLOGANS = [
@@ -29,6 +30,7 @@ export default function HeroVideo({
   poster = "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/hero-video.webm",
   className = "",
   onSearch,
+  children,
 }: Props) {
   const reduceMotion = useReducedMotion();
   const [index, setIndex] = useState(0);
@@ -65,7 +67,7 @@ export default function HeroVideo({
 
   return (
     <section
-      className={`relative w-full h-[90vh] overflow-hidden bg-black rounded-b-2xl ${className}`}
+      className={`relative w-full min-h-[90vh] overflow-hidden bg-black rounded-b-2xl ${className}`}
       aria-label="Hero video"
     >
       {/* Video element */}
@@ -93,25 +95,27 @@ export default function HeroVideo({
 
       {/* Content container */}
       <div className="absolute inset-0 flex items-center justify-center px-6">
-        <div className="max-w-5xl font-geologica text-center text-white">
-          <motion.h1
-            key={index}
-            initial={reduceMotion ? {} : { opacity: 0, y: 8 }}
-            animate={reduceMotion ? {} : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-2xl sm:text-3xl md:text-5xl font-semibold drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]"
-          >
-            {slogans[index]}
-          </motion.h1>
+        <div className="max-w-5xl font-geologica text-center text-white w-full">
+          {!children && (
+            <motion.h1
+              key={index}
+              initial={reduceMotion ? {} : { opacity: 0, y: 8 }}
+              animate={reduceMotion ? {} : { opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-2xl sm:text-3xl md:text-5xl font-semibold drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] mb-8"
+            >
+              {slogans[index]}
+            </motion.h1>
+          )}
 
           <motion.div
             initial={reduceMotion ? {} : { opacity: 0 }}
             animate={reduceMotion ? {} : { opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.6 }}
-            className="mt-16 flex justify-center gap-4"
+            className="flex justify-center gap-4 w-full"
           >
-            {/* Holiday Search Component */}
-            <HolidaySearch variant="hero" onSearch={onSearch} />
+            {/* Holiday Search Component or Children */}
+            {children ? children : <HolidaySearch variant="hero" onSearch={onSearch} />}
           </motion.div>
         </div>
       </div>

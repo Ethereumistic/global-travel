@@ -8,6 +8,11 @@ import { Holiday } from '@/lib/types-holiday';
 import { ALL_COUNTRIES } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { ContactForm } from '@/components/contact/contact-form';
+import { useMediaQuery } from '@/hooks/use-media-query';
 
 export default function HomePage() {
   const [allHolidays, setAllHolidays] = useState<Holiday[]>([]);
@@ -15,6 +20,18 @@ export default function HomePage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [displayCount, setDisplayCount] = useState(8);
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const showContactForm = searchParams.get('action') === 'contact';
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  const handleCloseContact = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('action');
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  };
 
   useEffect(() => {
     const fetchHolidays = async () => {
@@ -63,8 +80,20 @@ export default function HomePage() {
   return (
     <div>
       <div className='-mt-20'>
-        <HeroVideo onSearch={handleSearch} />
+        <HeroVideo onSearch={handleSearch}>
+          {showContactForm && isDesktop && (
+            <div className="w-full max-w-4xl mx-auto pt-20 pb-10">
+              <ContactForm onClose={handleCloseContact} />
+            </div>
+          )}
+        </HeroVideo>
       </div>
+
+      <Dialog open={showContactForm && !isDesktop} onOpenChange={(open) => !open && handleCloseContact()}>
+        <DialogContent className="p-0 border-none bg-transparent shadow-none max-w-[95vw] w-full max-h-[90vh] overflow-y-auto">
+          <ContactForm onClose={handleCloseContact} />
+        </DialogContent>
+      </Dialog>
 
       {/* Holidays Section */}
       <div id="holidays-section" className="container mx-auto py-12 px-4">
@@ -79,9 +108,9 @@ export default function HomePage() {
           <h2 className="text-3xl font-bold tracking-tight text-slate-900">
             {selectedCountry ? `Почивки в ${countryName}` : "Препоръчани Почивки"}
           </h2>
-          <span className="ml-auto text-sm text-muted-foreground bg-white px-3 py-1 rounded-full border shadow-sm">
+          {/* <span className="ml-auto text-sm text-muted-foreground bg-white px-3 py-1 rounded-full border shadow-sm">
             {filteredHolidays.length} {filteredHolidays.length === 1 ? 'резултат' : 'резултата'}
-          </span>
+          </span> */}
         </div>
 
         {loading ? (
