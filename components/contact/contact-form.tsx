@@ -181,114 +181,123 @@ export function ContactForm({ onClose }: ContactFormProps) {
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 
                         {/* Personal Info Section */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormField
-                                control={form.control}
-                                name="fullName"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-gray-200">Име и Фамилия <span className="text-red-500">*</span></FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="Иван Иванов"
-                                                className="h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus-visible:ring-white/30"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="email"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-gray-200">Email <span className="text-red-500">*</span></FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="ivan@example.com"
-                                                className="h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus-visible:ring-white/30"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="phone"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-gray-200">Телефон <span className="text-red-500">*</span></FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                placeholder="+359 888 123 456"
-                                                className="h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus-visible:ring-white/30"
-                                                {...field}
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="guests"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-gray-200">Брой Гости <span className="text-red-500">*</span></FormLabel>
-                                        <FormControl>
-                                            <div className="flex items-center gap-3">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="icon"
-                                                    className="h-12 w-12 bg-white/10 border-white/20 text-white hover:bg-white/20"
-                                                    onClick={() => {
-                                                        const val = parseInt(field.value) || 1;
-                                                        if (val > 1) field.onChange((val - 1).toString());
-                                                    }}
-                                                    disabled={parseInt(field.value) <= 1}
-                                                >
-                                                    <Minus className="h-4 w-4" />
-                                                </Button>
-                                                <div className="flex-1 relative">
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <FormField
+                                    control={form.control}
+                                    name="fullName"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-gray-200">Име и Фамилия <span className="text-red-500">*</span></FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="Иван Иванов"
+                                                    className="h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus-visible:ring-white/30"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="email"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-gray-200">Email <span className="text-red-500">*</span></FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="ivan@example.com"
+                                                    className="h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus-visible:ring-white/30"
+                                                    {...field}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="col-span-2">
+                                    <FormField
+                                        control={form.control}
+                                        name="phone"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-gray-200">Телефон <span className="text-red-500">*</span></FormLabel>
+                                                <FormControl>
                                                     <Input
-                                                        type="number"
-                                                        min="1"
-                                                        className="h-12 text-center text-lg font-medium bg-white/10 border-white/20 text-white"
+                                                        placeholder="+359 888 123 456"
+                                                        className="h-12 bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus-visible:ring-white/30"
                                                         {...field}
-                                                        onChange={(e) => {
-                                                            const val = parseInt(e.target.value);
-                                                            if (!isNaN(val) && val >= 1) field.onChange(val.toString());
-                                                            else if (e.target.value === "") field.onChange("");
-                                                        }}
                                                     />
-                                                </div>
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="icon"
-                                                    className="h-12 w-12 bg-white/10 border-white/20 text-white hover:bg-white/20"
-                                                    onClick={() => {
-                                                        const val = parseInt(field.value) || 0;
-                                                        field.onChange((val + 1).toString());
-                                                    }}
-                                                >
-                                                    <Plus className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                <div className="col-span-1">
+                                    <FormField
+                                        control={form.control}
+                                        name="guests"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-gray-200">Гости <span className="text-red-500">*</span></FormLabel>
+                                                <FormControl>
+                                                    <div className="flex items-center gap-1">
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="h-12 w-8 shrink-0 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                                                            onClick={() => {
+                                                                const val = parseInt(field.value) || 1;
+                                                                if (val > 1) field.onChange((val - 1).toString());
+                                                            }}
+                                                            disabled={parseInt(field.value) <= 1}
+                                                        >
+                                                            <Minus className="h-3 w-3" />
+                                                        </Button>
+                                                        <div className="flex-1 relative min-w-0">
+                                                            <Input
+                                                                type="number"
+                                                                min="1"
+                                                                className="h-12 px-1 text-center text-lg font-medium bg-white/10 border-white/20 text-white"
+                                                                {...field}
+                                                                onChange={(e) => {
+                                                                    const val = parseInt(e.target.value);
+                                                                    if (!isNaN(val) && val >= 1) field.onChange(val.toString());
+                                                                    else if (e.target.value === "") field.onChange("");
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="h-12 w-8 shrink-0 bg-white/10 border-white/20 text-white hover:bg-white/20"
+                                                            onClick={() => {
+                                                                const val = parseInt(field.value) || 0;
+                                                                field.onChange((val + 1).toString());
+                                                            }}
+                                                        >
+                                                            <Plus className="h-3 w-3" />
+                                                        </Button>
+                                                    </div>
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         {/* Trip Details Section */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-2 gap-4">
 
                             {/* Destination Search */}
                             <FormField
@@ -296,7 +305,7 @@ export function ContactForm({ onClose }: ContactFormProps) {
                                 name="destination"
                                 render={({ field }) => (
                                     <FormItem className="flex flex-col">
-                                        <FormLabel className="text-gray-200">Желана Дестинация (Опционално)</FormLabel>
+                                        <FormLabel className="text-gray-200 truncate">Дестинация</FormLabel>
                                         <Popover open={openDestination} onOpenChange={setOpenDestination}>
                                             <PopoverTrigger asChild>
                                                 <FormControl>
@@ -304,17 +313,17 @@ export function ContactForm({ onClose }: ContactFormProps) {
                                                         variant="outline"
                                                         role="combobox"
                                                         className={cn(
-                                                            "h-12 justify-between text-left font-normal bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white",
+                                                            "h-12 justify-between text-left font-normal bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white px-3",
                                                             !field.value && "text-gray-400"
                                                         )}
                                                     >
                                                         {field.value ? (
-                                                            <div className="flex items-center gap-2">
+                                                            <div className="flex items-center gap-2 overflow-hidden">
                                                                 {(() => {
                                                                     const data = getCountryData(field.value);
                                                                     return data ? (
                                                                         <>
-                                                                            <div className="relative w-6 h-4 shadow-sm rounded-sm overflow-hidden shrink-0">
+                                                                            <div className="relative w-5 h-3.5 shadow-sm rounded-sm overflow-hidden shrink-0">
                                                                                 <Image
                                                                                     src={data.flagUrl}
                                                                                     alt={data.name}
@@ -322,22 +331,22 @@ export function ContactForm({ onClose }: ContactFormProps) {
                                                                                     className="object-cover"
                                                                                 />
                                                                             </div>
-                                                                            <span className="font-medium text-white">{data.name}</span>
+                                                                            <span className="font-medium text-white truncate">{data.name}</span>
                                                                         </>
                                                                     ) : (
-                                                                        <span className="font-medium text-white">{field.value}</span>
+                                                                        <span className="font-medium text-white truncate">{field.value}</span>
                                                                     );
                                                                 })()}
                                                             </div>
                                                         ) : (
-                                                            <span className="flex items-center gap-2">
-                                                                <Search className="h-4 w-4 opacity-50" />
-                                                                Търсете дестинация...
+                                                            <span className="flex items-center gap-2 truncate">
+                                                                <Search className="h-4 w-4 opacity-50 shrink-0" />
+                                                                <span className="truncate">Търси...</span>
                                                             </span>
                                                         )}
                                                         {field.value && (
                                                             <div
-                                                                className="ml-auto flex items-center justify-center h-5 w-5 rounded-full cursor-pointer hover:bg-white/20"
+                                                                className="ml-1 flex items-center justify-center h-5 w-5 rounded-full cursor-pointer hover:bg-white/20 shrink-0"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     form.setValue("destination", "");
@@ -416,29 +425,30 @@ export function ContactForm({ onClose }: ContactFormProps) {
                                 name="dateRange"
                                 render={({ field }) => (
                                     <FormItem className="flex flex-col">
-                                        <FormLabel className="text-gray-200">Предпочитан Период (Опционално)</FormLabel>
+                                        <FormLabel className="text-gray-200 truncate">Период</FormLabel>
                                         <Popover>
                                             <PopoverTrigger asChild>
                                                 <Button
                                                     id="date"
                                                     variant={"outline"}
                                                     className={cn(
-                                                        "h-12 justify-start text-left font-normal bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white",
+                                                        "h-12 justify-start text-left font-normal bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white px-3",
                                                         !field.value && "text-gray-400"
                                                     )}
                                                 >
-                                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                                    <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
                                                     {field.value?.from ? (
                                                         field.value.to ? (
-                                                            <>
-                                                                {format(field.value.from, "dd MMM yyyy", { locale: bg })} -{" "}
-                                                                {format(field.value.to, "dd MMM yyyy", { locale: bg })}
-                                                            </>
+                                                            <span className="truncate text-xs sm:text-sm">
+                                                                {format(field.value.from, "dd.MM", { locale: bg })} - {format(field.value.to, "dd.MM", { locale: bg })}
+                                                            </span>
                                                         ) : (
-                                                            format(field.value.from, "dd MMM yyyy", { locale: bg })
+                                                            <span className="truncate text-xs sm:text-sm">
+                                                                {format(field.value.from, "dd MMM", { locale: bg })}
+                                                            </span>
                                                         )
                                                     ) : (
-                                                        <span>Изберете дати</span>
+                                                        <span className="truncate">Изберете</span>
                                                     )}
                                                 </Button>
                                             </PopoverTrigger>
