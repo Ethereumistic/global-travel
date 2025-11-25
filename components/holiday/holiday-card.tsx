@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, MapPin, Plane, Clock, Moon, Bus, Euro } from "lucide-react";
+import { Calendar, MapPin, Plane, Clock, Moon, Bus, Euro, Loader2 } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,7 @@ function getTransportNameBg(transportName: string) {
 }
 
 export function HolidayCard({ holiday }: HolidayCardProps) {
+    const [isImageLoaded, setIsImageLoaded] = React.useState(false);
 
     // Format dates
     const formatDate = (dateString: string) => {
@@ -44,13 +45,20 @@ export function HolidayCard({ holiday }: HolidayCardProps) {
         <Link href={`/holidays/${holiday.id}`}>
             <Card className="group flex flex-col h-full overflow-hidden hover:shadow-lg transition-shadow duration-300 pt-0 bg-secondary-foreground/30">
                 <div className="relative h-56 w-full bg-gray-200">
+                    {!isImageLoaded && (
+                        <div className="absolute inset-0 z-10 flex items-center justify-center bg-gray-100">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
+                        </div>
+                    )}
                     {holiday.main_image?.image ? (
                         <Image
                             src={holiday.main_image.image}
                             alt={holiday.title}
                             fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            className={`object-cover transition-transform duration-300 group-hover:scale-105 ${isImageLoaded ? "opacity-100" : "opacity-0"
+                                }`}
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            onLoad={() => setIsImageLoaded(true)}
                         />
                     ) : (
                         <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-300 to-gray-400">
@@ -137,5 +145,5 @@ export function HolidayCard({ holiday }: HolidayCardProps) {
                 </CardFooter>
             </Card>
         </Link>
-    );
+        );
 }
