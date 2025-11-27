@@ -35,7 +35,7 @@ export default async function HolidaysPage(props: PageProps) {
                 title="Почивки и Екскурзии"
                 subtitle="Открийте мечтаната почивка с нашите специални предложения."
                 icon={<Palmtree className="h-8 w-8 text-white" />}
-                className="h-96"
+                className="h-96 rounded-b-xl"
                 searchType="holidays"
             />
 

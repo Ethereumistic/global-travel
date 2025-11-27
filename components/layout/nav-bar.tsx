@@ -145,7 +145,9 @@ export default function NavBar() {
     if (isDetailPage) {
       const sidebar = document.getElementById("booking-sidebar");
       if (sidebar) {
-        sidebar.scrollIntoView({ behavior: "smooth" });
+        const yOffset = -82;
+        const y = sidebar.getBoundingClientRect().top + window.scrollY + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
         return;
       }
     }

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronsUpDown, Loader2, Search } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -85,6 +85,11 @@ export function HolidaySearch({ variant = "hero", className, onSearch }: Holiday
         }
     };
 
+    const clearSelection = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setValue("");
+    };
+
     const selectedOption = options.find((option) => option.value === value);
 
     // Hero variant (for home page)
@@ -103,7 +108,7 @@ export function HolidaySearch({ variant = "hero", className, onSearch }: Holiday
                                 variant="outline"
                                 role="combobox"
                                 aria-expanded={open}
-                                className="w-full justify-between bg-white/90 text-black hover:bg-white h-12"
+                                className="w-full justify-between bg-white/90 text-black hover:bg-white h-12 group"
                                 disabled={loading}
                             >
                                 {loading ? (
@@ -112,18 +117,29 @@ export function HolidaySearch({ variant = "hero", className, onSearch }: Holiday
                                         Зареждане...
                                     </div>
                                 ) : selectedOption ? (
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 flex-1 overflow-hidden">
                                         <img
                                             src={`https://flagcdn.com/${selectedOption.value}.svg`}
                                             alt="flag"
-                                            className="w-6 h-auto object-cover border border-gray-200"
+                                            className="w-6 h-auto object-cover border border-gray-200 shrink-0"
                                         />
                                         <span className="truncate font-medium">{selectedOption.label}</span>
                                     </div>
                                 ) : (
                                     "Всички дестинации..."
                                 )}
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                <div className="flex items-center ml-2 shrink-0">
+                                    {value && !loading && (
+                                        <div
+                                            role="button"
+                                            onClick={clearSelection}
+                                            className="mr-2 p-1 rounded-full hover:bg-slate-200 text-slate-500 transition-colors"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </div>
+                                    )}
+                                    <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                                </div>
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-var(--radix-popover-trigger-width) p-0">
