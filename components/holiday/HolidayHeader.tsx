@@ -10,11 +10,23 @@ import { Button } from "@/components/ui/button";
 import type { Holiday } from "@/lib/types-holiday";
 import { ALL_COUNTRIES } from "@/lib/constants";
 
-// Fallback images in case the API returns an empty array
-const FALLBACK_HERO_IMAGES = [
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/turkey.png",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/brazil.png",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/rome.png",
+const CDN_BASE_URL = "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/";
+
+const HERO_IMAGES_LIST = [
+    "brazil.png",
+    "cambodia.png",
+    "china.png",
+    "egypt.png",
+    "germany.png",
+    "india.png",
+    "japan.png",
+    "mexico.png",
+    "peru.png",
+    "petra.png",
+    "romania.png",
+    "rome.png",
+    "spain.png",
+    "turkey.png",
 ];
 
 interface HolidayHeaderProps {
@@ -25,17 +37,10 @@ interface HolidayHeaderProps {
 export function HolidayHeader({ holiday, className }: HolidayHeaderProps) {
     const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
 
-    // derive images from the holiday prop
+    // Use all CDN images for the slider
     const heroImages = React.useMemo(() => {
-        // Map the API response structure to an array of strings
-        const apiImages = holiday.images?.map((img: any) => img.image) || [];
-        if (apiImages.length === 0 && holiday.main_image) {
-            apiImages.push(holiday.main_image.image);
-        }
-
-        // Return API images (limit to first 6 for performance) or fallback
-        return apiImages.length > 0 ? apiImages.slice(0, 6) : FALLBACK_HERO_IMAGES;
-    }, [holiday.images, holiday.main_image]);
+        return HERO_IMAGES_LIST.map(img => `${CDN_BASE_URL}${img}`);
+    }, []);
 
     // Background Image Rotation
     React.useEffect(() => {
@@ -84,26 +89,38 @@ export function HolidayHeader({ holiday, className }: HolidayHeaderProps) {
             )}
         >
             {/* Background Images using Next.js <Image /> */}
+            {/* Background Images using Next.js <Image /> */}
             <div className="absolute inset-0 z-0">
-                {heroImages.map((img, index) => (
-                    <div
-                        key={`${img}-${index}`}
-                        className={cn(
-                            "absolute inset-0 transition-opacity duration-1000 ease-in-out",
-                            index === currentImageIndex ? "opacity-100" : "opacity-0"
-                        )}
-                    >
-                        <Image
-                            src={img}
-                            alt={`Holiday view ${index + 1}`}
-                            fill
-                            className="object-cover"
-                            priority={index === 0}
-                        />
-                    </div>
-                ))}
+                {/* Only render current and next image for performance */}
+                {heroImages.map((img, index) => {
+                    // Only render if it's the current image or the immediate next one (for smooth transition)
+                    // or if it's the first image (LCP optimization)
+                    const shouldRender = index === currentImageIndex || index === (currentImageIndex + 1) % heroImages.length;
+
+                    if (!shouldRender && index !== 0) return null;
+
+                    return (
+                        <div
+                            key={`${img}-${index}`}
+                            className={cn(
+                                "absolute inset-0 transition-opacity duration-1000 ease-in-out",
+                                index === currentImageIndex ? "opacity-100" : "opacity-0"
+                            )}
+                        >
+                            <Image
+                                src={img}
+                                alt={`Holiday view ${index + 1}`}
+                                fill
+                                className="object-cover"
+                                priority={index === 0}
+                                loading={index === 0 ? "eager" : "lazy"}
+                                sizes="100vw"
+                            />
+                        </div>
+                    );
+                })}
                 {/* Dark Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/60 to-black/50 backdrop-blur-[2px]" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/60 to-black/50 " />
             </div>
 
             {/* Content Container */}

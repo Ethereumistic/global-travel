@@ -1,11 +1,9 @@
-"use client";
-
 import * as React from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { notFound } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Info } from "lucide-react";
-import type { Holiday } from "@/lib/types-holiday";
+import { getHolidayById } from "@/app/actions/get-holidays";
 import { HolidayBookingSidebar } from "@/components/holiday/holiday-booking-sidebar";
 import { HolidayHeader } from "@/components/holiday/HolidayHeader";
 import { HolidayInfoGrid } from "@/components/holiday/HolidayInfoGrid";
@@ -17,45 +15,25 @@ import { CityRouteCarousel } from "@/components/holiday/CityRouteCarousel";
 import { DateInfoWidget } from "@/components/holiday/DateInfoWidget";
 import { YachtGallery } from "@/components/yacht/YachtGallery";
 
-export default function HolidayDetailPage({
+export default async function HolidayDetailPage({
     params,
 }: {
     params: Promise<{ id: string }>;
 }) {
-    const { id } = React.use(params);
-    const [holiday, setHoliday] = React.useState<Holiday | null>(null);
-    const [isLoading, setIsLoading] = React.useState(true);
+    const { id } = await params;
+    const holiday = await getHolidayById(id);
 
-    React.useEffect(() => {
-        async function fetchHolidayDetail() {
-            setIsLoading(true);
-            try {
-                const response = await fetch(`/api/holidays/${id}`);
-                if (!response.ok) throw new Error("Error");
-                const data = await response.json();
-                setHoliday(data);
-            } catch (err: unknown) {
-                console.error(err);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        if (id) fetchHolidayDetail();
-    }, [id]);
-
-    // Prepare images for gallery
-    // const galleryImages = React.useMemo(() => {
-    //     if (!holiday) return [];
-    //     return holiday.images?.map(img => img.image) || (holiday.main_image ? [holiday.main_image.image] : []);
-    // }, [holiday]);
+    if (!holiday) {
+        notFound();
+    }
 
     // Extract cities for carousel (flattened and deduplicated consecutive)
-    const routeCities = React.useMemo(() => {
+    const routeCities = (() => {
         if (!holiday?.daily_program) return [];
 
         const allDestinations: { id: string; name: string }[] = [];
 
-        holiday.daily_program.forEach(day => {
+        holiday.daily_program.forEach((day: any) => {
             day.destinations?.forEach((dest: { destination_name: string; destination_id: string; destination_name_str: string }) => {
                 const name = dest.destination_name_str || dest.destination_name;
                 const id = dest.destination_id || dest.destination_name;
@@ -70,12 +48,10 @@ export default function HolidayDetailPage({
         });
 
         return allDestinations;
-    }, [holiday]);
+    })();
 
     // Determine which tabs should be visible based on available data
-    const availableTabs = React.useMemo(() => {
-        if (!holiday) return [];
-
+    const availableTabs = (() => {
         const tabs = [];
 
         // Program tab - check if daily_program exists and has items
@@ -104,24 +80,10 @@ export default function HolidayDetailPage({
         }
 
         return tabs;
-    }, [holiday]);
+    })();
 
     // Get the default tab (first available tab)
     const defaultTab = availableTabs.length > 0 ? availableTabs[0].value : 'program';
-
-    if (isLoading || !holiday) {
-        return (
-            <div className="container py-20 space-y-8">
-                <Skeleton className="h-96 w-full rounded-b-xl" />
-                <div className="container mx-auto px-4 mt-8">
-                    <div className="grid grid-cols-3 gap-8">
-                        <Skeleton className="col-span-2 h-96" />
-                        <Skeleton className="col-span-1 h-96" />
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="min-h-screen bg-slate-50/50 pb-2">
@@ -225,7 +187,7 @@ export default function HolidayDetailPage({
                                             <TabsContent value="useful">
                                                 <Card>
                                                     <CardContent className="pt-6 space-y-4">
-                                                        {holiday.useful_info.map((info, idx) => (
+                                                        {holiday.useful_info.map((info: any, idx: number) => (
                                                             <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-slate-50">
                                                                 <Info className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
                                                                 <div>
@@ -253,7 +215,7 @@ export default function HolidayDetailPage({
                     </div>
 
                     {/* RIGHT COLUMN - SIDEBAR */}
-                    <div className="lg:col-span-2 lg:-translate-x-4">
+                    <div id="booking-sidebar" className="lg:col-span-2 lg:-translate-x-4">
                         <HolidayBookingSidebar holiday={holiday} />
                     </div>
 

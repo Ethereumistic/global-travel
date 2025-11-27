@@ -1,107 +1,78 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Holiday } from "@/lib/types-holiday";
 import { HolidayCard } from "@/components/holiday/holiday-card";
-import { HolidayCardSkeleton } from "@/components/holiday/holiday-card-skeleton";
-import { getHolidays } from "@/app/actions/get-holidays";
-import { Palmtree } from "lucide-react";
+import { Palmtree, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface HolidayListProps {
-    initialHolidays: Holiday[];
-    countryFilter: string | null;
+    allHolidays: Holiday[];
 }
 
-const LIMIT = 12;
+const INITIAL_DISPLAY_COUNT = 12;
+const LOAD_MORE_COUNT = 12;
 
-export function HolidayList({ initialHolidays, countryFilter }: HolidayListProps) {
-    const [holidays, setHolidays] = useState<Holiday[]>(initialHolidays);
-    const [offset, setOffset] = useState(initialHolidays.length);
-    const [loading, setLoading] = useState(false);
-    const [hasMore, setHasMore] = useState(true);
-    const observer = useRef<IntersectionObserver | null>(null);
-    const lastHolidayElementRef = useCallback((node: HTMLDivElement | null) => {
-        if (loading) return;
-        if (observer.current) observer.current.disconnect();
-        observer.current = new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting && hasMore) {
-                loadMoreHolidays();
-            }
-        });
-        if (node) observer.current.observe(node);
-    }, [loading, hasMore]);
+export function HolidayList({ allHolidays }: HolidayListProps) {
+    const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT);
+    const [loadingMore, setLoadingMore] = useState(false);
 
-    // Reset state when country filter changes
-    // Actually, since this component is likely re-mounted when the page params change (key={countryFilter} in parent),
-    // we might not need this useEffect if the parent handles the key.
-    // But to be safe, if the parent doesn't unmount us:
+    // Reset display count when the underlying data changes (e.g. filter change)
     useEffect(() => {
-        setHolidays(initialHolidays);
-        setOffset(initialHolidays.length);
-        setHasMore(true);
-    }, [initialHolidays, countryFilter]);
+        setDisplayCount(INITIAL_DISPLAY_COUNT);
+    }, [allHolidays]);
 
-
-    const loadMoreHolidays = async () => {
-        setLoading(true);
-        try {
-            // If we filtered client-side initially, our offset might be wrong for the API if the API doesn't filter.
-            // But we assumed in the server action that we are passing params to API.
-            // If the API doesn't support filtering, this whole pagination is tricky.
-            // Assuming the server action handles it best effort.
-
-            const newHolidays = await getHolidays(LIMIT, offset, countryFilter);
-
-            if (newHolidays.length < LIMIT) {
-                setHasMore(false);
-            }
-
-            setHolidays(prev => [...prev, ...newHolidays]);
-            setOffset(prev => prev + LIMIT);
-        } catch (error) {
-            console.error("Error loading more holidays:", error);
-        } finally {
-            setLoading(false);
-        }
+    const handleShowMore = () => {
+        setLoadingMore(true);
+        // Simulate a small delay for better UX, similar to root page
+        setTimeout(() => {
+            setDisplayCount(prev => prev + LOAD_MORE_COUNT);
+            setLoadingMore(false);
+        }, 300);
     };
+
+    const displayedHolidays = allHolidays.slice(0, displayCount);
+    const hasMore = displayedHolidays.length < allHolidays.length;
 
     return (
         <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {holidays.map((holiday, index) => {
-                    if (holidays.length === index + 1) {
-                        return (
-                            <div ref={lastHolidayElementRef} key={`${holiday.id}-${index}`} className="h-full">
-                                <HolidayCard holiday={holiday} />
-                            </div>
-                        );
-                    } else {
-                        return (
-                            <div key={`${holiday.id}-${index}`} className="h-full">
-                                <HolidayCard holiday={holiday} />
-                            </div>
-                        );
-                    }
-                })}
-
-                {loading && (
-                    <>
-                        {Array.from({ length: 4 }).map((_, i) => (
-                            <div key={`skeleton-${i}`} className="h-full">
-                                <HolidayCardSkeleton />
-                            </div>
-                        ))}
-                    </>
-                )}
+                {displayedHolidays.map((holiday) => (
+                    <div key={holiday.id} className="h-full">
+                        <HolidayCard holiday={holiday} />
+                    </div>
+                ))}
             </div>
 
-            {!hasMore && holidays.length > 0 && (
+            {hasMore && (
+                <div className="flex justify-center mt-12">
+                    <Button
+                        onClick={handleShowMore}
+                        disabled={loadingMore}
+                        size="lg"
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-medium shadow-lg transition-all hover:shadow-xl"
+                    >
+                        {loadingMore ? (
+                            <>
+                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                Зареждане...
+                            </>
+                        ) : (
+                            <>
+                                Покажи още ({Math.min(LOAD_MORE_COUNT, allHolidays.length - displayCount)})
+                            </>
+                        )}
+                    </Button>
+                </div>
+            )}
+
+            {!hasMore && allHolidays.length > 0 && (
                 <div className="text-center py-12 text-muted-foreground">
                     <p>Това са всички предложения за момента.</p>
                 </div>
             )}
 
-            {holidays.length === 0 && !loading && (
+            {allHolidays.length === 0 && (
                 <div className="text-center py-20">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
                         <Palmtree className="h-8 w-8 text-slate-400" />

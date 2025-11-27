@@ -121,7 +121,7 @@ export default function YachtDetailPage({
           </div>
 
           {/* RIGHT COLUMN (Sidebar) */}
-          <div className="lg:col-span-1">
+          <div id="booking-sidebar" className="lg:col-span-1">
             <YachtBookingSidebar yacht={yacht} externalCountryCode={urlCountryCode} />
           </div>
 

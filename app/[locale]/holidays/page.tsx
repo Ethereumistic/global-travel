@@ -21,8 +21,8 @@ export default async function HolidaysPage(props: PageProps) {
         ? resolvedParams.country.toLowerCase()
         : null;
 
-    // Fetch initial batch of holidays
-    const initialHolidays = await getHolidays(12, 0, countryFilter);
+    // Fetch all matching holidays (up to 1000) for client-side pagination
+    const allHolidays = await getHolidays(1000, 0, countryFilter);
 
     const countryName = countryFilter
         ? ALL_COUNTRIES.find(c => c.abbr === countryFilter)?.name || countryFilter.toUpperCase()
@@ -54,8 +54,7 @@ export default async function HolidaysPage(props: PageProps) {
                 </div>
 
                 <HolidayList
-                    initialHolidays={initialHolidays}
-                    countryFilter={countryFilter}
+                    allHolidays={allHolidays}
                 />
             </div>
         </main>

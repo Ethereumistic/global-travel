@@ -3,6 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
+import { Loader2 } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -18,6 +19,39 @@ interface YachtGalleryProps {
   images: YachtImage[];
   title: string;
 }
+
+// Helper component for Image with loading state
+const ImageWithLoader = ({
+  src,
+  alt,
+  priority = false,
+  className,
+}: {
+  src: string;
+  alt: string;
+  priority?: boolean;
+  className?: string;
+}) => {
+  const [isLoading, setIsLoading] = React.useState(true);
+
+  return (
+    <>
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-100 z-10">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      )}
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        className={className}
+        priority={priority}
+        onLoad={() => setIsLoading(false)}
+      />
+    </>
+  );
+};
 
 export function YachtGallery({ mainImage, images, title }: YachtGalleryProps) {
   const [mainCarouselApi, setMainCarouselApi] = React.useState<CarouselApi>();
@@ -51,12 +85,11 @@ export function YachtGallery({ mainImage, images, title }: YachtGalleryProps) {
             {allImages.map((img, idx) => (
               <CarouselItem key={img.id || idx}>
                 <div className={`relative w-full ${images.length === 0 ? "aspect-[21/9]" : "aspect-square"} rounded-xl ${images.length > 0 ? "lg:rounded-none lg:rounded-l-xl" : ""} overflow-hidden shadow-lg bg-slate-100`}>
-                  <Image
+                  <ImageWithLoader
                     src={img.image || "/placeholder.svg"}
                     alt={`${title} ${idx + 1}`}
-                    fill
-                    className="object-cover"
                     priority={idx === 0}
+                    className="object-cover"
                   />
                 </div>
               </CarouselItem>
@@ -92,10 +125,9 @@ export function YachtGallery({ mainImage, images, title }: YachtGalleryProps) {
                   onClick={() => mainCarouselApi?.scrollTo(1)}
                   className="relative w-full h-full overflow-hidden group cursor-pointer shadow-md hover:shadow-lg transition-shadow bg-slate-100 rounded-r-xl col-span-2 row-span-2"
                 >
-                  <Image
+                  <ImageWithLoader
                     src={images[0].image || "/placeholder.svg"}
                     alt={`${title} sub 1`}
-                    fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
@@ -112,10 +144,9 @@ export function YachtGallery({ mainImage, images, title }: YachtGalleryProps) {
                   className={`relative w-full h-full overflow-hidden group cursor-pointer shadow-md hover:shadow-lg transition-shadow bg-slate-100 ${idx === 0 ? "rounded-none" : "rounded-r-xl"}`}
                   style={{ gridRow: "span 2" }}
                 >
-                  <Image
+                  <ImageWithLoader
                     src={img.image || "/placeholder.svg"}
                     alt={`${title} sub ${idx + 1}`}
-                    fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
@@ -147,10 +178,9 @@ export function YachtGallery({ mainImage, images, title }: YachtGalleryProps) {
                   className={`relative w-full aspect-square overflow-hidden group cursor-pointer shadow-md hover:shadow-lg transition-shadow bg-slate-100 ${idx === 1 ? "rounded-tr-xl" : idx === 3 ? "rounded-br-xl" : ""
                     }`}
                 >
-                  <Image
+                  <ImageWithLoader
                     src={img.image || "/placeholder.svg"}
                     alt={`${title} grid ${idx + 1}`}
-                    fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />

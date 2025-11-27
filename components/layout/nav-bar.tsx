@@ -92,11 +92,11 @@ export default function NavBar() {
   }, [mobileOpen]);
 
   const navItems = [
-    {
-      label: "Дестинации",
-      href: "/destinations",
-      icon: <MapPin className="size-7 md:size-5 text-white" />,
-    },
+    // {
+    //   label: "Дестинации",
+    //   href: "/destinations",
+    //   icon: <MapPin className="size-7 md:size-5 text-white" />,
+    // },
     {
       label: "Екскурзии",
       href: "/holidays",
@@ -129,6 +129,27 @@ export default function NavBar() {
 
   const handleReserveClick = () => {
     setMobileOpen(false);
+
+    // Check if we are on a detail page (holiday or yacht with ID)
+    // Regex matches /holidays/UUID or /yachts/UUID (where UUID is approx 36 chars, or just check for ID presence)
+    // Simple check: starts with /holidays/ or /yachts/ and has a segment after it.
+    // We also need to handle locale prefixes like /en/holidays/... or /bg/holidays/...
+
+    // Remove locale prefix for checking path structure
+    const pathWithoutLocale = pathname.replace(/^\/(en|bg)/, "") || "/";
+
+    const isDetailPage =
+      (pathWithoutLocale.startsWith("/holidays/") && pathWithoutLocale.split("/").length > 2) ||
+      (pathWithoutLocale.startsWith("/yachts/") && pathWithoutLocale.split("/").length > 2);
+
+    if (isDetailPage) {
+      const sidebar = document.getElementById("booking-sidebar");
+      if (sidebar) {
+        sidebar.scrollIntoView({ behavior: "smooth" });
+        return;
+      }
+    }
+
     const isHomePage = pathname === "/" || pathname === "/en" || pathname === "/bg";
     if (isHomePage) {
       const params = new URLSearchParams(searchParams.toString());
@@ -139,7 +160,7 @@ export default function NavBar() {
       }
       router.push(`${pathname}?${params.toString()}`, { scroll: false });
     } else {
-      // If not on home page, go to home with contact action
+      // If not on home page and not on detail page (or sidebar not found), go to home with contact action
       const localePrefix = pathname.startsWith("/en") ? "/en" : pathname.startsWith("/bg") ? "/bg" : "";
       router.push(`${localePrefix}/?action=contact`);
     }
