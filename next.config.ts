@@ -37,7 +37,14 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "**", // Allows all images from this host
       },
+      {
+        protocol: "https",
+        hostname: "cdn.sanity.io",
+        port: "",
+        pathname: "**", // Allows all images from this host
+      },
     ],
-  },};
+  },
+};
 
 export default withNextIntl(nextConfig);

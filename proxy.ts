@@ -17,5 +17,5 @@ export function proxy(request: NextRequest) {
 
 // 4. Оставяме config-а, за да ИГНОРИРАМЕ 'simpletest'
 export const config = {
-  matcher: ['/((?!api|_next|_vercel|simpletest|.*\\..*).*)']
+  matcher: ['/((?!api|_next|_vercel|studio|.*\\..*).*)']
 };
