@@ -16,7 +16,7 @@ type Props = {
   children?: React.ReactNode;
 };
 
-const BULGARIAN_SLOGANS = [
+export const BULGARIAN_SLOGANS = [
   "Твоето следващо приключение те очаква.",
   "Създай спомени, които остават завинаги.",
   "Светът е книга. Отвори нова страница.",

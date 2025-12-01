@@ -18,6 +18,8 @@ import {
   Sailboat,
   Search,
   Ticket,
+  Hotel,
+  Car,
 } from "lucide-react"
 import Link from "next/link"
 import { useTheme } from "next-themes"
@@ -98,14 +100,24 @@ export default function NavBar() {
     //   icon: <MapPin className="size-7 md:size-5 text-white" />,
     // },
     {
-      label: "Екскурзии",
+      label: "Екскурзии и Почивки",
       href: "/holidays",
       icon: <TreePalm className="size-7 md:size-5 text-white" />,
+    },
+    {
+      label: "Хотели",
+      href: "/hotels", // Using /flights as a placeholder
+      icon: <Hotel className="size-7 md:size-5 text-white " />,
     },
     {
       label: "Самолетни Билети",
       href: "/flights", // Using /flights as a placeholder
       icon: <Plane className="size-7 md:size-5 text-white " />,
+    },
+    {
+      label: "Rent a Car",
+      href: "/rent-a-car", // Using /flights as a placeholder
+      icon: <Car className="size-7 md:size-5 text-white " />,
     },
     {
       label: "Яхти",
@@ -188,7 +200,8 @@ export default function NavBar() {
             pathname === "/bg/holidays" || pathname === "/en/holidays" ||
             pathname === "/en/destinations" || pathname === "/bg/destinations" ||
             pathname === "/bg/flights" || pathname === "/en/flights" ||
-            pathname === "/bg/yachts" || pathname === "/en/yachts") &&
+            pathname === "/bg/yachts" || pathname === "/en/yachts" ||
+            pathname === "/bg/card" || pathname === "/en/card") &&
           "md:bg-transparent md:backdrop-filter-none md:border-transparent"
         )}
       >

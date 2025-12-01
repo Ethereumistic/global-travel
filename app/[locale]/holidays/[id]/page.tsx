@@ -13,6 +13,7 @@ import { HolidayAccommodations } from "@/components/holiday/HolidayAccommodation
 import { HolidayAdditionalServices } from "@/components/holiday/HolidayAdditionalServices";
 import { CityRouteCarousel } from "@/components/holiday/CityRouteCarousel";
 import { DateInfoWidget } from "@/components/holiday/DateInfoWidget";
+import { HolidayHotels } from "@/components/holiday/HolidayHotels";
 import { YachtGallery } from "@/components/yacht/YachtGallery";
 
 export default async function HolidayDetailPage({
@@ -57,6 +58,11 @@ export default async function HolidayDetailPage({
         // Program tab - check if daily_program exists and has items
         if (holiday.daily_program && holiday.daily_program.length > 0) {
             tabs.push({ value: 'program', label: 'Програма' });
+        }
+
+        // Hotels tab - check if holiday_trips exists and has items
+        if (holiday.holiday_trips && holiday.holiday_trips.length > 0) {
+            tabs.push({ value: 'hotels', label: 'Хотели' });
         }
 
         // Included tab - check if included or not_included exists
@@ -158,6 +164,13 @@ export default async function HolidayDetailPage({
                                         {holiday.daily_program && holiday.daily_program.length > 0 && (
                                             <TabsContent value="program" className="space-y-6">
                                                 <HolidayProgram program={holiday.daily_program} />
+                                            </TabsContent>
+                                        )}
+
+                                        {/* HOTELS TAB */}
+                                        {holiday.holiday_trips && holiday.holiday_trips.length > 0 && (
+                                            <TabsContent value="hotels" className="space-y-6">
+                                                <HolidayHotels trips={holiday.holiday_trips} />
                                             </TabsContent>
                                         )}
 

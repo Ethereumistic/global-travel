@@ -26,7 +26,7 @@ interface PageSliderProps {
   subtitle: string;
   icon: React.ReactNode;
   className?: string;
-  searchType: "yachts" | "excursions" | "holidays" | "none";
+  searchType: "yachts" | "excursions" | "holidays" | "hotels" | "none";
 }
 
 interface CountryOption {
@@ -113,6 +113,28 @@ export function PageSlider({
                   uniqueCountries.set(countryCodeLower, {
                     value: countryCodeLower,
                     label: countryData ? countryData.name : holiday.country.name,
+                  });
+                }
+              }
+            });
+            setOptions(Array.from(uniqueCountries.values()));
+          }
+        } else if (searchType === "hotels") {
+          const res = await fetch("/api/hotels?limit=100");
+          const data = await res.json();
+
+          if (data.hotels) {
+            const uniqueCountries = new Map<string, CountryOption>();
+            data.hotels.forEach((hotel: any) => {
+              if (hotel.country_code) {
+                const countryCodeLower = hotel.country_code.toLowerCase();
+                const countryData = ALL_COUNTRIES.find(
+                  (c) => c.abbr === countryCodeLower
+                );
+                if (countryData && !uniqueCountries.has(countryCodeLower)) {
+                  uniqueCountries.set(countryCodeLower, {
+                    value: countryCodeLower,
+                    label: countryData.name,
                   });
                 }
               }

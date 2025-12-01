@@ -4,10 +4,10 @@ import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import './globals.css';
-import NavBar from '@/components/layout/nav-bar';
+import NavBarWithPathCheck from '@/components/layout/nav-bar-wrapper';
 import { ThemeProvider } from "next-themes";
 import { Balsamiq_Sans, Geologica } from 'next/font/google'
-import Footer from '@/components/layout/footer';
+import FooterWithPathCheck from '@/components/layout/footer-wrapper';
 
 
 const balsamiq = Balsamiq_Sans({
@@ -47,10 +47,10 @@ export default async function LocaleLayout({
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
 
             <React.Suspense fallback={null}>
-              <NavBar />
+              <NavBarWithPathCheck />
             </React.Suspense>
             {children}
-            <Footer />
+            <FooterWithPathCheck />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

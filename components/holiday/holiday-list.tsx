@@ -50,7 +50,8 @@ export function HolidayList({ allHolidays }: HolidayListProps) {
                         onClick={handleShowMore}
                         disabled={loadingMore}
                         size="lg"
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-medium shadow-lg transition-all hover:shadow-xl"
+                        variant="default"
+                        className=""
                     >
                         {loadingMore ? (
                             <>
@@ -59,7 +60,8 @@ export function HolidayList({ allHolidays }: HolidayListProps) {
                             </>
                         ) : (
                             <>
-                                Покажи още ({Math.min(LOAD_MORE_COUNT, allHolidays.length - displayCount)})
+                                {/* Покажи още ({Math.min(LOAD_MORE_COUNT, allHolidays.length - displayCount)}) */}
+                                Покажи още
                             </>
                         )}
                     </Button>

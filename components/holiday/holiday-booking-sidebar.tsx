@@ -30,6 +30,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
     Select,
     SelectContent,
@@ -40,11 +41,39 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
-import type { Holiday } from "@/lib/types-holiday";
+import type { Holiday, HolidayPrice } from "@/lib/types-holiday";
 import { ALL_COUNTRIES } from "@/lib/constants";
 
 interface HolidayBookingSidebarProps {
     holiday: Holiday;
+}
+
+// Helper to safely extract price and currency
+function getPrice(priceObj: any): { value: number; currency: string } | null {
+    if (!priceObj) return null;
+
+    // 1. Try standard structure: total_price.main.value
+    if (priceObj.main && typeof priceObj.main.value === 'number') {
+        return {
+            value: priceObj.main.value,
+            currency: priceObj.main.currency || "EUR"
+        };
+    }
+
+    // 2. Try flat structure: total_price.value
+    if (typeof priceObj.value === 'number') {
+        return {
+            value: priceObj.value,
+            currency: priceObj.display_currency || priceObj.currency || "EUR"
+        };
+    }
+
+    // 3. Try direct number (unlikely but possible in some legacy data)
+    if (typeof priceObj === 'number') {
+        return { value: priceObj, currency: "EUR" };
+    }
+
+    return null;
 }
 
 export function HolidayBookingSidebar({ holiday }: HolidayBookingSidebarProps) {
@@ -77,6 +106,7 @@ export function HolidayBookingSidebar({ holiday }: HolidayBookingSidebarProps) {
         phone: z.string().min(6, { message: "Невалиден телефон" }),
         guests: z.number().min(1, { message: "Поне 1 гост" }),
         selectedTripId: z.string().min(1, { message: "Моля изберете дата" }),
+        message: z.string().optional(),
     });
 
     const form = useForm<z.infer<typeof FormSchema>>({
@@ -87,23 +117,49 @@ export function HolidayBookingSidebar({ holiday }: HolidayBookingSidebarProps) {
             phone: "",
             guests: 2,
             selectedTripId: "",
+            message: "",
         },
     });
 
     const selectedTripId = form.watch("selectedTripId");
 
+    // Unified trips list including fallback
+    const allTrips = React.useMemo(() => {
+        // If we have real trips, use them
+        if (holiday.trips && holiday.trips.length > 0) {
+            return holiday.trips;
+        }
+
+        // Otherwise, create a fallback trip if available_from exists
+        if (holiday.available_from) {
+            return [{
+                trip_id: 'fallback',
+                departure_date: holiday.available_from,
+                total_price: holiday.min_price, // Use min_price as the price source
+                // Add other required fields with dummy/null values to satisfy TS if needed, 
+                // though casting or loose typing might be easier here given the context.
+                // We'll treat it as a partial trip object.
+            } as any];
+        }
+
+        return [];
+    }, [holiday.trips, holiday.available_from, holiday.min_price]);
+
     const selectedTrip = React.useMemo(() => {
-        return holiday.trips?.find(t => t.trip_id === selectedTripId);
-    }, [holiday.trips, selectedTripId]);
+        return allTrips.find(t => t.trip_id === selectedTripId);
+    }, [allTrips, selectedTripId]);
 
     const calculation = React.useMemo(() => {
         if (!selectedTrip) return null;
-        const pricePerPerson = selectedTrip.total_price.main.value;
+
+        const priceData = getPrice(selectedTrip.total_price);
+        if (!priceData) return null;
+
         const guests = form.getValues("guests");
         return {
-            total: pricePerPerson * guests,
-            perPerson: pricePerPerson,
-            currency: selectedTrip.total_price.main.currency
+            total: priceData.value * guests,
+            perPerson: priceData.value,
+            currency: priceData.currency
         };
     }, [selectedTrip, form.watch("guests")]);
 
@@ -133,6 +189,14 @@ export function HolidayBookingSidebar({ holiday }: HolidayBookingSidebarProps) {
             formData.append("holiday_id", holiday.id);
             formData.append("holiday_title", holiday.title);
             formData.append("destination", countryData.name);
+
+            if (holiday.supplier) {
+                formData.append("supplier", holiday.supplier);
+            }
+
+            if (data.message) {
+                formData.append("message", data.message);
+            }
 
             if (calculation) {
                 formData.append("estimated_total", `${calculation.currency} ${calculation.total}`);
@@ -211,29 +275,22 @@ export function HolidayBookingSidebar({ holiday }: HolidayBookingSidebarProps) {
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 
-                            {/* Trip Selection */}
-                            <FormField
-                                control={form.control}
-                                name="selectedTripId"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Изберете дата на отпътуване</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger className="h-12">
-                                                    <SelectValue placeholder="Изберете дата" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {(() => {
-                                                    // If no trips or trips don't have departure_date, create a fallback option
-                                                    const tripsToShow = holiday.trips && holiday.trips.length > 0
-                                                        ? holiday.trips
-                                                        : holiday.available_from
-                                                            ? [{ trip_id: 'fallback', departure_date: holiday.available_from, total_price: holiday.min_price }]
-                                                            : [];
-
-                                                    return tripsToShow.map((trip) => {
+                            <div className="grid grid-cols-2 gap-3">
+                                {/* Trip Selection */}
+                                <FormField
+                                    control={form.control}
+                                    name="selectedTripId"
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-col">
+                                            <FormLabel className="text-xs uppercase text-slate-500 font-bold">Дата</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger className="h-10 text-xs">
+                                                        <SelectValue placeholder="Изберете" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {allTrips.map((trip) => {
                                                         // Use departure_date or fallback to available_from
                                                         const startDateStr = trip.departure_date || holiday.available_from;
                                                         const startDate = startDateStr ? new Date(startDateStr) : null;
@@ -245,39 +302,37 @@ export function HolidayBookingSidebar({ holiday }: HolidayBookingSidebarProps) {
                                                         };
 
                                                         return (
-                                                            <SelectItem key={trip.trip_id} value={trip.trip_id}>
+                                                            <SelectItem key={trip.trip_id} value={trip.trip_id} className="text-xs">
                                                                 {formatDate(startDate)} - {formatDate(endDate)}
                                                             </SelectItem>
                                                         );
-                                                    });
-                                                })()}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                                    })}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
-                            {/* Guests */}
-                            <FormField
-                                control={form.control}
-                                name="guests"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <div className="flex justify-between items-center mb-2">
-                                            <FormLabel className="text-base font-medium">Гости</FormLabel>
-                                        </div>
-                                        <FormControl>
-                                            <div className="flex items-center gap-3">
-                                                <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0 border-slate-200" onClick={() => handleGuestChange(-1)} disabled={field.value <= 1}><Minus className="h-4 w-4" /></Button>
-                                                <div className="flex-1"><Input {...field} type="number" className="text-center font-bold h-11 text-lg bg-white" onChange={(e) => form.setValue("guests", parseInt(e.target.value))} /></div>
-                                                <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0 border-slate-200" onClick={() => handleGuestChange(1)}><Plus className="h-4 w-4" /></Button>
-                                            </div>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                                {/* Guests */}
+                                <FormField
+                                    control={form.control}
+                                    name="guests"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-xs uppercase text-slate-500 font-bold">Гости</FormLabel>
+                                            <FormControl>
+                                                <div className="flex items-center h-10 border rounded-md px-1 border-slate-200">
+                                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0 hover:bg-slate-100" onClick={() => handleGuestChange(-1)} disabled={field.value <= 1}><Minus className="h-3 w-3" /></Button>
+                                                    <div className="flex-1 text-center font-bold text-sm">{field.value}</div>
+                                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0 hover:bg-slate-100" onClick={() => handleGuestChange(1)}><Plus className="h-3 w-3" /></Button>
+                                                </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
 
                             <Separator className="my-2" />
 
@@ -286,6 +341,7 @@ export function HolidayBookingSidebar({ holiday }: HolidayBookingSidebarProps) {
                                 <FormField control={form.control} name="fullName" render={({ field }) => (<FormItem><FormLabel>Имена</FormLabel><FormControl><Input placeholder="Данаил Русев" className="h-11 bg-slate-50/50" {...field} /></FormControl><FormMessage /></FormItem>)} />
                                 <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="dani.rusev@abv.bg" className="h-11 bg-slate-50/50" {...field} /></FormControl><FormMessage /></FormItem>)} />
                                 <FormField control={form.control} name="phone" render={({ field }) => (<FormItem><FormLabel>Телефон</FormLabel><FormControl><Input placeholder="+359 884 091 616" className="h-11 bg-slate-50/50" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="message" render={({ field }) => (<FormItem><FormLabel>Допълнителна Информация</FormLabel><FormControl><Textarea placeholder="Ако имате допълнителна информация за запитването ви, въведете я тук." className="bg-slate-50/50 min-h-[100px] " {...field} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
 
                             {/* Price Display */}
