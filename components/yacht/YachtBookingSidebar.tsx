@@ -39,6 +39,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Popover,
   PopoverContent,
@@ -107,6 +108,7 @@ export function YachtBookingSidebar({ yacht, externalCountryCode }: YachtBooking
       from: z.date(),
       to: z.date(),
     }),
+    message: z.string().optional(),
   });
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -120,6 +122,7 @@ export function YachtBookingSidebar({ yacht, externalCountryCode }: YachtBooking
         from: undefined,
         to: undefined
       } as any,
+      message: "",
     },
   });
 
@@ -192,6 +195,10 @@ export function YachtBookingSidebar({ yacht, externalCountryCode }: YachtBooking
 
       formData.append("yacht_name", yacht.name);
       formData.append("destination", `${yacht.home_port}, ${countryData.name}`);
+
+      if (data.message) {
+        formData.append("message", data.message);
+      }
 
       if (calculation) {
         formData.append("estimated_total", `€${calculation.total}`);
@@ -346,6 +353,7 @@ export function YachtBookingSidebar({ yacht, externalCountryCode }: YachtBooking
                 <FormField control={form.control} name="fullName" render={({ field }) => (<FormItem><FormLabel>Имена</FormLabel><FormControl><Input placeholder="Вашето име" className="h-11 bg-slate-50/50" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="name@example.com" className="h-11 bg-slate-50/50" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="phone" render={({ field }) => (<FormItem><FormLabel>Телефон</FormLabel><FormControl><Input placeholder="+359..." className="h-11 bg-slate-50/50" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="message" render={({ field }) => (<FormItem><FormLabel>Допълнителна Информация</FormLabel><FormControl><Textarea placeholder="Ако имате допълнителна информация за запитването ви, въведете я тук." className="bg-slate-50/50 min-h-[100px] " {...field} /></FormControl><FormMessage /></FormItem>)} />
               </div>
 
               {/* Price Display */}
