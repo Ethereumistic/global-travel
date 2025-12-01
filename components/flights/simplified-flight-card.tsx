@@ -84,7 +84,7 @@ export function SimplifiedFlightCard({ flight }: { flight: SanityFlight }) {
 
                 {/* --- HEADER --- */}
                 <CardHeader className="-mb-4 ">
-                    <h3 className="font-black text-third mx-auto text-[1.35rem] line-clamp-2 transition-all duration-300 group-hover:text-primary flex items-center gap-2">
+                    <h3 className="font-black text-third mx-auto text-2xl line-clamp-2 transition-all duration-300 group-hover:text-primary flex items-center gap-2">
                         {flight.fromCity ? (
                             <>
 
@@ -105,8 +105,8 @@ export function SimplifiedFlightCard({ flight }: { flight: SanityFlight }) {
                 {/* --- FOOTER --- */}
                 <CardFooter className="justify-between pt-2 border-t border-border/5">
                     <div>
-                        <p className="text-xs text-muted-foreground">Цени от</p>
-                        <p className="text-3xl flex items-center gap-1 font-black text-primary text-nowrap">
+                        <p className="text-sm text-muted-foreground">Цени от</p>
+                        <p className="text-4xl flex items-center gap-1 font-black text-primary text-nowrap">
                             {flight.price} €
                         </p>
                     </div>

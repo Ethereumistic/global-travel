@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { Plane } from "lucide-react";
+import { Palmtree, Plane } from "lucide-react";
 import { HeroSlider } from "@/components/layout/hero-slider";
 import { SimplifiedFlightCard } from "./simplified-flight-card";
 import type { DestinationListItem } from "@/app/api/destinations/route";
+import { PageSlider } from "../layout/page-slider";
 
 // Define the interface for Sanity Data
 export interface SanityFlight {
@@ -23,6 +24,23 @@ export interface SanityFlight {
         current: string;
     };
 }
+
+const HOLIDAY_HERO_IMAGES = [
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/brazil.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/cambodia.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/china.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/egypt.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/germany.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/india.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/japan.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/mexico.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/peru.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/petra.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/romania.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/rome.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/spain.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/turkey.png",
+];
 
 export default function FlightsBrowser({ flights }: { flights: SanityFlight[] }) {
     const [selectedDestination, setSelectedDestination] = React.useState<DestinationListItem | null>(null);
@@ -45,16 +63,22 @@ export default function FlightsBrowser({ flights }: { flights: SanityFlight[] })
 
     return (
         <div>
-            <HeroSlider
-                className="h-112"
+            <PageSlider
+                images={HOLIDAY_HERO_IMAGES}
                 title="Самолетни Билети"
-                subtitle="Най-добрите цени за полети до цял свят"
-                icon={Plane}
-                selectedDestination={selectedDestination}
-                onDestinationSelect={setSelectedDestination}
+                subtitle="Открийте мечтаната дестинация с нашите специални предложения."
+                icon={<Plane className="h-8 w-8 text-white" />}
+                className="h-96 rounded-b-xl"
+                searchType="none"
             />
 
-            <div className="max-w-7xl mx-auto px-4 -mt-20 py-8 relative z-10">
+            <div className="container mx-auto px-4 py-8 relative z-10">
+
+                <div className="flex items-center gap-3 mb-8">
+                    <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+                        Нашите Предложения
+                    </h2>
+                </div>
                 {filteredFlights.length === 0 ? (
                     <div className="text-center py-20 bg-secondary-foreground/10 rounded-lg backdrop-blur-sm">
                         <p className="text-lg text-muted-foreground">

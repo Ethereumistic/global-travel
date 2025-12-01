@@ -77,7 +77,7 @@ export default async function YachtsPage(props: PageProps) {
         searchType="yachts"
       />
 
-      <div className="container mx-auto py-12 px-4">
+      <div className="container mx-auto py-8 px-4">
         <div className="flex items-center gap-3 mb-8">
           {countryFilter && (
             <img

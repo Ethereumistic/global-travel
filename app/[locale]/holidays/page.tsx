@@ -5,9 +5,20 @@ import { getHolidays } from "@/app/actions/get-holidays";
 import { HolidayList } from "@/components/holiday/holiday-list";
 
 const HOLIDAY_HERO_IMAGES = [
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/turkey.png",
     "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/brazil.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/cambodia.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/china.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/egypt.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/germany.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/india.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/japan.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/mexico.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/peru.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/petra.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/romania.png",
     "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/rome.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/spain.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/turkey.png",
 ];
 
 interface PageProps {
@@ -39,7 +50,7 @@ export default async function HolidaysPage(props: PageProps) {
                 searchType="holidays"
             />
 
-            <div className="container mx-auto py-12 px-4">
+            <div className="container mx-auto py-8 px-4">
                 <div className="flex items-center gap-3 mb-8">
                     {countryFilter && (
                         <img
