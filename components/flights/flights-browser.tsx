@@ -2,10 +2,8 @@
 
 import * as React from "react";
 import { Palmtree, Plane } from "lucide-react";
-import { HeroSlider } from "@/components/layout/hero-slider";
-import { SimplifiedFlightCard } from "./simplified-flight-card";
-import type { DestinationListItem } from "@/app/api/destinations/route";
 import { PageSlider } from "../layout/page-slider";
+import { SimplifiedFlightCard } from "./simplified-flight-card";
 
 // Define the interface for Sanity Data
 export interface SanityFlight {
@@ -43,23 +41,10 @@ const HOLIDAY_HERO_IMAGES = [
 ];
 
 export default function FlightsBrowser({ flights }: { flights: SanityFlight[] }) {
-    const [selectedDestination, setSelectedDestination] = React.useState<DestinationListItem | null>(null);
+    const [selectedDestination, setSelectedDestination] = React.useState<string | null>(null);
     const [filteredFlights, setFilteredFlights] = React.useState<SanityFlight[]>(flights);
 
-    // Filter logic adapted from your original page.tsx
-    React.useEffect(() => {
-        if (selectedDestination) {
-            const term = selectedDestination.name.toLowerCase();
-            const filtered = flights.filter(flight =>
-                flight.toCity.toLowerCase().includes(term) ||
-                (flight.fromCity && flight.fromCity.toLowerCase().includes(term)) ||
-                flight.toCountry.toLowerCase().includes(term)
-            );
-            setFilteredFlights(filtered);
-        } else {
-            setFilteredFlights(flights);
-        }
-    }, [selectedDestination, flights]);
+
 
     return (
         <div>
@@ -83,7 +68,7 @@ export default function FlightsBrowser({ flights }: { flights: SanityFlight[] })
                     <div className="text-center py-20 bg-secondary-foreground/10 rounded-lg backdrop-blur-sm">
                         <p className="text-lg text-muted-foreground">
                             {selectedDestination
-                                ? `Няма намерени полети за ${selectedDestination.name}.`
+                                ? `Няма намерени полети за ${selectedDestination}.`
                                 : "Няма налични полети в момента."}
                         </p>
                         <button

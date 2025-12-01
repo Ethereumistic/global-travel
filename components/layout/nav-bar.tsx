@@ -1,38 +1,18 @@
 "use client"
 
 import * as React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react" // Added useRef
 import {
-  Menu,
-  X,
-  Phone,
-  Mail,
-  Sun,
-  Moon,
-  Construction,
-  Trees,
-  Building,
-  Plane,
-  TreePalm,
-  MapPin,
-  Sailboat,
-  Search,
-  Ticket,
-  Hotel,
-  Car,
+  Menu, X, Phone, Mail, Sun, Moon, Construction, Trees, Building, Plane,
+  TreePalm, MapPin, Sailboat, Search, Ticket, Hotel, Car,
 } from "lucide-react"
 import Link from "next/link"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 
 import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
+  NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink,
+  NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
@@ -40,46 +20,49 @@ import Logo from "./logo"
 import { Button } from "../ui/button"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
+// --- CONFIGURATION ---
+const TRANSPARENT_STATIC_PAGES = [
+  "/",
+  "/holidays",
+  "/hotels",
+  "/flights",
+  "/yachts",
+  "/card",
+  "/rent-a-car"
+];
+
+const TRANSPARENT_DYNAMIC_SECTIONS = [
+  "/holidays",
+  "/hotels",
+  "/flights",
+  "/rent-a-car",
+  "/yachts",
+];
+
 export default function NavBar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
-  const pathname = usePathname() // Get current page path
+  const pathname = usePathname()
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // NEW: State to track scroll position
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-
-    // NEW: Add scroll event listener
     const handleScroll = () => {
-      // Set scrolled to true if user has scrolled more than 10px
       setScrolled(window.scrollY > 80)
     }
-
     window.addEventListener("scroll", handleScroll)
-
-    // Cleanup function to remove the listener
     return () => {
       window.removeEventListener("scroll", handleScroll)
     }
-  }, []) // Empty dependency array ensures this runs only on mount and unmount
+  }, [])
 
-  // NEW: Click outside to close mobile menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (mobileOpen) {
-        // Check if the click is outside the nav element
-        // Since the menu is part of the nav, we can check if the click target is NOT inside the nav
-        // However, the hamburger button is also inside the nav.
-        // A simpler approach for this specific layout:
-        // The menu takes up the full width below the bar. 
-        // If we want to close it when clicking *outside* the menu, we usually mean clicking on the main content.
-        // But the menu is absolute positioned.
-        // Let's check if the click is NOT within the <nav> element.
         const nav = document.querySelector('nav');
         if (nav && !nav.contains(event.target as Node)) {
           setMobileOpen(false);
@@ -93,12 +76,21 @@ export default function NavBar() {
     };
   }, [mobileOpen]);
 
+  // --- PATH TRANSPARENCY LOGIC ---
+  const isTransparentPage = React.useMemo(() => {
+    if (!pathname) return false;
+    let cleanPath = pathname.replace(/^\/(en|bg)/, "");
+    if (cleanPath === "") cleanPath = "/";
+
+    if (TRANSPARENT_STATIC_PAGES.includes(cleanPath)) return true;
+
+    return TRANSPARENT_DYNAMIC_SECTIONS.some(section =>
+      cleanPath.startsWith(`${section}/`)
+    );
+  }, [pathname]);
+
+
   const navItems = [
-    // {
-    //   label: "Дестинации",
-    //   href: "/destinations",
-    //   icon: <MapPin className="size-7 md:size-5 text-white" />,
-    // },
     {
       label: "Екскурзии и Почивки",
       href: "/holidays",
@@ -106,48 +98,33 @@ export default function NavBar() {
     },
     {
       label: "Хотели",
-      href: "/hotels", // Using /flights as a placeholder
+      href: "/hotels",
       icon: <Hotel className="size-7 md:size-5 text-white " />,
     },
     {
       label: "Самолетни Билети",
-      href: "/flights", // Using /flights as a placeholder
+      href: "/flights",
       icon: <Plane className="size-7 md:size-5 text-white " />,
     },
     {
       label: "Rent a Car",
-      href: "/rent-a-car", // Using /flights as a placeholder
+      href: "/rent-a-car",
       icon: <Car className="size-7 md:size-5 text-white " />,
     },
     {
       label: "Яхти",
-      href: "/yachts", // Using /flights as a placeholder
+      href: "/yachts",
       icon: <Sailboat className="size-7 md:size-5 text-white " />,
     },
   ]
 
   const mobileMenuVariants = {
-    open: {
-      opacity: 1,
-      height: "auto",
-      transition: { duration: 0.3, ease: "easeInOut" },
-    },
-    closed: {
-      opacity: 0,
-      height: 0,
-      transition: { duration: 0.25, ease: "easeInOut" },
-    },
+    open: { opacity: 1, height: "auto", transition: { duration: 0.3, ease: "easeInOut" } },
+    closed: { opacity: 0, height: 0, transition: { duration: 0.25, ease: "easeInOut" } },
   }
 
   const handleReserveClick = () => {
     setMobileOpen(false);
-
-    // Check if we are on a detail page (holiday or yacht with ID)
-    // Regex matches /holidays/UUID or /yachts/UUID (where UUID is approx 36 chars, or just check for ID presence)
-    // Simple check: starts with /holidays/ or /yachts/ and has a segment after it.
-    // We also need to handle locale prefixes like /en/holidays/... or /bg/holidays/...
-
-    // Remove locale prefix for checking path structure
     const pathWithoutLocale = pathname.replace(/^\/(en|bg)/, "") || "/";
 
     const isDetailPage =
@@ -166,6 +143,9 @@ export default function NavBar() {
 
     const isHomePage = pathname === "/" || pathname === "/en" || pathname === "/bg";
     if (isHomePage) {
+      // SCROLL FIX: Scroll to top immediately
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
       const params = new URLSearchParams(searchParams.toString());
       if (params.get("action") === "contact") {
         params.delete("action");
@@ -174,7 +154,6 @@ export default function NavBar() {
       }
       router.push(`${pathname}?${params.toString()}`, { scroll: false });
     } else {
-      // If not on home page and not on detail page (or sidebar not found), go to home with contact action
       const localePrefix = pathname.startsWith("/en") ? "/en" : pathname.startsWith("/bg") ? "/bg" : "";
       router.push(`${localePrefix}/?action=contact`);
     }
@@ -183,136 +162,205 @@ export default function NavBar() {
   const isContactMode = pathname && ["/", "/en", "/bg"].includes(pathname) && searchParams.get("action") === "contact";
   const buttonText = isContactMode ? "ТЪРСИ" : "РЕЗЕРВИРАЙ";
   const buttonIcon = isContactMode ? <Search className="size-6" /> : <Ticket className="size-6" />;
+
   return (
-    <nav
-      className={cn(
-        "sticky top-0 z-50 w-full",
-        "transition-all duration-300 ease-in-out"
-      )}
-    >
-      <div
+    <>
+      <nav
         className={cn(
-          "w-full bg-black/40 backdrop-blur-2xl",
-          "transition-all duration-300 ease-in-out",
-          !scrolled &&
-          (pathname === "/en" || pathname === "/bg" ||
-            pathname === "/bg/excursions" || pathname === "/en/excursions" ||
-            pathname === "/bg/holidays" || pathname === "/en/holidays" ||
-            pathname === "/en/destinations" || pathname === "/bg/destinations" ||
-            pathname === "/bg/flights" || pathname === "/en/flights" ||
-            pathname === "/bg/yachts" || pathname === "/en/yachts" ||
-            pathname === "/bg/card" || pathname === "/en/card") &&
-          "md:bg-transparent md:backdrop-filter-none md:border-transparent"
+          "sticky top-0 z-50 w-full",
+          "transition-all duration-300 ease-in-out"
         )}
       >
-        <div className="mx-auto  px-4 md:px-8 lg:px-12 xl:px-16">
-          <div className="flex items-center justify-between h-20">
-            <Logo />
+        <div
+          className={cn(
+            "w-full bg-black/40 backdrop-blur-2xl",
+            "transition-all duration-300 ease-in-out",
+            !scrolled && isTransparentPage &&
+            "md:bg-transparent md:backdrop-filter-none md:border-transparent"
+          )}
+        >
+          <div className="mx-auto px-4 md:px-8 lg:px-12 xl:px-16">
+            <div className="flex items-center justify-between h-20">
+              <Logo />
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-1 lg:gap-4 ">
-              <NavigationMenu className="">
-                <NavigationMenuList>
-                  {navItems.map((item) =>
-                    "submenu" in item ? (
-                      <NavigationMenuItem key={item.label}>
-                        <NavigationMenuTrigger className="">
-                          {item.label}
-                        </NavigationMenuTrigger>
-                        <NavigationMenuContent>
-                        </NavigationMenuContent>
-                      </NavigationMenuItem>
-                    ) : (
-                      <NavigationMenuItem key={item.label}>
-                        <NavigationMenuLink
-                          asChild
-                          className={navigationMenuTriggerStyle()}
-                        >
-                          <Link
-                            href={item.href}
-                            className="flex-row items-center gap-2 px-2 lg:px-4 "
+              {/* Desktop Navigation */}
+              <div className="hidden md:flex items-center gap-1 lg:gap-4 ">
+                <NavigationMenu className="">
+                  <NavigationMenuList>
+                    {navItems.map((item) =>
+                      "submenu" in item ? (
+                        <NavigationMenuItem key={item.label}>
+                          <NavigationMenuTrigger className="">
+                            {item.label}
+                          </NavigationMenuTrigger>
+                          <NavigationMenuContent>
+                          </NavigationMenuContent>
+                        </NavigationMenuItem>
+                      ) : (
+                        <NavigationMenuItem key={item.label}>
+                          <NavigationMenuLink
+                            asChild
+                            className={navigationMenuTriggerStyle()}
                           >
-                            {item.icon}
-                            <span className="md:text-base xl:text-lg 2xl:text-xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
-                              {item.label}
-                            </span>
-                          </Link>
-                        </NavigationMenuLink>
-                      </NavigationMenuItem>
-                    )
-                  )}
-                </NavigationMenuList>
-              </NavigationMenu>
-            </div>
+                            <Link
+                              href={item.href}
+                              className="flex-row items-center gap-2 px-2 lg:px-4 "
+                            >
+                              {item.icon}
+                              <span className="md:text-base xl:text-lg 2xl:text-xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
+                                {item.label}
+                              </span>
+                            </Link>
+                          </NavigationMenuLink>
+                        </NavigationMenuItem>
+                      )
+                    )}
+                  </NavigationMenuList>
+                </NavigationMenu>
+              </div>
 
-            {/* Right side - Contact & Theme */}
-            <div className="hidden lg:flex items-center gap-4 pl-4">
-              <Button
-                size="lg"
-                className="text-sm xl:text-base 2xl:text-lg"
-                onClick={handleReserveClick}
-              >
-                {buttonIcon}
-                {buttonText}
-              </Button>
-            </div>
-
-            {/* Mobile menu button & theme toggle */}
-            <div className="flex md:hidden items-center gap-2">
-              <AnimatedHamburgerButton
-                isOpen={mobileOpen}
-                onClick={() => setMobileOpen(!mobileOpen)}
-              />
+              {/* Mobile menu button */}
+              <div className="flex md:hidden items-center gap-2">
+                <AnimatedHamburgerButton
+                  isOpen={mobileOpen}
+                  onClick={() => setMobileOpen(!mobileOpen)}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            className="absolute top-20 left-0 right-0 z-40 md:hidden space-y-2 border-t border-border/10 pt-4 overflow-hidden bg-black/50 backdrop-blur-2xl "
-            initial="closed"
-            animate="open"
-            exit="closed"
-            variants={mobileMenuVariants as any}
-          >
-            {navItems.map((item) =>
-              "submenu" in item ? (
-                <div key={item.label} className="space-y-2">
-                  <div className="px-3 py-2 text-foreground font-medium ">
-                    {item.label}
-                  </div>
-                </div>
-              ) : (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="block px-8 py-4 text-white  text-xl"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <div className="flex gap-4 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
-                    {item.icon}
-                    {item.label}
-                  </div>
-                </Link>
-              )
-            )}
-            <Button
-              size="lg"
-              className="flex mx-auto my-8 text-xl"
-              onClick={handleReserveClick}
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div
+              className="absolute top-20 left-0 right-0 z-40 md:hidden space-y-2 border-t border-border/10 pt-4 overflow-hidden bg-black/50 backdrop-blur-2xl "
+              initial="closed"
+              animate="open"
+              exit="closed"
+              variants={mobileMenuVariants as any}
             >
-              <h1 className="drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
-                {buttonText}
-              </h1>
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </nav>
+              {navItems.map((item) =>
+                "submenu" in item ? (
+                  <div key={item.label} className="space-y-2">
+                    <div className="px-3 py-2 text-foreground font-medium ">
+                      {item.label}
+                    </div>
+                  </div>
+                ) : (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className="block px-8 py-4 text-white  text-xl"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <div className="flex gap-4 drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
+                      {item.icon}
+                      {item.label}
+                    </div>
+                  </Link>
+                )
+              )}
+              <Button
+                size="lg"
+                className="flex mx-auto my-8 text-xl"
+                onClick={handleReserveClick}
+              >
+                <h1 className="drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
+                  {buttonText}
+                </h1>
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </nav>
+
+      <FloatingActionBtn
+        onClick={handleReserveClick}
+        icon={buttonIcon}
+        text={buttonText}
+      />
+    </>
   )
 }
+
+// --- SUB COMPONENTS ---
+
+const FloatingActionBtn = ({
+  onClick,
+  icon,
+  text
+}: {
+  onClick: () => void,
+  icon: React.ReactNode,
+  text: string
+}) => {
+  const [isShrunk, setIsShrunk] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Ref to hold the timeout ID so we can clear it
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsShrunk(true);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Handler for mouse enter: Clear any pending "shrink" actions immediately
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    setIsHovered(true);
+  };
+
+  // Handler for mouse leave: Don't shrink immediately! Wait a bit.
+  // This prevents flickering if the mouse slips off the edge diagonally.
+  const handleMouseLeave = () => {
+    hoverTimeoutRef.current = setTimeout(() => {
+      setIsHovered(false);
+    }, 300); // 300ms grace period
+  };
+
+  const showText = !isShrunk || isHovered;
+
+  return (
+    <div className="fixed bottom-6 right-6 z-50">
+      <Button
+        size="lg"
+        onClick={onClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className={cn(
+          "rounded-full shadow-2xl transition-all duration-300 ease-in-out h-14",
+          showText ? "px-6" : "px-0 w-14"
+        )}
+      >
+        <div className="flex items-center justify-center">
+          <div className="">
+            {icon}
+          </div>
+
+          <AnimatePresence mode="wait">
+            {showText && (
+              <motion.span
+                initial={{ width: 0, opacity: 0, marginLeft: 0 }}
+                animate={{ width: "auto", opacity: 1, marginLeft: 8 }}
+                exit={{ width: 0, opacity: 0, marginLeft: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="whitespace-nowrap overflow-hidden text-lg font-semibold"
+              >
+                {text}
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </div>
+      </Button>
+    </div>
+  );
+};
 
 const AnimatedHamburgerButton = ({
   isOpen,
@@ -374,35 +422,3 @@ const AnimatedHamburgerButton = ({
     </motion.button>
   )
 }
-
-const ListItem = React.forwardRef<
-  React.ElementRef<typeof Link>,
-  React.ComponentPropsWithoutRef<typeof Link> & {
-    title: string
-    icon?: React.ReactNode
-  }
->(({ className, title, children, icon, ...props }, ref) => {
-  return (
-    <li>
-      <NavigationMenuLink asChild>
-        <Link
-          ref={ref}
-          className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-            className
-          )}
-          {...props}
-        >
-          <div className="flex items-center gap-2">
-            {icon}
-            <div className="text-sm font-medium leading-none">{title}</div>
-          </div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground pl-6">
-            {children}
-          </p>
-        </Link>
-      </NavigationMenuLink>
-    </li>
-  )
-})
-ListItem.displayName = "ListItem"

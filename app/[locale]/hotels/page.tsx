@@ -5,11 +5,20 @@ import { Hotel, HotelsResponse } from "@/lib/types-hotel";
 import { ALL_COUNTRIES } from "@/lib/constants";
 
 const HOTEL_HERO_IMAGES = [
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hotels/1.jpg",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hotels/2.jpg",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hotels/3.jpg",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hotels/4.jpg",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hotels/5.jpg",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/brazil.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/cambodia.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/china.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/egypt.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/germany.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/india.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/japan.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/mexico.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/peru.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/petra.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/romania.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/rome.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/spain.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/turkey.png",
 ];
 
 async function getHotels(limit = 20, offset = 0): Promise<HotelsResponse> {

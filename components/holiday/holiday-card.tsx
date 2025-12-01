@@ -3,28 +3,31 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, MapPin, Plane, Clock, Moon, Bus, Euro, Loader2 } from "lucide-react";
+import { Calendar, MapPin, Plane, Bus, Euro, Loader2, Clock } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { Holiday } from "@/lib/types-holiday";
 
 interface HolidayCardProps {
     holiday: Holiday;
 }
 
-// Helper functions moved outside component to prevent re-creation
+// Helper functions
 function TransportIcon({ transportName }: { transportName: string }) {
     const iconClasses = "size-4 mr-1.5";
-
     if (transportName === "Самолет" || transportName === "Директен полет" || transportName === "Airplane") {
         return <Plane className={iconClasses} />;
     }
-
     if (transportName === "Автобус" || transportName === "Bus") {
         return <Bus className={iconClasses} />;
     }
-
     return null;
 }
 
@@ -40,10 +43,26 @@ function formatDate(dateString: string) {
 
 export function HolidayCard({ holiday }: HolidayCardProps) {
     const [isImageLoaded, setIsImageLoaded] = React.useState(false);
+    const [isTruncated, setIsTruncated] = React.useState(false);
+    const titleRef = React.useRef<HTMLHeadingElement>(null);
+
+    React.useEffect(() => {
+        const checkTruncation = () => {
+            if (titleRef.current) {
+                // Check if the content is truncated by comparing scroll height to client height
+                setIsTruncated(titleRef.current.scrollHeight > titleRef.current.clientHeight);
+            }
+        };
+
+        checkTruncation();
+        // Recheck on window resize
+        window.addEventListener('resize', checkTruncation);
+        return () => window.removeEventListener('resize', checkTruncation);
+    }, [holiday.title]);
 
     return (
         <Card className="group flex flex-col h-full overflow-hidden hover:shadow-lg transition-shadow duration-300 pt-0 bg-secondary-foreground/30 relative">
-            {/* Main Link Overlay - Makes the whole card clickable without nesting links */}
+            {/* Main Link Overlay - Handles clicks on empty spaces and images */}
             <Link href={`/holidays/${holiday.id}`} className="absolute inset-0 z-0" aria-label={`View details for ${holiday.title}`} />
 
             <div className="relative h-56 w-full bg-gray-200 z-10 pointer-events-none">
@@ -57,8 +76,7 @@ export function HolidayCard({ holiday }: HolidayCardProps) {
                         src={holiday.main_image.image}
                         alt={holiday.title}
                         fill
-                        className={`object-cover transition-transform duration-300 group-hover:scale-105 ${isImageLoaded ? "opacity-100" : "opacity-0"
-                            }`}
+                        className={`object-cover transition-transform duration-300 group-hover:scale-105 ${isImageLoaded ? "opacity-100" : "opacity-0"}`}
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         onLoad={() => setIsImageLoaded(true)}
                     />
@@ -70,10 +88,7 @@ export function HolidayCard({ holiday }: HolidayCardProps) {
 
                 {holiday.country && (
                     <div className="absolute bottom-2 left-2 border border-border/10">
-                        <div
-                            className="relative w-8 h-6 flex-shrink-0"
-                            title={holiday.country.name}
-                        >
+                        <div className="relative w-8 h-6 flex-shrink-0" title={holiday.country.name}>
                             <Image
                                 src={`https://flagcdn.com/${holiday.country.iso_code?.toLowerCase()}.svg`}
                                 alt={`${holiday.country.name} flag`}
@@ -96,9 +111,33 @@ export function HolidayCard({ holiday }: HolidayCardProps) {
             </div>
 
             <CardHeader className="space-y-2 z-10 pointer-events-none">
-                <h3 className="font-semibold text-third text-xl line-clamp-2 transition-all duration-300 group-hover:scale-105 group-hover:text-primary">
-                    {holiday.title}
-                </h3>
+                {isTruncated ? (
+                    <TooltipProvider>
+                        <Tooltip delayDuration={300}>
+                            <TooltipTrigger asChild>
+                                {/* 1. We wrap in a Link because pointer-events-auto blocks the card background link.
+                                    2. z-20 puts it physically above the card background link.
+                                    3. pointer-events-auto allows the tooltip to detect hover.
+                                */}
+                                <Link href={`/holidays/${holiday.id}`} className="block relative z-20 pointer-events-auto w-fit">
+                                    <h3 ref={titleRef} className="font-semibold text-third text-xl line-clamp-2 transition-colors duration-300 group-hover:text-primary text-left">
+                                        {holiday.title}
+                                    </h3>
+                                </Link>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" align="start" className="max-w-[300px]">
+                                <p>{holiday.title}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                ) : (
+                    <Link href={`/holidays/${holiday.id}`} className="block relative z-20 pointer-events-auto w-fit">
+                        <h3 ref={titleRef} className="font-semibold text-third text-xl line-clamp-2 transition-colors duration-300 group-hover:text-primary text-left">
+                            {holiday.title}
+                        </h3>
+                    </Link>
+                )}
+
                 {holiday.subtitle && (
                     <p className="text-sm text-muted-foreground line-clamp-2">
                         {holiday.subtitle}
@@ -106,7 +145,7 @@ export function HolidayCard({ holiday }: HolidayCardProps) {
                 )}
             </CardHeader>
 
-            <CardContent className="space-y-2 flex-grow z-10 pointer-events-none">
+            <CardContent className="space-y-2 grow z-10 pointer-events-none">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MapPin className="size-5 text-third shrink-0" />
                     <span className="line-clamp-1">
@@ -139,10 +178,6 @@ export function HolidayCard({ holiday }: HolidayCardProps) {
                         {holiday.min_price.main?.value || holiday.min_price.value}
                     </p>
                 </div>
-                {/* Button is visually a button but functionally part of the card link via overlay, 
-                    or we can make it a real button but we need to handle z-index. 
-                    Since the whole card is a link, we can just style this as a button without being an interactive element 
-                    to avoid nested interactive controls. */}
                 <div className={buttonVariants({ variant: "default" })}>
                     Виж повече
                 </div>
