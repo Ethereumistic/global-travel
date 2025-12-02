@@ -15,7 +15,40 @@ interface HotelHeaderProps {
     className?: string;
 }
 
+const CDN_BASE_URL = "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hotels/";
+
+const HERO_IMAGES_LIST = [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg",
+    "4.jpg",
+    "5.jpg",
+    "6.jpg",
+    "7.jpg",
+    "8.jpg",
+    "9.jpg",
+];
+
 export function HotelHeader({ hotel, className }: HotelHeaderProps) {
+
+    const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
+
+    // Use all CDN images for the slider
+    const heroImages = React.useMemo(() => {
+        return HERO_IMAGES_LIST.map(img => `${CDN_BASE_URL}${img}`);
+    }, []);
+
+    // Background Image Rotation
+    React.useEffect(() => {
+        // Only set interval if we have more than 1 image
+        if (heroImages.length <= 1) return;
+
+        const interval = setInterval(() => {
+            setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [heroImages.length]);
+
     // Get Bulgarian Country Name and Flag
     const countryData = React.useMemo(() => {
         if (!hotel.location?.country_code && !hotel.country_code) return null;
@@ -47,16 +80,34 @@ export function HotelHeader({ hotel, className }: HotelHeaderProps) {
         >
             {/* Background Image */}
             <div className="absolute inset-0 z-0">
-                <div className="absolute inset-0 transition-opacity duration-1000 ease-in-out opacity-100">
-                    <Image
-                        src={hotel.main_image?.image || "/placeholder.svg"}
-                        alt={hotel.name}
-                        fill
-                        className="object-cover"
-                        priority
-                        sizes="100vw"
-                    />
-                </div>
+                {/* Only render current and next image for performance */}
+                {heroImages.map((img, index) => {
+                    // Only render if it's the current image or the immediate next one (for smooth transition)
+                    // or if it's the first image (LCP optimization)
+                    const shouldRender = index === currentImageIndex || index === (currentImageIndex + 1) % heroImages.length;
+
+                    if (!shouldRender && index !== 0) return null;
+
+                    return (
+                        <div
+                            key={`${img}-${index}`}
+                            className={cn(
+                                "absolute inset-0 transition-opacity duration-1000 ease-in-out",
+                                index === currentImageIndex ? "opacity-100" : "opacity-0"
+                            )}
+                        >
+                            <Image
+                                src={img}
+                                alt={`Holiday view ${index + 1}`}
+                                fill
+                                className="object-cover"
+                                priority={index === 0}
+                                loading={index === 0 ? "eager" : "lazy"}
+                                sizes="100vw"
+                            />
+                        </div>
+                    );
+                })}
                 {/* Dark Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/60 to-black/50 " />
             </div>

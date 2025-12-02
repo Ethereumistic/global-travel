@@ -16,6 +16,22 @@ const FALLBACK_HERO_IMAGES = [
   "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/rome.png",
 ];
 
+
+const CDN_BASE_URL = "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/yachts/";
+
+const HERO_IMAGES_LIST = [
+  "1.jpg",
+  "2.jpg",
+  "3.jpg",
+  "4.jpg",
+  "5.jpg",
+  "6.jpg",
+  "7.jpg",
+  "8.jpg",
+  "9.jpg",
+];
+
+
 interface YachtHeaderProps {
   yacht: Yacht;
   className?: string;
@@ -24,14 +40,10 @@ interface YachtHeaderProps {
 export function YachtHeader({ yacht, className }: YachtHeaderProps) {
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
 
-  // derive images from the yacht prop
+  // Use all CDN images for the slider
   const heroImages = React.useMemo(() => {
-    // Map the API response structure to an array of strings
-    const apiImages = yacht.images?.map((img: any) => img.image) || [];
-
-    // Return API images (limit to first 6 for performance) or fallback
-    return apiImages.length > 0 ? apiImages.slice(0, 6) : FALLBACK_HERO_IMAGES;
-  }, [yacht.images]);
+    return HERO_IMAGES_LIST.map(img => `${CDN_BASE_URL}${img}`);
+  }, []);
 
   // Background Image Rotation
   React.useEffect(() => {
@@ -80,7 +92,7 @@ export function YachtHeader({ yacht, className }: YachtHeaderProps) {
           </div>
         ))}
         {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/60 to-black/50 backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/60 to-black/50 " />
       </div>
 
       {/* Content Container */}

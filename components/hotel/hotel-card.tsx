@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Hotel } from "@/lib/types-hotel";
 import { ALL_COUNTRIES } from "@/lib/constants";
 import Link from "next/link";
+import { Button } from "../ui/button";
 
 interface HotelCardProps {
     hotel: Hotel;
@@ -55,22 +56,25 @@ export function HotelCard({ hotel }: HotelCardProps) {
 
                 {/* Content Section */}
                 <CardContent className="p-4 pt-4 flex-grow flex flex-col justify-between">
-                    <div>
-                        <h3 className="font-bold text-lg line-clamp-1 text-foreground group-hover:text-blue-600 transition-colors">
-                            {hotel.name}
-                        </h3>
-                        {/* Location */}
-                        <div className="flex items-center text-muted-foreground mb-3">
-                            <MapPin className="h-4 w-4 mr-1 shrink-0" />
-                            <span className="text-sm line-clamp-1">
-                                {hotel.location?.city || hotel.city}, {countryName}
-                            </span>
-                        </div>
+                    <div className="flex justify-between items-end">
+                        <div>
+                            <h3 className="font-bold text-lg line-clamp-1 text-foreground group-hover:text-blue-600 transition-colors">
+                                {hotel.name}
+                            </h3>
+                            {/* Location */}
+                            <div className="flex items-center text-muted-foreground mb-3">
+                                <MapPin className="h-4 w-4 mr-1 shrink-0" />
+                                <span className="text-sm line-clamp-1">
+                                    {hotel.location?.city || hotel.city}, {countryName}
+                                </span>
+                            </div>
 
-                        {/* Address */}
-                        <p className="text-xs text-muted-foreground line-clamp-1 mb-4">
-                            {hotel.location?.address_1 || hotel.address}
-                        </p>
+                            {/* Address */}
+                            <p className="text-xs text-muted-foreground line-clamp-1 mb-4">
+                                {hotel.location?.address_1 || hotel.address}
+                            </p>
+                        </div>
+                        <Button className="cursor-pointer">Виж Повече</Button>
                     </div>
                 </CardContent>
             </Card>

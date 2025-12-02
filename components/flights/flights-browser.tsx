@@ -24,20 +24,16 @@ export interface SanityFlight {
 }
 
 const HOLIDAY_HERO_IMAGES = [
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/brazil.png",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/cambodia.png",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/china.png",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/egypt.png",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/germany.png",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/india.png",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/japan.png",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/mexico.png",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/peru.png",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/petra.png",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/romania.png",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/rome.png",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/spain.png",
-    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/turkey.png",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/flights/1.jpg",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/flights/2.jpg",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/flights/3.jpg",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/flights/4.jpg",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/flights/5.jpg",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/flights/6.jpg",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/flights/7.jpg",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/flights/8.jpg",
+    "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/flights/9.jpg",
+
 ];
 
 export default function FlightsBrowser({ flights }: { flights: SanityFlight[] }) {

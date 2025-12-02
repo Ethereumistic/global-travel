@@ -9,7 +9,7 @@ const Footer = () => {
     return (
         <footer className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 pt-16 pb-8">
             <div className="container mx-auto px-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
                     {/* Column 1: Brand & Slogan */}
                     <div className="flex flex-col items-start space-y-6">
                         <Logo variant="primary" />
@@ -56,6 +56,28 @@ const Footer = () => {
                             </li>
                             <li>
                                 <Link
+                                    href="/card"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors flex items-center gap-2 group"
+                                >
+                                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full group-hover:bg-primary transition-colors"></span>
+                                    Бизнес карта
+                                </Link>
+                            </li>
+
+                        </ul>
+                    </div>
+
+                    {/* Column 3: Cards */}
+                    <div>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 relative inline-block">
+                            Правно
+                            <span className="absolute -bottom-2 left-0 w-12 h-1 bg-primary rounded-full"></span>
+                        </h3>
+                        <ul className="space-y-4">
+                            <li>
+                                <Link
                                     href="/privacy-policy"
                                     className="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors flex items-center gap-2 group"
                                 >
@@ -84,7 +106,7 @@ const Footer = () => {
                         </ul>
                     </div>
 
-                    {/* Column 3: Contacts */}
+                    {/* Column 4: Contacts */}
                     <div>
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 relative inline-block">
                             Контакти
@@ -118,10 +140,10 @@ const Footer = () => {
                                     <span>reservation@global-travel.bg</span>
                                 </a>
                             </li>
-                            <li className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+                            {/* <li className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
                                 <Clock size={20} className="text-primary shrink-0" />
                                 <span>Работно време: 24/7</span>
-                            </li>
+                            </li> */}
                         </ul>
                     </div>
                 </div>

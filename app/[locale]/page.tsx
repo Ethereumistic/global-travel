@@ -37,7 +37,7 @@ export default function HomePage() {
     const fetchHolidays = async () => {
       setLoading(true);
       try {
-        const res = await fetch('/api/holidays?limit=100');
+        const res = await fetch('/api/holidays?limit=1000');
         const data = await res.json();
         setAllHolidays(data.holidays || []);
       } catch (error) {
