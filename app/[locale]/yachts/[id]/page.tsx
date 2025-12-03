@@ -92,10 +92,10 @@ export default function YachtDetailPage({
             <div className="relative min-h-[500px]">
               <Tabs defaultValue="inventory" className="w-full">
                 <div className="sticky top-20 z-30  backdrop-blur-sm py-2 -mx-1 px-1">
-                  <TabsList className="w-full justify-start bg-slate-100 p-1 rounded-lg shadow-sm">
+                  <TabsList className="w-full justify-start bg-slate-100 p-1 rounded-lg shadow-sm overflow-x-auto h-auto flex-wrap">
                     <TabsTrigger value="inventory">Оборудване</TabsTrigger>
                     <TabsTrigger value="specs">Характеристики</TabsTrigger>
-                    <TabsTrigger value="prices">Сезонни Цени</TabsTrigger>
+                    <TabsTrigger value="prices">Цени</TabsTrigger>
                     {yacht.layouts?.length > 0 && (
                       <TabsTrigger value="layout">Схема</TabsTrigger>
                     )}

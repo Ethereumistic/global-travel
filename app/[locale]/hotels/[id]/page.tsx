@@ -68,7 +68,7 @@ export default async function HotelDetailPage({
                     </div>
 
                     {/* RIGHT COLUMN - SIDEBAR */}
-                    <div className="lg:col-span-2 lg:-translate-x-4">
+                    <div id="booking-sidebar" className="lg:col-span-2 lg:-translate-x-4">
                         <HotelBookingSidebar hotel={hotel} />
                     </div>
 

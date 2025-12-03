@@ -146,7 +146,7 @@ export default function HomePage() {
                     </>
                   ) : (
                     <>
-                      Покажи още ({Math.min(8, filteredHolidays.length - displayCount)})
+                      Покажи още
                     </>
                   )}
                 </Button>

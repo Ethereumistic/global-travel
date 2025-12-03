@@ -34,7 +34,7 @@ export default async function RentACarPage(props: PageProps) {
                 searchType="none"
             />
 
-            <div className="container mx-auto py-8 px-4">
+            <div id="booking-sidebar" className="container mx-auto py-8 px-4">
                 <RentForm
                     title="Запитване за Наемане на Кола"
                     description="Попълнете формата и ние ще Ви изпратим най-добрата оферта за автомобил"

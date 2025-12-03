@@ -217,7 +217,7 @@ export default async function FlightPage({ params }: { params: Promise<{ id: str
                     </div>
 
                     {/* Sidebar */}
-                    <div className="lg:col-span-1">
+                    <div id="booking-sidebar" className="lg:col-span-1">
                         <FlightBookingSidebar flight={flight} />
                     </div>
                 </div>

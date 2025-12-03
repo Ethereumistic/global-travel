@@ -94,27 +94,27 @@ export default function NavBar() {
     {
       label: "Екскурзии и Почивки",
       href: "/holidays",
-      icon: <TreePalm className="size-7 md:size-5 text-white" />,
+      icon: <TreePalm className="size-7 md:size-5 text-white block md:hidden xl:block" />,
     },
     {
       label: "Хотели",
       href: "/hotels",
-      icon: <Hotel className="size-7 md:size-5 text-white " />,
+      icon: <Hotel className="size-7 md:size-5 text-white block md:hidden xl:block" />,
     },
     {
       label: "Самолетни Билети",
       href: "/flights",
-      icon: <Plane className="size-7 md:size-5 text-white " />,
+      icon: <Plane className="size-7 md:size-5 text-white block md:hidden xl:block" />,
     },
     {
       label: "Rent a Car",
       href: "/rent-a-car",
-      icon: <Car className="size-7 md:size-5 text-white " />,
+      icon: <Car className="size-7 md:size-5 text-white block md:hidden xl:block" />,
     },
     {
       label: "Яхти",
       href: "/yachts",
-      icon: <Sailboat className="size-7 md:size-5 text-white " />,
+      icon: <Sailboat className="size-7 md:size-5 text-white block md:hidden xl:block" />,
     },
   ]
 
@@ -129,6 +129,9 @@ export default function NavBar() {
 
     const isDetailPage =
       (pathWithoutLocale.startsWith("/holidays/") && pathWithoutLocale.split("/").length > 2) ||
+      (pathWithoutLocale.startsWith("/hotels/") && pathWithoutLocale.split("/").length > 2) ||
+      (pathWithoutLocale.startsWith("/flights/") && pathWithoutLocale.split("/").length > 2) ||
+      (pathWithoutLocale.startsWith("/rent-a-car") && pathWithoutLocale.split("/").length > 0) ||
       (pathWithoutLocale.startsWith("/yachts/") && pathWithoutLocale.split("/").length > 2);
 
     if (isDetailPage) {
@@ -179,12 +182,12 @@ export default function NavBar() {
             "md:bg-transparent md:backdrop-filter-none md:border-transparent"
           )}
         >
-          <div className="mx-auto px-4 md:px-8 lg:px-12 xl:px-16">
+          <div className="mx-auto px-2  lg:px-6 xl:px-12">
             <div className="flex items-center justify-between h-20">
               <Logo />
 
               {/* Desktop Navigation */}
-              <div className="hidden md:flex items-center gap-1 lg:gap-4 ">
+              <div className="hidden md:flex items-center  ">
                 <NavigationMenu className="">
                   <NavigationMenuList>
                     {navItems.map((item) =>
@@ -204,10 +207,10 @@ export default function NavBar() {
                           >
                             <Link
                               href={item.href}
-                              className="flex-row items-center gap-2 px-2 lg:px-4 "
+                              className="flex-row items-center gap-2 px-1 md:px-2 lg:px-4 "
                             >
                               {item.icon}
-                              <span className="md:text-base xl:text-lg 2xl:text-xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
+                              <span className=" md:text-sm xl:text-base 2xl:text-xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]">
                                 {item.label}
                               </span>
                             </Link>
@@ -327,7 +330,7 @@ const FloatingActionBtn = ({
   const showText = !isShrunk || isHovered;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-2 right-2 md:right-4 z-50">
       <Button
         size="lg"
         onClick={onClick}
