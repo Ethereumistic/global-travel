@@ -164,6 +164,10 @@ export function PageSlider({
   const clearSelection = (e: React.MouseEvent) => {
     e.stopPropagation();
     setValue("");
+    // Automatically trigger search to clear the filter without scrolling
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("country");
+    router.push(`?${params.toString()}`, { scroll: false });
   };
 
   const selectedOption = options.find((option) => option.value === value);

@@ -88,6 +88,10 @@ export function HolidaySearch({ variant = "hero", className, onSearch }: Holiday
     const clearSelection = (e: React.MouseEvent) => {
         e.stopPropagation();
         setValue("");
+        // Automatically trigger search to clear the filter without scrolling
+        if (onSearch) {
+            onSearch("");
+        }
     };
 
     const selectedOption = options.find((option) => option.value === value);
