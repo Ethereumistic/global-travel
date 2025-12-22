@@ -112,6 +112,11 @@ export default function NavBar() {
       icon: <Car className="size-7 md:size-5 text-white block md:hidden xl:block" />,
     },
     {
+      label: "Трансфери",
+      href: "/rent-a-car",
+      icon: <Car className="size-7 md:size-5 text-white block md:hidden xl:block" />,
+    },
+    {
       label: "Яхти",
       href: "/yachts",
       icon: <Sailboat className="size-7 md:size-5 text-white block md:hidden xl:block" />,

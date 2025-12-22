@@ -4,7 +4,7 @@ import airline from './sanity/schemas/airline'
 import flight from './sanity/schemas/flights'
 export default defineConfig({
     name: 'default',
-    title: 'My Website Studio',
+    title: 'Global Travel Admin Panel',
     projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
     dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
     basePath: '/studio', // This is important!
