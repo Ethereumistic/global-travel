@@ -176,6 +176,8 @@ export function HolidayBookingSidebar({ holiday }: HolidayBookingSidebarProps) {
             }
 
             formData.append("access_key", accessKey);
+            formData.append("subject", `Запитване за Екскурзия - ${data.fullName}`);
+            formData.append("Inquiry Type", "Екскурзия");
             formData.append("full_name", data.fullName);
             formData.append("email", data.email);
             formData.append("phone", data.phone);

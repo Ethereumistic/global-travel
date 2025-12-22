@@ -120,6 +120,8 @@ export function FlightBookingSidebar({ flight }: FlightBookingSidebarProps) {
             }
 
             formData.append("access_key", accessKey);
+            formData.append("subject", `Запитване за Самолетен Билет - ${data.fullName}`);
+            formData.append("Inquiry Type", "Самолетен Билет");
             formData.append("full_name", data.fullName);
             formData.append("email", data.email);
             formData.append("phone", data.phone);

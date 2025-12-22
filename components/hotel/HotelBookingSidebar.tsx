@@ -112,6 +112,8 @@ export function HotelBookingSidebar({ hotel }: HotelBookingSidebarProps) {
             }
 
             formData.append("access_key", accessKey);
+            formData.append("subject", `Запитване за Хотел - ${data.fullName}`);
+            formData.append("Inquiry Type", "Хотел");
             formData.append("full_name", data.fullName);
             formData.append("email", data.email);
             formData.append("phone", data.phone);

@@ -68,7 +68,7 @@ export function ContactForm({
     title = "Персонално Запитване",
     description = "Попълнете формата и ние ще организираме Вашето мечтано пътуване",
     submitText = "Изпрати Запитване",
-    formType = "General Inquiry"
+    formType = "Персонално Запитване"
 }: ContactFormProps) {
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [isSuccess, setIsSuccess] = React.useState(false);

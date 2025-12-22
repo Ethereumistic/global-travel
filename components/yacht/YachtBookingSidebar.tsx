@@ -183,6 +183,8 @@ export function YachtBookingSidebar({ yacht, externalCountryCode }: YachtBooking
       }
 
       formData.append("access_key", accessKey);
+      formData.append("subject", `Запитване за Яхта - ${data.fullName}`);
+      formData.append("Inquiry Type", "Яхта");
       formData.append("full_name", data.fullName);
       formData.append("email", data.email);
       formData.append("phone", data.phone);

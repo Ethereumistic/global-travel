@@ -39,7 +39,7 @@ export default async function TransfersPage(props: PageProps) {
                     title="Запитване за Трансфер"
                     description="Попълнете формата и ние ще Ви изпратим оферта за вашия трансфер"
                     submitText="Изпрати Запитване"
-                    formType="Transfer"
+                    formType="Трансфер"
                 />
             </div>
         </main>
