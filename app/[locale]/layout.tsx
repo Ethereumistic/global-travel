@@ -33,7 +33,23 @@ export const metadata: Metadata = {
     default: 'Global Travel - Туристическа Агенция',
   },
   description: 'Вашият надежден партньор за почивки, екскурзии, хотели и яхти. Открийте света с Global Travel.',
-  keywords: ['почивки', 'екскурзии', 'хотели', 'яхти', 'туристическа агенция', 'travel agency bulgaria', 'почивка в турция', 'почивка в гърция'],
+  keywords: ['почивки', 'екскурзии', 'хотели', 'яхти', 'туристическа агенция', 'travel agency bulgaria', 'почивка в турция', 'почивка в гърция', 'почивки в европа'],
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png' },
+    ],
+    other: [
+      {
+        rel: 'manifest',
+        url: '/site.webmanifest',
+      },
+    ],
+  },
   openGraph: {
     type: 'website',
     locale: 'bg_BG',
@@ -42,7 +58,7 @@ export const metadata: Metadata = {
     description: 'Вашият надежден партньор за почивки, екскурзии, хотели и яхти.',
     images: [
       {
-        url: 'https://globaltravel.bg/og-image.jpg', // Ideally this fits a real image, but placeholder is fine for now if one doesn't exist
+        url: '/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Global Travel',
