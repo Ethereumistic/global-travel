@@ -18,6 +18,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { ALL_COUNTRIES } from "@/lib/constants";
+import { getHolidays, getHolidayDestinations } from "@/app/actions/get-holidays";
 
 interface CountryOption {
     value: string;
@@ -41,28 +42,9 @@ export function HolidaySearch({ variant = "hero", className, onSearch }: Holiday
         const fetchDestinations = async () => {
             setLoading(true);
             try {
-                const res = await fetch("/api/holidays?limit=100");
-                const data = await res.json();
-
-                if (data.holidays) {
-                    const uniqueCountries = new Map<string, CountryOption>();
-                    data.holidays.forEach((holiday: any) => {
-                        if (holiday.country && holiday.country.iso_code) {
-                            const countryCodeLower = holiday.country.iso_code.toLowerCase();
-                            const countryData = ALL_COUNTRIES.find(
-                                (c) => c.abbr === countryCodeLower
-                            );
-
-                            if (!uniqueCountries.has(countryCodeLower)) {
-                                uniqueCountries.set(countryCodeLower, {
-                                    value: countryCodeLower,
-                                    label: countryData ? countryData.name : holiday.country.name,
-                                });
-                            }
-                        }
-                    });
-                    setOptions(Array.from(uniqueCountries.values()));
-                }
+                // Use optimized server action to get all available countries
+                const countries = await getHolidayDestinations();
+                setOptions(countries);
             } catch (error) {
                 console.error("Failed to fetch destinations", error);
             } finally {

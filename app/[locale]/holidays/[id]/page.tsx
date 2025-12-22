@@ -15,6 +15,33 @@ import { CityRouteCarousel } from "@/components/holiday/CityRouteCarousel";
 import { DateInfoWidget } from "@/components/holiday/DateInfoWidget";
 import { HolidayHotels } from "@/components/holiday/HolidayHotels";
 import { YachtGallery } from "@/components/yacht/YachtGallery";
+import type { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+    const { id } = await params;
+    const holiday = await getHolidayById(id);
+
+    if (!holiday) {
+        return {
+            title: "Почивка | Global Travel",
+        };
+    }
+
+    // Strip HTML tags from description for metadata
+    const description = holiday.description
+        ? holiday.description.replace(/<[^>]*>/g, '').slice(0, 160) + '...'
+        : `Почивка до ${holiday.title}`;
+
+    return {
+        title: holiday.title,
+        description: description,
+        openGraph: {
+            title: holiday.title,
+            description: description,
+            images: holiday.main_image ? [holiday.main_image.image] : [],
+        },
+    };
+}
 
 export default async function HolidayDetailPage({
     params,

@@ -1,8 +1,16 @@
 import { PageSlider } from "@/components/layout/page-slider";
 import { HotelList } from "@/components/hotel/hotel-list";
 import { Building2 } from "lucide-react";
-import { Hotel, HotelsResponse } from "@/lib/types-hotel";
 import { ALL_COUNTRIES } from "@/lib/constants";
+import { getHotels } from "@/app/actions/get-hotels";
+
+
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Хотели | Global Travel",
+    description: "Резервирайте хотел за вашата почивка. Богат избор от хотели в цял свят.",
+};
 
 const HOTEL_HERO_IMAGES = [
     "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hotels/1.jpg",
@@ -14,31 +22,7 @@ const HOTEL_HERO_IMAGES = [
     "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hotels/7.jpg",
     "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hotels/8.jpg",
     "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hotels/9.jpg",
-
 ];
-
-async function getHotels(limit = 20, offset = 0): Promise<HotelsResponse> {
-    try {
-        const apiUrl = `https://live.planet.bg/api/v1/hotels/?limit=${limit}&offset=${offset}`;
-        const res = await fetch(apiUrl, {
-            next: { revalidate: 3600 },
-        });
-
-        if (!res.ok) {
-            console.error("Failed to fetch hotels:", res.statusText);
-            return { hotels: [], total: 0 };
-        }
-
-        const data = await res.json();
-        return {
-            hotels: data.results || [],
-            total: data.count || 0,
-        };
-    } catch (error) {
-        console.error("Error fetching hotels:", error);
-        return { hotels: [], total: 0 };
-    }
-}
 
 interface PageProps {
     searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -51,17 +35,9 @@ export default async function HotelsPage(props: PageProps) {
         ? resolvedParams.country.toLowerCase()
         : null;
 
-    // Fetch initial data
-    // Fetch a large number of hotels to allow for client-side filtering and pagination
-    const { hotels: allHotels } = await getHotels(1000);
-
-    // Filter data
-    const filteredHotels = countryFilter
-        ? allHotels.filter((h) => h.country_code?.toLowerCase() === countryFilter)
-        : allHotels;
-
-    // Only show enabled hotels
-    const enabledHotels = filteredHotels.filter(h => h.status === 'enabled');
+    // Fetch initial data (limit 12)
+    // getHotels returns { hotels, total }
+    const { hotels: initialHotels } = await getHotels(12, 0, countryFilter);
 
     const countryName = countryFilter
         ? ALL_COUNTRIES.find(c => c.abbr === countryFilter)?.name || countryFilter.toUpperCase()
@@ -93,7 +69,8 @@ export default async function HotelsPage(props: PageProps) {
                 </div>
 
                 <HotelList
-                    initialHotels={enabledHotels}
+                    initialHotels={initialHotels}
+                    country={countryFilter}
                 />
             </div>
         </main>

@@ -4,6 +4,14 @@ import { ALL_COUNTRIES } from "@/lib/constants";
 import { getHolidays } from "@/app/actions/get-holidays";
 import { HolidayList } from "@/components/holiday/holiday-list";
 
+
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Почивки и Екскурзии | Global Travel",
+    description: "Разгледайте нашите актуални предложения за почивки и екскурзии до екзотични и популярни дестинации.",
+};
+
 const HOLIDAY_HERO_IMAGES = [
     "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/brazil.png",
     "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/hero/img/cambodia.png",
@@ -32,8 +40,8 @@ export default async function HolidaysPage(props: PageProps) {
         ? resolvedParams.country.toLowerCase()
         : null;
 
-    // Fetch all matching holidays (up to 1000) for client-side pagination
-    const allHolidays = await getHolidays(1000, 0, countryFilter);
+    // Fetch initial holidays (limit 12)
+    const initialHolidays = await getHolidays(12, 0, countryFilter);
 
     const countryName = countryFilter
         ? ALL_COUNTRIES.find(c => c.abbr === countryFilter)?.name || countryFilter.toUpperCase()
@@ -65,7 +73,8 @@ export default async function HolidaysPage(props: PageProps) {
                 </div>
 
                 <HolidayList
-                    allHolidays={allHolidays}
+                    initialHolidays={initialHolidays}
+                    country={countryFilter}
                 />
             </div>
         </main>

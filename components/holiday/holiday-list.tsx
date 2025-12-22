@@ -5,39 +5,54 @@ import { Holiday } from "@/lib/types-holiday";
 import { HolidayCard } from "@/components/holiday/holiday-card";
 import { Palmtree, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getHolidays } from "@/app/actions/get-holidays";
 
 interface HolidayListProps {
-    allHolidays: Holiday[];
+    initialHolidays: Holiday[];
+    country?: string | null;
 }
 
-const INITIAL_DISPLAY_COUNT = 12;
 const LOAD_MORE_COUNT = 12;
 
-export function HolidayList({ allHolidays }: HolidayListProps) {
-    const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT);
+export function HolidayList({ initialHolidays, country }: HolidayListProps) {
+    const [holidays, setHolidays] = useState<Holiday[]>(initialHolidays);
+    const [offset, setOffset] = useState(initialHolidays.length);
+    const [hasMore, setHasMore] = useState(initialHolidays.length >= LOAD_MORE_COUNT);
     const [loadingMore, setLoadingMore] = useState(false);
 
-    // Reset display count when the underlying data changes (e.g. filter change)
+    // Reset state when filters change (initialHolidays updates)
     useEffect(() => {
-        setDisplayCount(INITIAL_DISPLAY_COUNT);
-    }, [allHolidays]);
+        setHolidays(initialHolidays);
+        setOffset(initialHolidays.length);
+        setHasMore(initialHolidays.length >= LOAD_MORE_COUNT);
+    }, [initialHolidays]);
 
-    const handleShowMore = () => {
+    const handleShowMore = async () => {
         setLoadingMore(true);
-        // Simulate a small delay for better UX, similar to root page
-        setTimeout(() => {
-            setDisplayCount(prev => prev + LOAD_MORE_COUNT);
-            setLoadingMore(false);
-        }, 300);
-    };
+        try {
+            const newHolidays = await getHolidays(LOAD_MORE_COUNT, offset, country);
 
-    const displayedHolidays = allHolidays.slice(0, displayCount);
-    const hasMore = displayedHolidays.length < allHolidays.length;
+            if (newHolidays.length < LOAD_MORE_COUNT) {
+                setHasMore(false);
+            }
+
+            if (newHolidays.length > 0) {
+                setHolidays(prev => [...prev, ...newHolidays]);
+                setOffset(prev => prev + newHolidays.length);
+            } else {
+                setHasMore(false);
+            }
+        } catch (error) {
+            console.error("Error loading more holidays:", error);
+        } finally {
+            setLoadingMore(false);
+        }
+    };
 
     return (
         <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {displayedHolidays.map((holiday) => (
+                {holidays.map((holiday) => (
                     <div key={holiday.id} className="h-full">
                         <HolidayCard holiday={holiday} />
                     </div>
@@ -60,7 +75,6 @@ export function HolidayList({ allHolidays }: HolidayListProps) {
                             </>
                         ) : (
                             <>
-                                {/* Покажи още ({Math.min(LOAD_MORE_COUNT, allHolidays.length - displayCount)}) */}
                                 Покажи още
                             </>
                         )}
@@ -68,13 +82,13 @@ export function HolidayList({ allHolidays }: HolidayListProps) {
                 </div>
             )}
 
-            {!hasMore && allHolidays.length > 0 && (
+            {!hasMore && holidays.length > 0 && (
                 <div className="text-center py-12 text-muted-foreground">
                     <p>Това са всички предложения за момента.</p>
                 </div>
             )}
 
-            {allHolidays.length === 0 && (
+            {holidays.length === 0 && (
                 <div className="text-center py-20">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
                         <Palmtree className="h-8 w-8 text-slate-400" />

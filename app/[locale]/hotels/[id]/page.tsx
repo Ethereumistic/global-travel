@@ -8,6 +8,8 @@ import { HotelInfo } from "@/components/hotel/HotelInfo";
 import { HotelBookingSidebar } from "@/components/hotel/HotelBookingSidebar";
 import type { Hotel } from "@/lib/types-hotel";
 
+import type { Metadata } from "next";
+
 // Helper to fetch hotel data
 async function getHotelById(id: string): Promise<Hotel | null> {
     try {
@@ -22,6 +24,31 @@ async function getHotelById(id: string): Promise<Hotel | null> {
         console.error("Error fetching hotel:", error);
         return null;
     }
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+    const { id } = await params;
+    const hotel = await getHotelById(id);
+
+    if (!hotel) {
+        return {
+            title: "Хотел | Global Travel",
+        };
+    }
+
+    const description = hotel.description
+        ? hotel.description.replace(/<[^>]*>/g, '').slice(0, 160) + '...'
+        : `Хотел ${hotel.name} - Global Travel`;
+
+    return {
+        title: hotel.name,
+        description: description,
+        openGraph: {
+            title: hotel.name,
+            description: description,
+            images: hotel.main_image ? [hotel.main_image.image] : [],
+        },
+    };
 }
 
 export default async function HotelDetailPage({

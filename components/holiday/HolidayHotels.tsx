@@ -38,7 +38,7 @@ export function HolidayHotels({ trips }: HolidayHotelsProps) {
     }
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
             {uniqueHotels.map(hotel => (
                 <div key={hotel.id} className="h-full">
                     <HotelCard hotel={hotel} />

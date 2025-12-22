@@ -113,7 +113,7 @@ export default function NavBar() {
     },
     {
       label: "Трансфери",
-      href: "/rent-a-car",
+      href: "/transfers",
       icon: <Car className="size-7 md:size-5 text-white block md:hidden xl:block" />,
     },
     {
@@ -137,6 +137,7 @@ export default function NavBar() {
       (pathWithoutLocale.startsWith("/hotels/") && pathWithoutLocale.split("/").length > 2) ||
       (pathWithoutLocale.startsWith("/flights/") && pathWithoutLocale.split("/").length > 2) ||
       (pathWithoutLocale.startsWith("/rent-a-car") && pathWithoutLocale.split("/").length > 0) ||
+      (pathWithoutLocale.startsWith("/transfers") && pathWithoutLocale.split("/").length > 0) ||
       (pathWithoutLocale.startsWith("/yachts/") && pathWithoutLocale.split("/").length > 2);
 
     if (isDetailPage) {

@@ -19,6 +19,9 @@ import {
 } from "@/components/ui/popover";
 import { ALL_COUNTRIES } from "@/lib/constants";
 import { useRouter, useSearchParams } from "next/navigation";
+import { getHolidays, getHolidayDestinations } from "@/app/actions/get-holidays";
+import { getHotels, getHotelDestinations } from "@/app/actions/get-hotels";
+import { getYachts, getYachtDestinations } from "@/app/actions/get-yachts";
 
 interface PageSliderProps {
   images: string[];
@@ -74,73 +77,14 @@ export function PageSlider({
       setLoading(true);
       try {
         if (searchType === "yachts") {
-          // Using relative path for safety, ensures it hits the Next.js API route
-          const res = await fetch("/api/yachts?limit=100");
-          const data = await res.json();
-
-          if (data.yachts) {
-            const uniqueCountries = new Map<string, CountryOption>();
-            data.yachts.forEach((yacht: any) => {
-              if (yacht.country) {
-                const countryCodeLower = yacht.country.toLowerCase();
-                const countryData = ALL_COUNTRIES.find(
-                  (c) => c.abbr === countryCodeLower
-                );
-                if (countryData && !uniqueCountries.has(countryCodeLower)) {
-                  uniqueCountries.set(countryCodeLower, {
-                    value: countryCodeLower,
-                    label: countryData.name,
-                  });
-                }
-              }
-            });
-            setOptions(Array.from(uniqueCountries.values()));
-          }
+          const countries = await getYachtDestinations();
+          setOptions(countries);
         } else if (searchType === "holidays") {
-          const res = await fetch("/api/holidays?limit=100");
-          const data = await res.json();
-
-          if (data.holidays) {
-            const uniqueCountries = new Map<string, CountryOption>();
-            data.holidays.forEach((holiday: any) => {
-              if (holiday.country && holiday.country.iso_code) {
-                const countryCodeLower = holiday.country.iso_code.toLowerCase();
-                const countryData = ALL_COUNTRIES.find(
-                  (c) => c.abbr === countryCodeLower
-                );
-
-                if (!uniqueCountries.has(countryCodeLower)) {
-                  uniqueCountries.set(countryCodeLower, {
-                    value: countryCodeLower,
-                    label: countryData ? countryData.name : holiday.country.name,
-                  });
-                }
-              }
-            });
-            setOptions(Array.from(uniqueCountries.values()));
-          }
+          const countries = await getHolidayDestinations();
+          setOptions(countries);
         } else if (searchType === "hotels") {
-          const res = await fetch("/api/hotels?limit=100");
-          const data = await res.json();
-
-          if (data.hotels) {
-            const uniqueCountries = new Map<string, CountryOption>();
-            data.hotels.forEach((hotel: any) => {
-              if (hotel.country_code) {
-                const countryCodeLower = hotel.country_code.toLowerCase();
-                const countryData = ALL_COUNTRIES.find(
-                  (c) => c.abbr === countryCodeLower
-                );
-                if (countryData && !uniqueCountries.has(countryCodeLower)) {
-                  uniqueCountries.set(countryCodeLower, {
-                    value: countryCodeLower,
-                    label: countryData.name,
-                  });
-                }
-              }
-            });
-            setOptions(Array.from(uniqueCountries.values()));
-          }
+          const countries = await getHotelDestinations();
+          setOptions(countries);
         }
       } catch (error) {
         console.error("Failed to fetch destinations", error);

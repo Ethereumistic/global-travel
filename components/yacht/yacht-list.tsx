@@ -1,39 +1,48 @@
 "use client";
 
-import { useState } from "react";
-import { YachtCard } from "@/components/yacht/yacht-card"; // Ensure this path matches where you saved the card
+import { useState, useEffect } from "react";
+import { YachtCard } from "@/components/yacht/yacht-card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Anchor } from "lucide-react";
 import type { Yacht } from "@/lib/types-yacht";
+import { getYachts } from "@/app/actions/get-yachts";
 
 interface YachtListProps {
   initialYachts: Yacht[];
-  initialTotal: number;
+  country?: string | null;
 }
 
-export function YachtList({ initialYachts, initialTotal }: YachtListProps) {
+const LOAD_MORE_COUNT = 9;
+
+export function YachtList({ initialYachts, country }: YachtListProps) {
   const [yachts, setYachts] = useState<Yacht[]>(initialYachts);
   const [offset, setOffset] = useState(initialYachts.length);
   const [isLoading, setIsLoading] = useState(false);
-  
-  // Calculate if there are more to show
-  const hasMore = yachts.length < initialTotal;
+  // Initial heuristic: if we got full batch, likely more exists. 
+  // If initial fetch was < 9, then definitely no more.
+  const [hasMore, setHasMore] = useState(initialYachts.length >= 1);
 
-  const loadMore = async () => {
-    if (isLoading || !hasMore) return;
-    
+  // Reset state when filters change
+  useEffect(() => {
+    setYachts(initialYachts);
+    setOffset(initialYachts.length);
+    setHasMore(initialYachts.length >= 1);
+  }, [initialYachts]);
+
+  const handleShowMore = async () => {
     setIsLoading(true);
     try {
-      // We fetch 9 more, using the current length as the offset
-      const res = await fetch(`/api/yachts?limit=9&offset=${offset}`);
-      
-      if (!res.ok) throw new Error("Failed to fetch");
-      
-      const data = await res.json();
-      
-      if (data.yachts && Array.isArray(data.yachts)) {
-        setYachts((prev) => [...prev, ...data.yachts]);
-        setOffset((prev) => prev + 9);
+      const newYachts = await getYachts(LOAD_MORE_COUNT, offset, country);
+
+      if (newYachts.length < LOAD_MORE_COUNT) {
+        setHasMore(false);
+      }
+
+      if (newYachts.length > 0) {
+        setYachts(prev => [...prev, ...newYachts]);
+        setOffset(prev => prev + newYachts.length);
+      } else {
+        setHasMore(false);
       }
     } catch (error) {
       console.error("Error loading more yachts:", error);
@@ -45,30 +54,30 @@ export function YachtList({ initialYachts, initialTotal }: YachtListProps) {
   return (
     <div className="space-y-10">
       {/* Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {yachts.map((yacht) => (
-          <YachtCard key={`${yacht.id}-${yacht.name}`} yacht={yacht} />
+          <YachtCard key={yacht.id} yacht={yacht} />
         ))}
       </div>
 
       {/* Empty State */}
       {yachts.length === 0 && (
-        <div className="text-center py-20 bg-secondary/20 rounded-xl">
-          <Anchor className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-muted-foreground">
-            В момента няма налични яхти.
-          </h3>
+        <div className="text-center py-20">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
+            <Anchor className="h-8 w-8 text-slate-400" />
+          </div>
+          <h3 className="text-lg font-medium text-slate-900">Няма намерени яхти</h3>
+          <p className="text-slate-500 mt-2">Нямаме налични лодки за тази дестинация в момента.</p>
         </div>
       )}
 
       {/* Show More Button */}
-      {hasMore && (
+      {hasMore && yachts.length > 0 && (
         <div className="flex justify-center pb-8">
-          <Button 
-            onClick={loadMore} 
-            size="lg" 
-            variant="outline"
-            className="min-w-[200px] border-primary/20 hover:bg-primary/5 text-primary"
+          <Button
+            onClick={handleShowMore}
+            size="lg"
+            className=""
             disabled={isLoading}
           >
             {isLoading ? (
@@ -77,9 +86,15 @@ export function YachtList({ initialYachts, initialTotal }: YachtListProps) {
                 Зареждане...
               </>
             ) : (
-              `Покажи още (${initialTotal - yachts.length})`
+              `Покажи още`
             )}
           </Button>
+        </div>
+      )}
+
+      {!hasMore && yachts.length > 0 && (
+        <div className="text-center py-12 text-muted-foreground">
+          <p>Това са всички предложения за момента.</p>
         </div>
       )}
     </div>

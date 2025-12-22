@@ -181,8 +181,7 @@ export function ContactForm({
                         Вашето запитване ({formType}) беше изпратено успешно. Наш консултант ще се свърже с Вас възможно най-скоро.
                     </p>
                     <Button
-                        variant="outline"
-                        className="mt-8 border-white/20 text-white hover:bg-white/10"
+                        className="mt-8 "
                         onClick={() => setIsSuccess(false)}
                     >
                         Изпрати ново запитване
