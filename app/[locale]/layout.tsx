@@ -28,6 +28,7 @@ export function generateStaticParams() {
 }
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
   title: {
     template: '%s | Global Travel',
     default: 'Global Travel - Туристическа Агенция',
