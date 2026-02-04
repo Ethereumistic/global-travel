@@ -1,0 +1,25 @@
+name = "global-travel"
+compatibility_date = "2024-01-01"
+main = ".worker-next/index.mjs"
+
+# Workers configuration
+workers_dev = true
+
+# Build configuration
+[build]
+command = "pnpm run build:cloudflare"
+
+# Environment variables (set these in Cloudflare dashboard)
+[vars]
+# NEXT_PUBLIC_SANITY_PROJECT_ID will be set in dashboard
+# NEXT_PUBLIC_SANITY_DATASET will be set in dashboard
+# NEXT_PUBLIC_STUDIO_URL will be set in dashboard
+
+# Production environment
+[env.production]
+name = "global-travel-production"
+workers_dev = false
+
+# Development/preview environment
+[env.preview]
+name = "global-travel-preview"
