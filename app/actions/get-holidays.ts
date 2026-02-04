@@ -5,8 +5,6 @@ import { ALL_COUNTRIES } from "@/lib/constants";
 
 export async function getHolidays(limit = 12, offset = 0, country: string | null = null): Promise<Holiday[]> {
     try {
-        // 1. Always fetch a large set to ensure we have data to filter/slice from the cache
-        // The fetch() call is cached by Next.js, so this doesn't hit the external API every time.
         const fetchLimit = 1000;
         const fetchOffset = 0;
 
