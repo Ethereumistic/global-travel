@@ -7,7 +7,6 @@ import {
   TreePalm, MapPin, Sailboat, Search, Ticket, Hotel, Car,
 } from "lucide-react"
 import Link from "next/link"
-import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 
 import {
@@ -41,7 +40,6 @@ const TRANSPARENT_DYNAMIC_SECTIONS = [
 
 export default function NavBar() {
   const [mobileOpen, setMobileOpen] = useState(false)
-  const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
   const router = useRouter()

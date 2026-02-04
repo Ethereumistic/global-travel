@@ -1,7 +1,7 @@
 import React from 'react';
 import './globals.css';
 import NavBarWithPathCheck from '@/components/layout/nav-bar-wrapper';
-import { ThemeProvider } from "next-themes";
+// import { ThemeProvider } from "next-themes";
 import { Balsamiq_Sans, Geologica } from 'next/font/google'
 import FooterWithPathCheck from '@/components/layout/footer-wrapper';
 
@@ -73,13 +73,11 @@ export default function RootLayout({
   return (
     <html lang="bg">
       <body className={`${balsamiq.variable} ${geologica.variable} antialiased font-geologica`} >
-        <ThemeProvider attribute="class" defaultTheme="light" >
-          <React.Suspense fallback={null}>
-            <NavBarWithPathCheck />
-          </React.Suspense>
-          {children}
-          <FooterWithPathCheck />
-        </ThemeProvider>
+        <React.Suspense fallback={null}>
+          <NavBarWithPathCheck />
+        </React.Suspense>
+        {children}
+        <FooterWithPathCheck />
       </body>
     </html>
   );
