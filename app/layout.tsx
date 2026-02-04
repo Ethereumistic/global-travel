@@ -1,7 +1,6 @@
 import React from 'react';
 import './globals.css';
 import NavBarWithPathCheck from '@/components/layout/nav-bar-wrapper';
-// import { ThemeProvider } from "next-themes";
 import { Balsamiq_Sans, Geologica } from 'next/font/google'
 import FooterWithPathCheck from '@/components/layout/footer-wrapper';
 
