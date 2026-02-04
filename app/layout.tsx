@@ -4,7 +4,7 @@ import NavBarWithPathCheck from '@/components/layout/nav-bar-wrapper';
 import { Balsamiq_Sans, Geologica } from 'next/font/google'
 import FooterWithPathCheck from '@/components/layout/footer-wrapper';
 
-export const runtime = 'edge';
+// export const runtime = 'edge';
 
 const balsamiq = Balsamiq_Sans({
   variable: "--font-balsamiq",
