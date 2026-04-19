@@ -6,7 +6,7 @@ pages_build_output_dir = ".vercel/output/static"
 
 [[routes]]
 pattern = "global-travel.bg/*"
-zone_name = "global-travel.bg"
+zone_name = "https://global-travel.badjarovv.workers.dev"
 
 [vars]
-NEXT_PUBLIC_BASE_URL = "https://global-travel.bg"
+NEXT_PUBLIC_BASE_URL = "https://global-travel.badjarovv.workers.dev"
