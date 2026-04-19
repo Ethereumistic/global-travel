@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { getYachtById } from "@/app/actions/get-yachts";
 import YachtDetailClient from "./client";
 
+export const runtime = 'edge';
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const yacht = await getYachtById(id);

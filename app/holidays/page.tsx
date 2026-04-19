@@ -3,9 +3,9 @@ import { Palmtree } from "lucide-react";
 import { ALL_COUNTRIES } from "@/lib/constants";
 import { getHolidays } from "@/app/actions/get-holidays";
 import { HolidayList } from "@/components/holiday/holiday-list";
-
-
 import type { Metadata } from "next";
+
+export const runtime = 'edge';
 
 export const metadata: Metadata = {
     title: "Почивки и Екскурзии | Global Travel",

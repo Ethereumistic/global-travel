@@ -2,6 +2,8 @@ import { PageSlider } from "@/components/layout/page-slider";
 import { Car } from "lucide-react";
 import { RentForm } from "@/components/rent-a-car/rent-form";
 
+export const runtime = 'edge';
+
 const RENT_A_CAR_HERO_IMAGES = [
     "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/rent-a-car/1.jpg",
     "https://cdn.jsdelivr.net/gh/Ethereumistic/global-travel-assets/rent-a-car/2.jpg",

@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ALL_COUNTRIES } from "@/lib/constants";
 
+export const runtime = 'edge';
+
 // Revalidate every hour
 export const revalidate = 3600;
 

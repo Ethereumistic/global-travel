@@ -17,6 +17,8 @@ import { HolidayHotels } from "@/components/holiday/HolidayHotels";
 import { YachtGallery } from "@/components/yacht/YachtGallery";
 import type { Metadata } from "next";
 
+export const runtime = 'edge';
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params;
     const holiday = await getHolidayById(id);

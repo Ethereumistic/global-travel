@@ -7,6 +7,8 @@ import { getHotels } from "@/app/actions/get-hotels";
 
 import type { Metadata } from "next";
 
+export const runtime = 'edge';
+
 export const metadata: Metadata = {
     title: "Хотели | Global Travel",
     description: "Резервирайте хотел за вашата почивка. Богат избор от хотели в цял свят.",

@@ -7,6 +7,8 @@ import { getYachts } from "@/app/actions/get-yachts";
 
 import type { Metadata } from "next";
 
+export const runtime = 'edge';
+
 export const metadata: Metadata = {
   title: "Яхти под наем | Global Travel",
   description: "Луксозни яхти под наем за незабравими морски приключения. Разгледайте нашия каталог.",

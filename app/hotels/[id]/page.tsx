@@ -10,6 +10,8 @@ import type { Hotel } from "@/lib/types-hotel";
 
 import type { Metadata } from "next";
 
+export const runtime = 'edge';
+
 // Helper to fetch hotel data
 async function getHotelById(id: string): Promise<Hotel | null> {
     try {
