@@ -2,6 +2,7 @@ import { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   images: {
+    unoptimized: true,
     // 'domains' is deprecated. 'remotePatterns' is the new, more secure standard.
     remotePatterns: [
       {
