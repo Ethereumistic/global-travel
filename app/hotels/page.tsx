@@ -2,7 +2,7 @@ import { PageSlider } from "@/components/layout/page-slider";
 import { HotelList } from "@/components/hotel/hotel-list";
 import { Building2 } from "lucide-react";
 import { ALL_COUNTRIES } from "@/lib/constants";
-import { getHotels } from "@/app/actions/get-hotels";
+import { getHotelPage } from "@/app/actions/get-hotels";
 
 
 import type { Metadata } from "next";
@@ -37,7 +37,7 @@ export default async function HotelsPage(props: PageProps) {
 
     // Fetch initial data (limit 12)
     // getHotels returns { hotels, total }
-    const { hotels: initialHotels } = await getHotels(12, 0, countryFilter);
+    const { items: initialHotels, nextOffset } = await getHotelPage(12, 0, countryFilter);
 
     const countryName = countryFilter
         ? ALL_COUNTRIES.find(c => c.abbr === countryFilter)?.name || countryFilter.toUpperCase()
@@ -69,6 +69,8 @@ export default async function HotelsPage(props: PageProps) {
                 </div>
 
                 <HotelList
+                    key={countryFilter || "all"}
+                    initialNextOffset={nextOffset}
                     initialHotels={initialHotels}
                     country={countryFilter}
                 />

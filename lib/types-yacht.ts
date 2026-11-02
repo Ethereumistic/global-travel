@@ -48,3 +48,7 @@ export interface YachtImage {
     
     prices: SeasonalPrice[];
   }
+
+export type YachtCardData = Pick<Yacht,
+  'id' | 'name' | 'main_image' | 'min_price' | 'country' | 'home_port' |
+  'guests' | 'cabins' | 'wc' | 'available_as'>;

@@ -1,7 +1,7 @@
 import { PageSlider } from "@/components/layout/page-slider";
 import { Palmtree } from "lucide-react";
 import { ALL_COUNTRIES } from "@/lib/constants";
-import { getHolidays } from "@/app/actions/get-holidays";
+import { getHolidayPage } from "@/app/actions/get-holidays";
 import { HolidayList } from "@/components/holiday/holiday-list";
 
 
@@ -41,7 +41,7 @@ export default async function HolidaysPage(props: PageProps) {
         : null;
 
     // Fetch initial holidays (limit 12)
-    const initialHolidays = await getHolidays(12, 0, countryFilter);
+    const { items: initialHolidays, nextOffset } = await getHolidayPage(12, 0, countryFilter);
 
     const countryName = countryFilter
         ? ALL_COUNTRIES.find(c => c.abbr === countryFilter)?.name || countryFilter.toUpperCase()
@@ -73,6 +73,8 @@ export default async function HolidaysPage(props: PageProps) {
                 </div>
 
                 <HolidayList
+                    key={countryFilter || "all"}
+                    initialNextOffset={nextOffset}
                     initialHolidays={initialHolidays}
                     country={countryFilter}
                 />

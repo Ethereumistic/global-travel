@@ -54,8 +54,8 @@ export function HolidayHeader({ holiday, className }: HolidayHeaderProps) {
     }, [heroImages.length]);
 
     // Format Price
-    const currentPrice = holiday.min_price.main?.value || holiday.min_price.value;
-    const currency = holiday.min_price.main?.currency || holiday.min_price.display_currency;
+    const currentPrice = holiday.min_price?.main?.value ?? holiday.min_price?.value ?? 'При запитване';
+    const currency = holiday.min_price?.main?.currency || holiday.min_price?.display_currency || '';
 
     // Get Bulgarian Country Name and Flag
     const countryData = React.useMemo(() => {

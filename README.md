@@ -1,5 +1,37 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Hosting and catalogue caching
+
+Deploy directly to the existing Netlify project `global-travel-bg` (`659b7567-c434-41d6-9ee4-55deec4de30e`). `netlify.toml` selects Node 22, `pnpm build`, and `.next`. Netlify supplies its maintained Next.js/OpenNext adapter. Keep the existing DNS nameservers; do not add a catch-all SPA redirect.
+
+```bash
+pnpm install --frozen-lockfile
+pnpm test
+pnpm typecheck
+npx netlify-cli@27.16.2 link --id 659b7567-c434-41d6-9ee4-55deec4de30e
+npx netlify-cli@27.16.2 env:import .env
+npx netlify-cli@27.16.2 deploy --remote
+# After checking the returned draft URL:
+npx netlify-cli@27.16.2 deploy --remote --prod
+```
+
+The ignored `.env` contains the five `NEXT_PUBLIC_*` settings used by the site, Sanity and Web3Forms. These are also needed on Netlify for builds and functions. Set `NEXT_PUBLIC_BASE_URL=https://global-travel.bg` on Netlify; a local localhost value must not become the deployed canonical URL. Never commit credentials. Remote builds require committed, pushed source. Prefer Netlify's Linux build rather than uploading a Windows-generated standalone server.
+
+### Why the original catalogue used 1,000 records
+
+The original server actions downloaded the first 1,000 rows, filtered countries locally, then sliced the requested page. The fetch cache reduced network calls but every action still deserialized and filtered the bulk response. Destination dropdowns repeated that processing. Hotels beyond the first 1,000 could not be browsed or found by country.
+
+`lib/planet.ts` now owns the integration:
+
+- Hotels use verified upstream pagination and country UUID filters, with ISO codes resolved through Planet's small country directory. Pagination tracks the raw upstream cursor so hidden/disabled hotels cannot cause missing rows or a premature end. No overall catalogue limit is imposed.
+- Holiday and yacht indexes are assembled from successive upstream pages, rather than assuming 1,000 rows means the whole catalogue. Only card fields are cached in small chunks; descriptions, galleries, inventory and other detail data remain available through the existing detail endpoints. These indexes retain global ascending price order and yacht country filtering, which Planet currently ignores.
+- The resulting small pages and destination lists are cached separately across requests with Next.js Data Cache (supported by Netlify). A hot visitor request reads its small result rather than deserializing the complete index. Index chunks refresh hourly, result pages every five minutes. Stale-while-revalidate can add a refresh window; this is catalogue caching, not live price confirmation.
+- Failures throw instead of turning into cached empty catalogues. Load-more buttons retain their cursor and offer a retry after errors. Server actions validate page sizes and country codes. The 100-row request ceiling bounds each response, not how far visitors can browse.
+- Hotel destination choices use the complete upstream country directory; countries without current inventory can return an empty result. They are no longer inferred from an arbitrary initial hotel sample.
+- `/sitemap.xml` is a sitemap index. Hotel sitemaps each read at most a 1,000-row range, including ranges beyond the old cutoff, instead of loading all hotel records in every sitemap request. URLs use the configured production hostname and actual routes.
+
+The Cloudflare test Worker and its dedicated KV cache were removed. The project uses the normal Next.js runtime again.
+
 ## Getting Started
 
 First, run the development server:

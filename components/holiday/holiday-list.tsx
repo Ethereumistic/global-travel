@@ -1,56 +1,46 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Holiday } from "@/lib/types-holiday";
+import { useState } from "react";
+import { HolidayCardData } from "@/lib/types-holiday";
 import { HolidayCard } from "@/components/holiday/holiday-card";
 import { Palmtree, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getHolidays } from "@/app/actions/get-holidays";
+import { getHolidayPage } from "@/app/actions/get-holidays";
 
 interface HolidayListProps {
-    initialHolidays: Holiday[];
+    initialHolidays: HolidayCardData[];
+    initialNextOffset: number | null;
     country?: string | null;
 }
 
 const LOAD_MORE_COUNT = 12;
 
-export function HolidayList({ initialHolidays, country }: HolidayListProps) {
-    const [holidays, setHolidays] = useState<Holiday[]>(initialHolidays);
-    const [offset, setOffset] = useState(initialHolidays.length);
-    const [hasMore, setHasMore] = useState(initialHolidays.length >= LOAD_MORE_COUNT);
-    const [loadingMore, setLoadingMore] = useState(false);
-
-    // Reset state when filters change (initialHolidays updates)
-    useEffect(() => {
-        setHolidays(initialHolidays);
-        setOffset(initialHolidays.length);
-        setHasMore(initialHolidays.length >= LOAD_MORE_COUNT);
-    }, [initialHolidays]);
+export function HolidayList({ initialHolidays, initialNextOffset, country }: HolidayListProps) {
+    const [holidays, setHolidays] = useState<HolidayCardData[]>(initialHolidays);
+    const [nextOffset, setNextOffset] = useState(initialNextOffset);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const hasMore = nextOffset !== null;
 
     const handleShowMore = async () => {
-        setLoadingMore(true);
+        if (isLoading || nextOffset === null) return;
+        setIsLoading(true);
+        setError(null);
         try {
-            const newHolidays = await getHolidays(LOAD_MORE_COUNT, offset, country);
-
-            if (newHolidays.length < LOAD_MORE_COUNT) {
-                setHasMore(false);
-            }
-
-            if (newHolidays.length > 0) {
-                setHolidays(prev => [...prev, ...newHolidays]);
-                setOffset(prev => prev + newHolidays.length);
-            } else {
-                setHasMore(false);
-            }
+            const page = await getHolidayPage(LOAD_MORE_COUNT, nextOffset, country);
+            setHolidays(previous => [...new Map([...previous, ...page.items].map(item => [item.id, item])).values()]);
+            setNextOffset(page.nextOffset);
         } catch (error) {
             console.error("Error loading more holidays:", error);
+            setError("Не успяхме да заредим предложенията. Опитайте отново.");
         } finally {
-            setLoadingMore(false);
+            setIsLoading(false);
         }
     };
 
     return (
         <>
+            {error && <p role="alert" className="text-center text-red-600 mb-4">{error}</p>}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {holidays.map((holiday) => (
                     <div key={holiday.id} className="h-full">
@@ -63,12 +53,12 @@ export function HolidayList({ initialHolidays, country }: HolidayListProps) {
                 <div className="flex justify-center mt-12">
                     <Button
                         onClick={handleShowMore}
-                        disabled={loadingMore}
+                        disabled={isLoading}
                         size="lg"
                         variant="default"
                         className=""
                     >
-                        {loadingMore ? (
+                        {isLoading ? (
                             <>
                                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                                 Зареждане...

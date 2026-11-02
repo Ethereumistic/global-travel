@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
+        hostname: "images.planet.bg",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "cdn.jsdelivr.net",
         port: "",
         pathname: "/gh/Ethereumistic/**", // Allows all images from this host

@@ -13,10 +13,10 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { Holiday } from "@/lib/types-holiday";
+import type { HolidayCardData } from "@/lib/types-holiday";
 
 interface HolidayCardProps {
-    holiday: Holiday;
+    holiday: HolidayCardData;
 }
 
 // Helper functions
@@ -174,8 +174,8 @@ export function HolidayCard({ holiday }: HolidayCardProps) {
                 <div>
                     <p className="text-xs text-muted-foreground">Цена от</p>
                     <p className="text-3xl font-black text-primary flex items-center gap-1">
-                        <Euro className="h-6 w-6" />
-                        {holiday.min_price.main?.value || holiday.min_price.value}
+                        {holiday.min_price && <Euro className="h-6 w-6" />}
+                        {holiday.min_price?.main?.value ?? holiday.min_price?.value ?? 'При запитване'}
                     </p>
                 </div>
                 <div className={buttonVariants({ variant: "default" })}>

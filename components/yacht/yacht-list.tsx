@@ -1,58 +1,46 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { YachtCard } from "@/components/yacht/yacht-card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Anchor } from "lucide-react";
-import type { Yacht } from "@/lib/types-yacht";
-import { getYachts } from "@/app/actions/get-yachts";
+import type { YachtCardData } from "@/lib/types-yacht";
+import { getYachtPage } from "@/app/actions/get-yachts";
 
 interface YachtListProps {
-  initialYachts: Yacht[];
+  initialYachts: YachtCardData[];
+    initialNextOffset: number | null;
   country?: string | null;
 }
 
 const LOAD_MORE_COUNT = 9;
 
-export function YachtList({ initialYachts, country }: YachtListProps) {
-  const [yachts, setYachts] = useState<Yacht[]>(initialYachts);
-  const [offset, setOffset] = useState(initialYachts.length);
-  const [isLoading, setIsLoading] = useState(false);
-  // Initial heuristic: if we got full batch, likely more exists. 
-  // If initial fetch was < 9, then definitely no more.
-  const [hasMore, setHasMore] = useState(initialYachts.length >= 1);
+export function YachtList({ initialYachts, initialNextOffset, country }: YachtListProps) {
+    const [yachts, setYachts] = useState<YachtCardData[]>(initialYachts);
+    const [nextOffset, setNextOffset] = useState(initialNextOffset);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const hasMore = nextOffset !== null;
 
-  // Reset state when filters change
-  useEffect(() => {
-    setYachts(initialYachts);
-    setOffset(initialYachts.length);
-    setHasMore(initialYachts.length >= 1);
-  }, [initialYachts]);
-
-  const handleShowMore = async () => {
-    setIsLoading(true);
-    try {
-      const newYachts = await getYachts(LOAD_MORE_COUNT, offset, country);
-
-      if (newYachts.length < LOAD_MORE_COUNT) {
-        setHasMore(false);
-      }
-
-      if (newYachts.length > 0) {
-        setYachts(prev => [...prev, ...newYachts]);
-        setOffset(prev => prev + newYachts.length);
-      } else {
-        setHasMore(false);
-      }
-    } catch (error) {
-      console.error("Error loading more yachts:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    const handleShowMore = async () => {
+        if (isLoading || nextOffset === null) return;
+        setIsLoading(true);
+        setError(null);
+        try {
+            const page = await getYachtPage(LOAD_MORE_COUNT, nextOffset, country);
+            setYachts(previous => [...new Map([...previous, ...page.items].map(item => [item.id, item])).values()]);
+            setNextOffset(page.nextOffset);
+        } catch (error) {
+            console.error("Error loading more yachts:", error);
+            setError("Не успяхме да заредим предложенията. Опитайте отново.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
   return (
     <div className="space-y-10">
+            {error && <p role="alert" className="text-center text-red-600">{error}</p>}
       {/* Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {yachts.map((yacht) => (
@@ -72,7 +60,7 @@ export function YachtList({ initialYachts, country }: YachtListProps) {
       )}
 
       {/* Show More Button */}
-      {hasMore && yachts.length > 0 && (
+      {hasMore && (
         <div className="flex justify-center pb-8">
           <Button
             onClick={handleShowMore}
@@ -92,7 +80,7 @@ export function YachtList({ initialYachts, country }: YachtListProps) {
         </div>
       )}
 
-      {!hasMore && yachts.length > 0 && (
+      {!hasMore && (
         <div className="text-center py-12 text-muted-foreground">
           <p>Това са всички предложения за момента.</p>
         </div>

@@ -104,8 +104,8 @@ export function HolidayInfoGrid({ holiday, showDateCard = false }: HolidayInfoGr
                     <Euro className="size-8 mx-auto mb-2 text-primary" />
                     <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wider">Цена от</p>
                     <p className="text-2xl font-black text-primary leading-tight">
-                        {holiday.min_price.main?.value || holiday.min_price.value}
-                        <span className="text-sm font-bold ml-1">{holiday.min_price.main?.currency || holiday.min_price.display_currency}</span>
+                        {holiday.min_price?.main?.value ?? holiday.min_price?.value ?? 'При запитване'}
+                        <span className="text-sm font-bold ml-1">{holiday.min_price?.main?.currency || holiday.min_price?.display_currency}</span>
                     </p>
                 </CardContent>
             </Card>

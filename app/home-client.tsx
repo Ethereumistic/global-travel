@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import HeroVideo from '@/components/hero/hero-video';
 import { HolidayCard } from '@/components/holiday/holiday-card';
-import { Holiday } from '@/lib/types-holiday';
+import { HolidayCardData } from '@/lib/types-holiday';
 import { ALL_COUNTRIES } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
@@ -11,19 +11,22 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { ContactForm } from '@/components/contact/contact-form';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { getHolidays } from '@/app/actions/get-holidays';
+import { getHolidayPage } from '@/app/actions/get-holidays';
 
 interface HomeClientProps {
-    initialHolidays: Holiday[];
+    initialHolidays: HolidayCardData[];
+    initialNextOffset: number | null;
 }
 
-export function HomeClient({ initialHolidays }: HomeClientProps) {
-    const [holidays, setHolidays] = useState<Holiday[]>(initialHolidays);
+export function HomeClient({ initialHolidays, initialNextOffset }: HomeClientProps) {
+    const [holidays, setHolidays] = useState<HolidayCardData[]>(initialHolidays);
     const [loading, setLoading] = useState(false); // Only for country change
     const [loadingMore, setLoadingMore] = useState(false);
     const [selectedCountry, setSelectedCountry] = useState<string>("");
-    const [offset, setOffset] = useState(initialHolidays.length);
-    const [hasMore, setHasMore] = useState(true);
+    const [nextOffset, setNextOffset] = useState(initialNextOffset);
+    const hasMore = nextOffset !== null;
+    const requestId = useRef(0);
+    const [error, setError] = useState<string | null>(null);
 
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -38,43 +41,38 @@ export function HomeClient({ initialHolidays }: HomeClientProps) {
     };
 
     const handleSearch = async (countryCode: string) => {
-        setSelectedCountry(countryCode);
+        const current = ++requestId.current;
         setLoading(true);
-        setOffset(0); // Reset for new search
-
+        setError(null);
         try {
-            // Fetch fresh batch for the new country
-            const initialLimit = 8;
-            const newHolidays = await getHolidays(initialLimit, 0, countryCode);
-            setHolidays(newHolidays);
-            setOffset(newHolidays.length);
-            setHasMore(newHolidays.length === initialLimit);
+            const page = await getHolidayPage(8, 0, countryCode);
+            if (current !== requestId.current) return;
+            setSelectedCountry(countryCode);
+            setHolidays(page.items);
+            setNextOffset(page.nextOffset);
         } catch (error) {
+            if (current !== requestId.current) return;
             console.error("Error filtering holidays:", error);
+            setError("Не успяхме да заредим предложенията. Опитайте отново.");
         } finally {
-            setLoading(false);
+            if (current === requestId.current) setLoading(false);
         }
     };
 
     const handleShowMore = async () => {
+        if (loadingMore || loading || nextOffset === null) return;
+        const current = requestId.current;
         setLoadingMore(true);
+        setError(null);
         try {
-            const limit = 8;
-            const newBatch = await getHolidays(limit, offset, selectedCountry || null);
-
-            if (newBatch.length < limit) {
-                setHasMore(false);
-            }
-
-            if (newBatch.length > 0) {
-                setHolidays(prev => [...prev, ...newBatch]);
-                setOffset(prev => prev + newBatch.length);
-            } else {
-                setHasMore(false);
-            }
-
+            const page = await getHolidayPage(8, nextOffset, selectedCountry || null);
+            if (current !== requestId.current) return;
+            setHolidays(previous => [...new Map([...previous, ...page.items].map(item => [item.id, item])).values()]);
+            setNextOffset(page.nextOffset);
         } catch (error) {
+            if (current !== requestId.current) return;
             console.error("Error loading more holidays:", error);
+            setError("Не успяхме да заредим предложенията. Опитайте отново.");
         } finally {
             setLoadingMore(false);
         }
@@ -117,6 +115,7 @@ export function HomeClient({ initialHolidays }: HomeClientProps) {
                     </h2>
                 </div>
 
+                {error && <p role="alert" className="text-center text-red-600 mb-4">{error}</p>}
                 {loading ? (
                     <div className="text-center py-20">
                         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">

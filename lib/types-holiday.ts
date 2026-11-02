@@ -86,8 +86,8 @@ export interface Holiday {
     available_to: string;
     available_months: number[];
     holiday_type: string;
-    min_price: HolidayPrice;
-    max_price: HolidayPrice;
+    min_price: HolidayPrice | null;
+    max_price: HolidayPrice | null;
     country: HolidayCountry;
     status: string;
     supplier: string;
@@ -121,3 +121,7 @@ export interface Holiday {
 export interface HolidayApiResponse {
     holidays: Holiday[];
 }
+
+export type HolidayCardData = Pick<Holiday,
+    'id' | 'title' | 'subtitle' | 'main_image' | 'min_price' | 'country' |
+    'route' | 'transport' | 'duration' | 'available_from' | 'available_to'>;

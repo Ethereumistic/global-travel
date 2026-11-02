@@ -2,7 +2,7 @@ import { PageSlider } from "@/components/layout/page-slider";
 import { YachtList } from "@/components/yacht/yacht-list";
 import { Anchor } from "lucide-react";
 import { ALL_COUNTRIES } from "@/lib/constants";
-import { getYachts } from "@/app/actions/get-yachts";
+import { getYachtPage } from "@/app/actions/get-yachts";
 
 
 import type { Metadata } from "next";
@@ -36,7 +36,7 @@ export default async function YachtsPage(props: PageProps) {
     : null;
 
   // Fetch initial batch (limit 9 as per original desire)
-  const initialYachts = await getYachts(9, 0, countryFilter);
+  const { items: initialYachts, nextOffset } = await getYachtPage(9, 0, countryFilter);
 
   const countryName = countryFilter
     ? ALL_COUNTRIES.find(c => c.abbr === countryFilter)?.name || countryFilter.toUpperCase()
@@ -68,6 +68,8 @@ export default async function YachtsPage(props: PageProps) {
         </div>
 
         <YachtList
+                    key={countryFilter || "all"}
+                    initialNextOffset={nextOffset}
           initialYachts={initialYachts}
           country={countryFilter}
         />

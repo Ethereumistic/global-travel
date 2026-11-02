@@ -3,12 +3,12 @@ import { Users, DoorOpen, Bath, MapPin } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Yacht } from "@/lib/types-yacht";
+import { YachtCardData } from "@/lib/types-yacht";
 import { ALL_COUNTRIES } from "@/lib/constants";
 import Link from "next/link";
 
 interface YachtCardProps {
-  yacht: Yacht;
+  yacht: YachtCardData;
 }
 
 export function YachtCard({ yacht }: YachtCardProps) {
