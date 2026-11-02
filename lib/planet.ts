@@ -50,30 +50,36 @@ function destinations(countries: { code: string; name: string }[]) {
 
 // Only compact card fields are cached, never descriptions, inventory or galleries.
 // Chunks stay small enough for the Next.js Data Cache as catalogues grow.
-const holidayChunk = unstable_cache(async (offset: number) => {
+const holidayChunk = unstable_cache(async (_generation: number, offset: number) => {
   const page = rows<Holiday>(await json(`holidays/?limit=${INDEX_CHUNK_SIZE}&offset=${offset}`), 'holidays');
   return { ...page, items: page.items.map((h): HolidayCardData => ({
     id: h.id, title: h.title, subtitle: h.subtitle, main_image: h.main_image,
     min_price: h.min_price, country: h.country, route: h.route, transport: h.transport,
     duration: h.duration, available_from: h.available_from, available_to: h.available_to,
   })) };
-}, ['planet-holiday-card-chunk-v1'], { revalidate: CATALOGUE_TTL });
+}, ['planet-holiday-card-chunk-v2'], { revalidate: CATALOGUE_TTL });
 
-const yachtChunk = unstable_cache(async (offset: number) => {
+const yachtChunk = unstable_cache(async (_generation: number, offset: number) => {
   const page = rows<Yacht>(await json(`yachts/?limit=${INDEX_CHUNK_SIZE}&offset=${offset}`), 'yachts');
   return { ...page, items: page.items.map((y): YachtCardData => ({
     id: y.id, name: y.name, main_image: y.main_image, min_price: y.min_price,
     country: y.country, home_port: y.home_port, guests: y.guests,
     cabins: y.cabins, wc: y.wc, available_as: y.available_as,
   })) };
-}, ['planet-yacht-card-chunk-v1'], { revalidate: CATALOGUE_TTL });
+}, ['planet-yacht-card-chunk-v2'], { revalidate: CATALOGUE_TTL });
 
 async function holidays() {
-  return (await readCompleteCatalogue(holidayChunk)).sort((a, b) => priceSortValue(a.min_price) - priceSortValue(b.min_price));
+  // All chunks in a read share an hourly generation. This prevents combining
+  // independently refreshed old/new offsets when upstream inventory changes.
+  const generation = Math.floor(Date.now() / (CATALOGUE_TTL * 1000));
+  return (await readCompleteCatalogue(offset => holidayChunk(generation, offset)))
+    .sort((a, b) => priceSortValue(a.min_price) - priceSortValue(b.min_price));
 }
 
 async function yachts() {
-  return (await readCompleteCatalogue(yachtChunk)).sort((a, b) => priceSortValue(a.min_price) - priceSortValue(b.min_price));
+  const generation = Math.floor(Date.now() / (CATALOGUE_TTL * 1000));
+  return (await readCompleteCatalogue(offset => yachtChunk(generation, offset)))
+    .sort((a, b) => priceSortValue(a.min_price) - priceSortValue(b.min_price));
 }
 
 // Cache the final small pages too: a hot request never deserializes a full index.
