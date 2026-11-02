@@ -5,7 +5,7 @@ import { HotelCard } from "@/components/hotel/hotel-card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Building2 } from "lucide-react";
 import type { Hotel } from "@/lib/types-hotel";
-import { getHotelPage } from "@/app/actions/get-hotels";
+import { getHotelPage } from "@/lib/catalogue-client";
 
 interface HotelListProps {
     initialHotels: Hotel[];

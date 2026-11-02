@@ -19,9 +19,9 @@ import {
 } from "@/components/ui/popover";
 import { ALL_COUNTRIES } from "@/lib/constants";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getHolidays, getHolidayDestinations } from "@/app/actions/get-holidays";
-import { getHotels, getHotelDestinations } from "@/app/actions/get-hotels";
-import { getYachts, getYachtDestinations } from "@/app/actions/get-yachts";
+import { getHolidayDestinations } from "@/lib/catalogue-client";
+import { getHotelDestinations } from "@/lib/catalogue-client";
+import { getYachtDestinations } from "@/lib/catalogue-client";
 
 interface PageSliderProps {
   images: string[];

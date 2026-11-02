@@ -18,7 +18,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import { ALL_COUNTRIES } from "@/lib/constants";
-import { getHolidays, getHolidayDestinations } from "@/app/actions/get-holidays";
+import { getHolidayDestinations } from "@/lib/catalogue-client";
 
 interface CountryOption {
     value: string;

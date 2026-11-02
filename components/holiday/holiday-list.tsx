@@ -5,7 +5,7 @@ import { HolidayCardData } from "@/lib/types-holiday";
 import { HolidayCard } from "@/components/holiday/holiday-card";
 import { Palmtree, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getHolidayPage } from "@/app/actions/get-holidays";
+import { getHolidayPage } from "@/lib/catalogue-client";
 
 interface HolidayListProps {
     initialHolidays: HolidayCardData[];

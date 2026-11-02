@@ -11,7 +11,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { ContactForm } from '@/components/contact/contact-form';
 import { useMediaQuery } from '@/hooks/use-media-query';
-import { getHolidayPage } from '@/app/actions/get-holidays';
+import { getHolidayPage } from '@/lib/catalogue-client';
 
 interface HomeClientProps {
     initialHolidays: HolidayCardData[];

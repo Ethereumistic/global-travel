@@ -5,7 +5,7 @@ import { YachtCard } from "@/components/yacht/yacht-card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Anchor } from "lucide-react";
 import type { YachtCardData } from "@/lib/types-yacht";
-import { getYachtPage } from "@/app/actions/get-yachts";
+import { getYachtPage } from "@/lib/catalogue-client";
 
 interface YachtListProps {
   initialYachts: YachtCardData[];
