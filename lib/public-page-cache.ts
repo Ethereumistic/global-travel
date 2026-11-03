@@ -20,6 +20,7 @@ export function publicPageHeaders() {
       { type: 'cookie' as const, key: '__next_preview_data' },
     ],
     headers: [
+      { key: 'Vercel-CDN-Cache-Control', value: `public, s-maxage=${seconds}, stale-while-revalidate=60` },
       { key: 'Netlify-CDN-Cache-Control', value: `public, s-maxage=${seconds}, stale-while-revalidate=60, durable` },
       { key: 'Netlify-Vary', value: `query=${query.join('|')}` },
     ],

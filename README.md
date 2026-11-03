@@ -57,6 +57,14 @@ These changes reduce avoidable requests and repeated rendering; they cannot guar
 
 The Cloudflare test Worker and its dedicated KV cache were removed. The project uses the normal Next.js runtime again.
 
+### Vercel recovery deployment
+
+Deploy the patched branch, not an older copy of the repository. Import the five `NEXT_PUBLIC_*` settings from the ignored local `.env`, overriding `NEXT_PUBLIC_BASE_URL` to `https://global-travel.bg` for production. A duplicate repository is optional; the existing source already contains the fixes.
+
+Public catalogue responses include `Vercel-CDN-Cache-Control` as well as the Netlify-specific headers. Supplier errors explicitly disable CDN caching. Netlify's `Netlify-Vary` query selection and native traffic-guard plugin do not configure Vercel: Vercel uses its own cache keys and firewall settings. Before switching DNS, configure Vercel's Bot Protection managed ruleset in Challenge mode and a native per-IP rate-limit rule, then verify real browser access, cache hits, and provider data on the deployment URL. Verified search-engine bots should remain allowed; identify any further blocks from actual Firewall/Observability traffic.
+
+Keep Netlify nameservers and email records. Add `global-travel.bg` and `www.global-travel.bg` to the new Vercel project, complete any ownership TXT verification, then use the exact A/CNAME values that project supplies. Test HTTPS and content before directing public traffic to it. The current local Vercel CLI account must not be assumed to match a browser login; verify the deployment account/team explicitly.
+
 ## Getting Started
 
 First, run the development server:
