@@ -8,3 +8,8 @@
 
 # Netlify detects Next.js and provides its maintained OpenNext adapter.
 # Do not add a catch-all SPA redirect: it would bypass server-rendered routes.
+
+# Append native rate-limit forward rules AFTER the Next.js adapter's image/CDN
+# routes. Placing a wildcard redirect here would shadow those generated routes.
+[[plugins]]
+  package = "./netlify/plugins/traffic-guard"

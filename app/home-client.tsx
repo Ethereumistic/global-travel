@@ -16,9 +16,10 @@ import { getHolidayPage } from '@/lib/catalogue-client';
 interface HomeClientProps {
     initialHolidays: HolidayCardData[];
     initialNextOffset: number | null;
+    initialLoadFailed?: boolean;
 }
 
-export function HomeClient({ initialHolidays, initialNextOffset }: HomeClientProps) {
+export function HomeClient({ initialHolidays, initialNextOffset, initialLoadFailed = false }: HomeClientProps) {
     const [holidays, setHolidays] = useState<HolidayCardData[]>(initialHolidays);
     const [loading, setLoading] = useState(false); // Only for country change
     const [loadingMore, setLoadingMore] = useState(false);
@@ -26,7 +27,9 @@ export function HomeClient({ initialHolidays, initialNextOffset }: HomeClientPro
     const [nextOffset, setNextOffset] = useState(initialNextOffset);
     const hasMore = nextOffset !== null;
     const requestId = useRef(0);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(initialLoadFailed
+        ? "Предложенията временно не могат да бъдат заредени. Опитайте отново."
+        : null);
 
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -156,6 +159,10 @@ export function HomeClient({ initialHolidays, initialNextOffset }: HomeClientPro
                             </div>
                         )}
                     </>
+                ) : error ? (
+                    <div className="text-center py-12">
+                        <Button onClick={() => handleSearch(selectedCountry)}>Опитай отново</Button>
+                    </div>
                 ) : (
                     <div className="text-center py-20">
                         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">

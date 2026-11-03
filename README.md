@@ -40,6 +40,19 @@ The legacy Netlify Free plan counts function invocations. Reducing CPU work or c
 - Offer-card links disable automatic prefetching. Scrolling through a catalogue no longer automatically requests every linked detail page. Clicking and client navigation continue to work.
 - Supplier errors such as `403`/`429` throw instead of becoming false `404` responses. This lets ISR keep an existing successful page during an upstream outage.
 
+### Free-plan traffic protections
+
+- Next.js is updated from 16.0.10 to 16.4.4, which includes the fix for the App Router/Server Actions CPU denial-of-service advisory [GHSA-p3m5-59mp-jv5r](https://github.com/vercel/next.js/security/advisories/GHSA-p3m5-59mp-jv5r). The old version was affected; existing invocation logs do not establish exploitation.
+- Catalogue helpers now use `server-only` instead of `use server`. They are used internally by server rendering; browsers already use the cacheable GET API. This removes unnecessary publicly callable Server Actions and the POST route around GET caching, without changing catalogue behavior.
+- If Planet is unavailable during a fresh build, the homepage still publishes its marketing/contact content with an explicit catalogue error and manual retry. Runtime ISR still throws on supplier errors, retaining an already successful homepage instead of replacing it with an empty catalogue. Supplier data is never cached as an empty success.
+- Catalogue JSON varies only by `limit`, `offset` and `country`; destination JSON ignores irrelevant query arguments. Random tracking/cache-busting arguments no longer create separate CDN entries for the same data.
+- A local Netlify build plugin appends two native rate-limit forward rules **after** the Next adapter's image CDN redirects. They allow 30 API requests/minute and 120 other matched requests/minute per IP/domain, returning platform `429` responses above the threshold. No runtime middleware, edge function or paid counter service is added. Image CDN redirects retain precedence. Native rate-limit acceptance must be confirmed in deploy post-processing logs and an HTTP smoke test; a passing local build alone does not establish enforcement.
+- `robots.txt` discourages compliant crawlers from fetching JSON APIs and requests a 10-second crawl delay. This is advisory: Google does not honor crawl delay, and hostile bots can ignore robots.txt entirely. Public offer pages remain crawlable.
+
+Netlify Free supports per-IP/domain rate limiting, not a shared global origin budget. Enforcement can lag by up to 10 seconds. Multiple clients behind one IP share its allowance; distributed or slow traffic can still consume a monthly quota. These controls cannot honestly promise that a free hosting account will never be paused. See [Netlify rate limiting](https://docs.netlify.com/manage/security/secure-access-to-sites/rate-limiting/).
+
+For an isolated deployment, verify its actual plan allowances rather than assuming a new account has the legacy 125,000-function allowance. New credit-based Free teams have request-level Observability (legacy teams do not): inspect paths, response statuses, clients and cache results immediately after launch, then narrow any blocks using actual traffic evidence. Keep automatic purchases disabled. See [Observability availability](https://docs.netlify.com/manage/monitoring/observability/overview/).
+
 These changes reduce avoidable requests and repeated rendering; they cannot guarantee that an arbitrary volume of unique URLs or abusive traffic fits a free monthly quota. A Netlify account suspension is an account/billing state and cannot be cleared by deploying code.
 
 The Cloudflare test Worker and its dedicated KV cache were removed. The project uses the normal Next.js runtime again.

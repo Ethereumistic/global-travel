@@ -1,4 +1,4 @@
-"use server";
+import 'server-only';
 
 import { getHolidayById as readHoliday } from "@/lib/planet-details";
 import { pageRequest } from "@/lib/catalogue";

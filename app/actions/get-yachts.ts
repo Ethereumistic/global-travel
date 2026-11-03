@@ -1,4 +1,4 @@
-"use server";
+import 'server-only';
 
 import { getYachtById as readYacht } from "@/lib/planet-details";
 import { pageRequest } from "@/lib/catalogue";
