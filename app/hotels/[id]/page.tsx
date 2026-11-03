@@ -6,24 +6,14 @@ import { HotelDescription } from "@/components/hotel/HotelDescription";
 import { HotelFacilities } from "@/components/hotel/HotelFacilities";
 import { HotelInfo } from "@/components/hotel/HotelInfo";
 import { HotelBookingSidebar } from "@/components/hotel/HotelBookingSidebar";
-import type { Hotel } from "@/lib/types-hotel";
 
 import type { Metadata } from "next";
+import { getHotelById } from '@/lib/planet-details';
 
-// Helper to fetch hotel data
-async function getHotelById(id: string): Promise<Hotel | null> {
-    try {
-        // Use absolute URL for server-side fetch if needed, but here we can use the same logic as the API route
-        // or call the external API directly to avoid self-request issues during build/runtime
-        const apiUrl = `https://live.planet.bg/api/v1/hotels/${id}/`;
-        const res = await fetch(apiUrl, { next: { revalidate: 3600 } });
+export const revalidate = 3600;
 
-        if (!res.ok) return null;
-        return await res.json();
-    } catch (error) {
-        console.error("Error fetching hotel:", error);
-        return null;
-    }
+export async function generateStaticParams() {
+    return [];
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {

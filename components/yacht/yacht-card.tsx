@@ -23,7 +23,7 @@ export function YachtCard({ yacht }: YachtCardProps) {
   const yachtLink = yacht.id ? `/yachts/${yacht.id}` : "#";
 
   return (
-    <Link href={`/yachts/${yacht.id}?c=${yacht.country}`} 
+    <Link prefetch={false} href={`/yachts/${yacht.id}?c=${yacht.country}`}
     className="block h-full group focus:outline-none">
     <Card className="group overflow-hidden border-none shadow-lg transition-all hover:shadow-xl flex flex-col h-full p-0">
       {/* Image Section */}

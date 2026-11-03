@@ -1,10 +1,10 @@
 import { hotelSitemapPage } from '@/lib/planet';
-import { HOTEL_SITEMAP_SIZE, SITE_URL, xmlEscape, xmlResponse } from '@/lib/sitemap';
+import { HOTEL_SITEMAP_SIZE, SITE_URL, hotelSitemapsEnabled, xmlEscape, xmlResponse } from '@/lib/sitemap';
 
 export const revalidate = 3600;
 
 export async function GET() {
-  const { total } = await hotelSitemapPage(0, 1);
+  const total = hotelSitemapsEnabled() ? (await hotelSitemapPage(0, 1)).total : 0;
   const names = ['static', 'holidays', 'yachts', ...Array.from(
     { length: Math.ceil(total / HOTEL_SITEMAP_SIZE) }, (_, index) => `hotels-${index}`,
   )];

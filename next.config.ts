@@ -1,6 +1,10 @@
 import { NextConfig } from 'next';
+import { publicPageHeaders } from './lib/public-page-cache';
 
 const nextConfig: NextConfig = {
+  async headers() {
+    return publicPageHeaders();
+  },
   images: {
     // 'domains' is deprecated. 'remotePatterns' is the new, more secure standard.
     remotePatterns: [

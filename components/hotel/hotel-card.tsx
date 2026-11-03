@@ -22,7 +22,7 @@ export function HotelCard({ hotel }: HotelCardProps) {
     const countryCode = (hotel.location?.country_code || hotel.country_code)?.toLowerCase();
 
     return (
-        <Link href={`/hotels/${hotel.id}`} className="block h-full group focus:outline-none">
+        <Link prefetch={false} href={`/hotels/${hotel.id}`} className="block h-full group focus:outline-none">
             <Card className="group overflow-hidden border-none shadow-lg transition-all hover:shadow-xl flex flex-col h-full p-0">
                 {/* Image Section */}
                 <div className="relative aspect-4/3 overflow-hidden">

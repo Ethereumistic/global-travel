@@ -40,7 +40,7 @@ export function SimplifiedFlightCard({ flight }: { flight: SanityFlight }) {
     const flagUrl = getCountryFlagUrl(flight.toCountry);
 
     return (
-        <Link href={`/flights/${flight.slug?.current || '#'}`} className="block h-full">
+        <Link prefetch={false} href={`/flights/${flight.slug?.current || '#'}`} className="block h-full">
             <Card className="group flex flex-col h-full overflow-hidden hover:shadow-lg transition-shadow duration-300 pt-0 bg-secondary-foreground/30 border-border/50 cursor-pointer">
 
                 {/* --- IMAGE SECTION --- */}

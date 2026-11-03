@@ -29,7 +29,18 @@ The original server actions downloaded the first 1,000 rows, filtered countries 
 - Browser pagination and destination lookups use public, cacheable GET endpoints under `/api/catalogue/`. Netlify's CDN can serve repeat requests without invoking a function. Cache keys vary by query parameters, so countries and offsets remain separate. Errors are never cached.
 - Failures throw instead of turning into cached empty catalogues. Load-more buttons retain their cursor and offer a retry after errors. Server actions validate page sizes and country codes. The 100-row request ceiling bounds each response, not how far visitors can browse.
 - Hotel destination choices use the complete upstream country directory; countries without current inventory can return an empty result. They are no longer inferred from an arbitrary initial hotel sample.
-- `/sitemap.xml` is a sitemap index. Hotel sitemaps each read at most a 1,000-row range, including ranges beyond the old cutoff, instead of loading all hotel records in every sitemap request. URLs use the configured production hostname and actual routes.
+- `/sitemap.xml` publishes static pages, holidays and yachts. Publishing the full supplier hotel catalogue requires the explicit `INDEX_HOTEL_CATALOGUE=true` setting. It is off by default: the supplier has over 530,000 hotels, and advertising every detail URL invites a large cold-page crawl. All hotels remain searchable, paginated and accessible to visitors. Previously advertised hotel sitemap URLs return a cacheable `410` while this setting is off.
+
+### Function-invocation safeguards
+
+The legacy Netlify Free plan counts function invocations. Reducing CPU work or caching only supplier JSON does not stop an uncached HTML/RSC request from invoking Next.js.
+
+- Hotel and holiday detail pages use on-demand ISR (`generateStaticParams` returns an empty array, with hourly revalidation). This caches complete rendered responses, without prebuilding or limiting the catalogue.
+- Public catalogue listing/detail routes explicitly opt into Netlify's durable CDN cache. Country filters and the yacht country hint remain in their cache keys, alongside Next.js's RSC variation. Server Actions and authenticated preview cookies are excluded from this override.
+- Offer-card links disable automatic prefetching. Scrolling through a catalogue no longer automatically requests every linked detail page. Clicking and client navigation continue to work.
+- Supplier errors such as `403`/`429` throw instead of becoming false `404` responses. This lets ISR keep an existing successful page during an upstream outage.
+
+These changes reduce avoidable requests and repeated rendering; they cannot guarantee that an arbitrary volume of unique URLs or abusive traffic fits a free monthly quota. A Netlify account suspension is an account/billing state and cannot be cleared by deploying code.
 
 The Cloudflare test Worker and its dedicated KV cache were removed. The project uses the normal Next.js runtime again.
 

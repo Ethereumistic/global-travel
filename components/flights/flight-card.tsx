@@ -41,7 +41,7 @@ export function FlightCard({ flight }: FlightCardProps) {
   };
 
   return (
-    <Link href={`/flights/${flight.id}`}>
+    <Link prefetch={false} href={`/flights/${flight.id}`}>
       <Card className="group flex flex-col h-full overflow-hidden hover:shadow-lg transition-shadow duration-300 pt-0 bg-secondary-foreground/30">
         
         {/* --- IMAGE SECTION --- */}
@@ -122,7 +122,7 @@ export function FlightCard({ flight }: FlightCardProps) {
             <p className="text-3xl font-black text-primary">{flight.price} лв.</p>
           </div>
           <Button asChild>
-            <Link href={`/flights/${flight.id}`}>Купи билет</Link>
+            <Link prefetch={false} href={`/flights/${flight.id}`}>Купи билет</Link>
           </Button>
         </CardFooter>
       </Card>

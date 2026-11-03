@@ -63,7 +63,7 @@ export function HolidayCard({ holiday }: HolidayCardProps) {
     return (
         <Card className="group flex flex-col h-full overflow-hidden hover:shadow-lg transition-shadow duration-300 pt-0 bg-secondary-foreground/30 relative">
             {/* Main Link Overlay - Handles clicks on empty spaces and images */}
-            <Link href={`/holidays/${holiday.id}`} className="absolute inset-0 z-0" aria-label={`View details for ${holiday.title}`} />
+            <Link prefetch={false} href={`/holidays/${holiday.id}`} className="absolute inset-0 z-0" aria-label={`View details for ${holiday.title}`} />
 
             <div className="relative h-56 w-full bg-gray-200 z-10 pointer-events-none">
                 {!isImageLoaded && (
@@ -119,7 +119,7 @@ export function HolidayCard({ holiday }: HolidayCardProps) {
                                     2. z-20 puts it physically above the card background link.
                                     3. pointer-events-auto allows the tooltip to detect hover.
                                 */}
-                                <Link href={`/holidays/${holiday.id}`} className="block relative z-20 pointer-events-auto w-fit">
+                                <Link prefetch={false} href={`/holidays/${holiday.id}`} className="block relative z-20 pointer-events-auto w-fit">
                                     <h3 ref={titleRef} className="font-semibold text-third text-xl line-clamp-2 transition-colors duration-300 group-hover:text-primary text-left">
                                         {holiday.title}
                                     </h3>
@@ -131,7 +131,7 @@ export function HolidayCard({ holiday }: HolidayCardProps) {
                         </Tooltip>
                     </TooltipProvider>
                 ) : (
-                    <Link href={`/holidays/${holiday.id}`} className="block relative z-20 pointer-events-auto w-fit">
+                    <Link prefetch={false} href={`/holidays/${holiday.id}`} className="block relative z-20 pointer-events-auto w-fit">
                         <h3 ref={titleRef} className="font-semibold text-third text-xl line-clamp-2 transition-colors duration-300 group-hover:text-primary text-left">
                             {holiday.title}
                         </h3>
