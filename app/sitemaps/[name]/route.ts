@@ -1,5 +1,5 @@
 import { holidayIds, hotelSitemapPage, yachtIds } from '@/lib/planet';
-import { HOTEL_SITEMAP_SIZE, SITE_URL, xmlEscape, xmlResponse } from '@/lib/sitemap';
+import { HOTEL_SITEMAP_SIZE, SITE_URL, hotelSitemapsEnabled, xmlEscape, xmlResponse } from '@/lib/sitemap';
 
 export const revalidate = 3600;
 
@@ -14,6 +14,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ nam
   } else if (name === 'yachts.xml') {
     paths = (await yachtIds()).map(id => `/yachts/${id}`);
   } else if (/^hotels-(0|[1-9]\d*)\.xml$/.test(name)) {
+    if (!hotelSitemapsEnabled()) {
+      return new Response('Hotel sitemap publishing is disabled', {
+        status: 410,
+        headers: { 'Vercel-CDN-Cache-Control': 'public, s-maxage=86400', 'Netlify-CDN-Cache-Control': 'public, s-maxage=86400, durable', 'Cache-Control': 'public, max-age=3600' },
+      });
+    }
     const index = Number(name.slice(7, -4));
     if (!Number.isSafeInteger(index) || !Number.isSafeInteger(index * HOTEL_SITEMAP_SIZE)) {
       return new Response('Not found', { status: 404 });

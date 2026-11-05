@@ -4,7 +4,6 @@ import * as React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { Yacht } from "@/lib/types-yacht";
-import { getYachtById } from "@/app/actions/get-yachts";
 
 // Components
 import { YachtHeader } from "@/components/yacht/YachtHeader";

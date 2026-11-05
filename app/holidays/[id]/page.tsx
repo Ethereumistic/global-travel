@@ -17,6 +17,12 @@ import { HolidayHotels } from "@/components/holiday/HolidayHotels";
 import { YachtGallery } from "@/components/yacht/YachtGallery";
 import type { Metadata } from "next";
 
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+    return [];
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params;
     const holiday = await getHolidayById(id);

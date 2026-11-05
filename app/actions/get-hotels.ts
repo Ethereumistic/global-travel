@@ -1,4 +1,4 @@
-"use server";
+import 'server-only';
 
 import { pageRequest } from "@/lib/catalogue";
 import { hotelPage, hotelDestinations } from "@/lib/planet";
