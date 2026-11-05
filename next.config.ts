@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
     return publicPageHeaders();
   },
   images: {
+    // Serve source URLs directly; avoid hosting image transformations and cache quotas.
+    unoptimized: true,
     // 'domains' is deprecated. 'remotePatterns' is the new, more secure standard.
     remotePatterns: [
       {
